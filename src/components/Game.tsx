@@ -40,6 +40,7 @@ interface State {
   showPassButton: boolean;
   computerThinking: boolean;
   roundEnded: boolean;
+  playerTookCards: boolean;
 }
 
 type Action =
@@ -121,6 +122,7 @@ function reducer(state: State, action: Action): State {
         showPassButton: false,
         computerThinking: false,
         roundEnded: false,
+        playerTookCards: false,
       };
 
     case 'SELECT_CARD':
@@ -222,11 +224,13 @@ function reducer(state: State, action: Action): State {
         showTakeButton: false,
         showPassButton: false,
         message: 'Вы взяли карты. Компьютер подкидывает...',
+        playerTookCards: true,
       };
     }
 
     case 'END_ROUND': {
-      const newAttacker: Attacker = action.playerTook
+      // Если игрок брал карты в этом раунде, атакующий не меняется
+      const newAttacker: Attacker = state.playerTookCards
         ? state.attacker
         : (state.attacker === 'player' ? 'computer' : 'player');
 
@@ -238,7 +242,8 @@ function reducer(state: State, action: Action): State {
         showTakeButton: false,
         showPassButton: false,
         roundEnded: true,
-        computerThinking: false, // Сбрасываем флаг "думает"
+        computerThinking: false,
+        playerTookCards: false, // Сбрасываем флаг
       };
 
       const withCards = drawFromDeck(newState);
@@ -249,7 +254,8 @@ function reducer(state: State, action: Action): State {
         ...withCards,
         message: newAttacker === 'computer' ? 'Компьютер атакует...' : 'Ваш ход! Выберите карту для атаки.',
         roundEnded: false,
-        computerThinking: false, // Сбрасываем флаг "думает"
+        computerThinking: false,
+        playerTookCards: false,
       };
     }
 
@@ -309,6 +315,7 @@ const initialState: State = {
   showPassButton: false,
   computerThinking: false,
   roundEnded: false,
+  playerTookCards: false,
 };
 
 const HIGH_SCORE_KEY = 'durak_high_score';
