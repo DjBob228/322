@@ -39,7 +39,7 @@ export const Menu: React.FC<MenuProps> = ({ onStartGame }) => {
       </div>
       {/* Debug indicator */}
       <div className="absolute top-0 left-0 right-0 bg-red-500 text-white text-center text-xs py-0.5 z-50 font-bold">
-        ✅ МЕНЮ v5 — ИСПРАВЛЕНО
+        ✅ МЕНЮ v6 — СОРТИРОВКА
       </div>
 
       <div className="relative z-10 max-w-md w-full">

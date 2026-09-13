@@ -140,6 +140,25 @@ export function computerChooseDefense(
   return sorted[0];
 }
 
+export function sortHand(hand: Card[], trumpSuit: Suit | null): Card[] {
+  return [...hand].sort((a, b) => {
+    const aIsTrump = a.suit === trumpSuit;
+    const bIsTrump = b.suit === trumpSuit;
+
+    // Козыри идут первыми
+    if (aIsTrump && !bIsTrump) return -1;
+    if (!aIsTrump && bIsTrump) return 1;
+
+    // Если обе козыри или обе не козыри - сортируем по масти, затем по рангу
+    if (a.suit !== b.suit) {
+      return a.suit.localeCompare(b.suit);
+    }
+
+    // Одна масть - сортируем по рангу (туз первый, 6 последний)
+    return RANK_VALUES[b.rank] - RANK_VALUES[a.rank];
+  });
+}
+
 export function computerShouldThrow(
   hand: Card[],
   table: TablePair[],
