@@ -328,6 +328,7 @@ export const Game: React.FC<GameProps> = ({ difficulty, onBackToMenu }) => {
   const [gamesWon, setGamesWon] = useState(() => parseInt(localStorage.getItem(GAMES_WON_KEY) || '0'));
   const [sortMode, setSortMode] = useState<SortMode>('suit');
   const [soundEnabled, setSoundEnabled] = useState(() => localStorage.getItem('durak_sound') !== 'false');
+  const [showExitConfirm, setShowExitConfirm] = useState(false);
 
   const computerTimeoutRef = useRef<number | null>(null);
   const stateRef = useRef(state);
@@ -630,37 +631,41 @@ export const Game: React.FC<GameProps> = ({ difficulty, onBackToMenu }) => {
   // Play sound
   const playSound = (type: 'card' | 'win' | 'lose' | 'take') => {
     if (!soundEnabled) return;
-    const audioContext = new (window.AudioContext || (window as any).webkitAudioContext)();
-    const oscillator = audioContext.createOscillator();
-    const gainNode = audioContext.createGain();
-    
-    oscillator.connect(gainNode);
-    gainNode.connect(audioContext.destination);
-    
-    if (type === 'card') {
-      oscillator.frequency.value = 800;
-      gainNode.gain.setValueAtTime(0.1, audioContext.currentTime);
-      gainNode.gain.exponentialRampToValueAtTime(0.01, audioContext.currentTime + 0.1);
-      oscillator.start(audioContext.currentTime);
-      oscillator.stop(audioContext.currentTime + 0.1);
-    } else if (type === 'win') {
-      oscillator.frequency.value = 523;
-      gainNode.gain.setValueAtTime(0.2, audioContext.currentTime);
-      gainNode.gain.exponentialRampToValueAtTime(0.01, audioContext.currentTime + 0.5);
-      oscillator.start(audioContext.currentTime);
-      oscillator.stop(audioContext.currentTime + 0.5);
-    } else if (type === 'lose') {
-      oscillator.frequency.value = 200;
-      gainNode.gain.setValueAtTime(0.2, audioContext.currentTime);
-      gainNode.gain.exponentialRampToValueAtTime(0.01, audioContext.currentTime + 0.5);
-      oscillator.start(audioContext.currentTime);
-      oscillator.stop(audioContext.currentTime + 0.5);
-    } else if (type === 'take') {
-      oscillator.frequency.value = 300;
-      gainNode.gain.setValueAtTime(0.15, audioContext.currentTime);
-      gainNode.gain.exponentialRampToValueAtTime(0.01, audioContext.currentTime + 0.2);
-      oscillator.start(audioContext.currentTime);
-      oscillator.stop(audioContext.currentTime + 0.2);
+    try {
+      const audioContext = new (window.AudioContext || (window as any).webkitAudioContext)();
+      const oscillator = audioContext.createOscillator();
+      const gainNode = audioContext.createGain();
+      
+      oscillator.connect(gainNode);
+      gainNode.connect(audioContext.destination);
+      
+      if (type === 'card') {
+        oscillator.frequency.value = 800;
+        gainNode.gain.setValueAtTime(0.1, audioContext.currentTime);
+        gainNode.gain.exponentialRampToValueAtTime(0.01, audioContext.currentTime + 0.1);
+        oscillator.start(audioContext.currentTime);
+        oscillator.stop(audioContext.currentTime + 0.1);
+      } else if (type === 'win') {
+        oscillator.frequency.value = 523;
+        gainNode.gain.setValueAtTime(0.2, audioContext.currentTime);
+        gainNode.gain.exponentialRampToValueAtTime(0.01, audioContext.currentTime + 0.5);
+        oscillator.start(audioContext.currentTime);
+        oscillator.stop(audioContext.currentTime + 0.5);
+      } else if (type === 'lose') {
+        oscillator.frequency.value = 200;
+        gainNode.gain.setValueAtTime(0.2, audioContext.currentTime);
+        gainNode.gain.exponentialRampToValueAtTime(0.01, audioContext.currentTime + 0.5);
+        oscillator.start(audioContext.currentTime);
+        oscillator.stop(audioContext.currentTime + 0.5);
+      } else if (type === 'take') {
+        oscillator.frequency.value = 300;
+        gainNode.gain.setValueAtTime(0.15, audioContext.currentTime);
+        gainNode.gain.exponentialRampToValueAtTime(0.01, audioContext.currentTime + 0.2);
+        oscillator.start(audioContext.currentTime);
+        oscillator.stop(audioContext.currentTime + 0.2);
+      }
+    } catch (e) {
+      console.error('Sound error:', e);
     }
   };
 
@@ -701,13 +706,13 @@ export const Game: React.FC<GameProps> = ({ difficulty, onBackToMenu }) => {
       <div className="relative z-10 flex items-center justify-between p-2 sm:p-3 bg-black/20 backdrop-blur-sm shrink-0">
         <div className="flex items-center gap-2">
           <button
-            onClick={onBackToMenu}
+            onClick={() => setShowExitConfirm(true)}
             className="px-2 py-1.5 sm:px-3 sm:py-2 text-xs sm:text-sm bg-gray-700 hover:bg-gray-600 text-white rounded-lg transition-colors"
           >
             ← Меню
           </button>
           <span className="text-white/60 text-xs hidden md:inline">
-            {difficulty === 'easy' ? '😊 Легко' : difficulty === 'medium' ? '🤔 Средне' : '😈 Сложно'}
+            {difficulty === 'casual' ? '🎯 Легко (Казуальная)' : difficulty === 'easy' ? '😊 Легко' : difficulty === 'medium' ? '🤔 Средне' : '😈 Сложно'}
           </span>
         </div>
 
@@ -873,16 +878,29 @@ export const Game: React.FC<GameProps> = ({ difficulty, onBackToMenu }) => {
 
         {/* Player Hand */}
         <div className="flex flex-col items-center shrink-0 mt-2">
-          <div className="flex justify-center flex-wrap max-w-full px-2">
+          <div className="flex justify-center max-w-full px-2 overflow-hidden">
             {sortCards(state.playerHand).map((card, i) => {
-              const overlap = state.playerHand.length > 6 ? Math.max(0.3, 1 - (state.playerHand.length - 6) * 0.1) : 1;
+              // Calculate overlap based on number of cards
+              const cardCount = state.playerHand.length;
+              let marginLeft = '0';
+              
+              if (i > 0) {
+                if (cardCount <= 6) {
+                  marginLeft = '-1.5rem'; // Normal spacing
+                } else if (cardCount <= 8) {
+                  marginLeft = '-2rem'; // More overlap
+                } else if (cardCount <= 10) {
+                  marginLeft = '-2.5rem'; // Even more overlap
+                } else {
+                  marginLeft = '-3rem'; // Maximum overlap
+                }
+              }
+              
               return (
               <div
                 key={card.id}
                 className="transition-all duration-200 flex-shrink-0"
-                style={{
-                  marginLeft: i > 0 ? `-${(1 - overlap) * 100}%` : '0',
-                }}
+                style={{ marginLeft }}
               >
                 <CardComponent
                   card={card}
@@ -964,6 +982,30 @@ export const Game: React.FC<GameProps> = ({ difficulty, onBackToMenu }) => {
                 className="block w-full px-6 py-3 bg-gray-600 hover:bg-gray-500 text-white rounded-lg font-bold transition-colors"
               >
                 ← В меню
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Exit Confirmation Modal */}
+      {showExitConfirm && (
+        <div className="absolute inset-0 z-50 bg-black/70 backdrop-blur-sm flex items-center justify-center animate-fade-in">
+          <div className="bg-gray-800 rounded-2xl p-6 text-center shadow-2xl border border-gray-600 animate-scale-in max-w-sm mx-4">
+            <h2 className="text-xl font-bold text-white mb-4">Выйти в меню?</h2>
+            <p className="text-gray-300 text-sm mb-6">Текущая игра будет потеряна</p>
+            <div className="space-y-2">
+              <button
+                onClick={onBackToMenu}
+                className="block w-full px-6 py-3 bg-red-500 hover:bg-red-400 text-white rounded-lg font-bold transition-colors"
+              >
+                ✓ Да, выйти
+              </button>
+              <button
+                onClick={() => setShowExitConfirm(false)}
+                className="block w-full px-6 py-3 bg-gray-600 hover:bg-gray-500 text-white rounded-lg font-bold transition-colors"
+              >
+                ✕ Отмена
               </button>
             </div>
           </div>
