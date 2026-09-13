@@ -137,7 +137,7 @@ function reducer(state: State, action: Action): State {
         table: newTable,
         selectedCard: null,
         showPassButton: false,
-        message: 'Компьютер думает...',
+        message: 'Ожидание...',
       };
     }
 
@@ -152,7 +152,7 @@ function reducer(state: State, action: Action): State {
         table: newTable,
         selectedCard: null,
         showTakeButton: false,
-        message: 'Компьютер думает...',
+        message: 'Ожидание...',
         computerThinking: false,
       };
     }
@@ -207,7 +207,7 @@ function reducer(state: State, action: Action): State {
         table: [],
         showTakeButton: false,
         showPassButton: false,
-        message: 'Компьютер берёт карты!',
+        message: 'Ожидание...',
         computerThinking: false,
       };
       return drawFromDeck(newState);
@@ -438,21 +438,26 @@ export const Game: React.FC<GameProps> = ({ difficulty, onBackToMenu }) => {
           dispatch({ type: 'SET_MESSAGE', message: 'Подкиньте карту или нажмите "Бито".' });
         }, 400);
       } else {
-        // Computer takes cards
-        dispatch({ type: 'COMPUTER_TAKES' });
+        // Computer takes cards - show message first
+        dispatch({ type: 'SET_MESSAGE', message: 'Компьютер берёт карты' });
         setScore(prev => prev + 15);
 
-        // After computer takes, player attacks again
+        // Wait before adding cards to hand
         setTimeout(() => {
-          const cs3 = stateRef.current;
-          if (cs3.status !== 'playing') return;
-          const endCheck = checkGameEnd(cs3);
-          if (endCheck) {
-            dispatch({ type: 'GAME_OVER', message: endCheck.gameOverMessage });
-          } else {
-            dispatch({ type: 'SET_MESSAGE', message: 'Ваш ход! Выберите карту для атаки.' });
-          }
-        }, 500);
+          dispatch({ type: 'COMPUTER_TAKES' });
+          
+          // After computer takes, player attacks again
+          setTimeout(() => {
+            const cs3 = stateRef.current;
+            if (cs3.status !== 'playing') return;
+            const endCheck = checkGameEnd(cs3);
+            if (endCheck) {
+              dispatch({ type: 'GAME_OVER', message: endCheck.gameOverMessage });
+            } else {
+              dispatch({ type: 'SET_MESSAGE', message: 'Ваш ход! Выберите карту для атаки.' });
+            }
+          }, 800);
+        }, 1000);
       }
     }, 800 + Math.random() * 600);
   }, [difficulty]);
@@ -487,7 +492,7 @@ export const Game: React.FC<GameProps> = ({ difficulty, onBackToMenu }) => {
         if (state.selectedCard?.id === card.id) {
           // Double-click confirms
           dispatch({ type: 'PLAYER_ATTACK', card });
-          dispatch({ type: 'SET_MESSAGE', message: 'Компьютер думает...' });
+          dispatch({ type: 'SET_MESSAGE', message: 'Ожидание...' });
           playSound('card');
         } else {
           dispatch({ type: 'SELECT_CARD', card });
@@ -499,7 +504,7 @@ export const Game: React.FC<GameProps> = ({ difficulty, onBackToMenu }) => {
         if (state.selectedCard?.id === card.id) {
           // Double-click confirms
           dispatch({ type: 'PLAYER_DEFEND', card, attackId: undefended.attack.id });
-          dispatch({ type: 'SET_MESSAGE', message: 'Компьютер думает...' });
+          dispatch({ type: 'SET_MESSAGE', message: 'Ожидание...' });
           playSound('card');
         } else {
           dispatch({ type: 'SELECT_CARD', card });
@@ -514,12 +519,12 @@ export const Game: React.FC<GameProps> = ({ difficulty, onBackToMenu }) => {
 
     if (state.attacker === 'player') {
       dispatch({ type: 'PLAYER_ATTACK', card: state.selectedCard });
-      dispatch({ type: 'SET_MESSAGE', message: 'Компьютер думает...' });
+      dispatch({ type: 'SET_MESSAGE', message: 'Ожидание...' });
     } else if (state.attacker === 'computer') {
       const undefended = state.table.find(p => !p.defense);
       if (undefended) {
         dispatch({ type: 'PLAYER_DEFEND', card: state.selectedCard, attackId: undefended.attack.id });
-        dispatch({ type: 'SET_MESSAGE', message: 'Компьютер думает...' });
+        dispatch({ type: 'SET_MESSAGE', message: 'Ожидание...' });
       }
     }
   };
@@ -844,7 +849,7 @@ export const Game: React.FC<GameProps> = ({ difficulty, onBackToMenu }) => {
               onClick={handleTake}
               className="px-3 py-2 bg-orange-500 hover:bg-orange-400 text-white rounded-lg font-bold text-sm transition-colors shadow-lg"
             >
-              📥 Взять (T)
+              📥 Взять
             </button>
           )}
           {state.showPassButton && (
@@ -878,7 +883,7 @@ export const Game: React.FC<GameProps> = ({ difficulty, onBackToMenu }) => {
         <div className="text-center shrink-0">
           <div className="inline-block px-3 py-1 bg-black/30 backdrop-blur-sm rounded-full">
             <span className="text-white text-xs sm:text-sm">
-              {state.computerThinking ? '🤔 Компьютер думает...' : state.message}
+              {state.message}
             </span>
           </div>
         </div>
