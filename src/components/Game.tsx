@@ -347,103 +347,114 @@ export const Game: React.FC<GameProps> = ({ difficulty, onBackToMenu }) => {
     };
   }, [initGame]);
 
-  // Computer AI turn
-  useEffect(() => {
-    if (state.status !== 'playing') return;
-    if (state.computerThinking) return;
+  // Computer AI functions
+  const computerAttack = useCallback(() => {
+    const cs = stateRef.current;
+    if (cs.status !== 'playing' || cs.computerThinking) return;
+    if (cs.attacker !== 'computer' || cs.table.length !== 0) return;
 
-    // Use state directly for condition checks
-    const { attacker, table, playerHand, computerHand, trumpSuit } = state;
+    dispatch({ type: 'SET_THINKING', thinking: true });
+    computerTimeoutRef.current = window.setTimeout(() => {
+      const cs2 = stateRef.current;
+      if (cs2.status !== 'playing') return;
+      
+      const card = computerChooseAttack(cs2.computerHand, cs2.table, cs2.trumpSuit, difficulty);
+      if (card) {
+        dispatch({ type: 'COMPUTER_ATTACK', card });
+      } else {
+        dispatch({ type: 'END_ROUND', playerTook: false });
+      }
+    }, 800 + Math.random() * 500);
+  }, [difficulty]);
 
-    // Computer attacks (first card)
-    if (attacker === 'computer' && table.length === 0) {
-      dispatch({ type: 'SET_THINKING', thinking: true });
-      computerTimeoutRef.current = window.setTimeout(() => {
-        const cs = stateRef.current;
-        if (cs.status !== 'playing') return;
-        
-        const card = computerChooseAttack(cs.computerHand, cs.table, cs.trumpSuit, difficulty);
-        if (card) {
-          dispatch({ type: 'COMPUTER_ATTACK', card });
+  const computerThrow = useCallback(() => {
+    const cs = stateRef.current;
+    if (cs.status !== 'playing' || cs.computerThinking) return;
+    if (cs.attacker !== 'computer' || cs.table.length === 0) return;
+    
+    const allDefended = cs.table.every(p => p.defense !== null);
+    if (!allDefended || cs.playerHand.length === 0 || cs.table.length >= 6) return;
+
+    dispatch({ type: 'SET_THINKING', thinking: true });
+    computerTimeoutRef.current = window.setTimeout(() => {
+      const cs2 = stateRef.current;
+      if (cs2.status !== 'playing' || cs2.attacker !== 'computer') return;
+      
+      const card = computerShouldThrow(cs2.computerHand, cs2.table, cs2.trumpSuit, difficulty, cs2.playerHand.length);
+      if (card && cs2.table.length < 6) {
+        dispatch({ type: 'COMPUTER_THROW', card });
+      } else {
+        dispatch({ type: 'END_ROUND', playerTook: false });
+      }
+    }, 600 + Math.random() * 400);
+  }, [difficulty]);
+
+  const computerDefend = useCallback(() => {
+    const cs = stateRef.current;
+    if (cs.status !== 'playing' || cs.computerThinking) return;
+    if (cs.attacker !== 'player' || cs.table.length === 0) return;
+    
+    const undefended = cs.table.find(p => !p.defense);
+    if (!undefended) return;
+
+    dispatch({ type: 'SET_THINKING', thinking: true });
+    computerTimeoutRef.current = window.setTimeout(() => {
+      const cs2 = stateRef.current;
+      if (cs2.status !== 'playing' || cs2.attacker !== 'player') return;
+      
+      const currentUndefended = cs2.table.find(p => !p.defense);
+      if (!currentUndefended) return;
+      
+      const defenseCard = computerChooseDefense(cs2.computerHand, currentUndefended.attack, cs2.trumpSuit, difficulty);
+      if (defenseCard) {
+        dispatch({ type: 'COMPUTER_DEFEND', card: defenseCard, attackId: currentUndefended.attack.id });
+        // Check if player can throw immediately after defend
+        const updatedTable = cs2.table.map(p =>
+          p.attack.id === currentUndefended.attack.id ? { ...p, defense: defenseCard } : p
+        );
+        const canThrow = cs2.playerHand.some(c => canThrowCard(c, updatedTable));
+        if (canThrow && updatedTable.length < 6) {
+          setTimeout(() => {
+            dispatch({ type: 'SHOW_BUTTONS', take: false, pass: true });
+            dispatch({ type: 'SET_MESSAGE', message: 'Подкиньте карту или нажмите "Бито".' });
+          }, 300);
         } else {
-          dispatch({ type: 'END_ROUND', playerTook: false });
-        }
-      }, 800 + Math.random() * 500);
-      return;
-    }
-
-    // Computer throws more cards (after player defended all)
-    if (attacker === 'computer' && table.length > 0) {
-      const allDefended = table.every(p => p.defense !== null);
-      if (allDefended && playerHand.length > 0 && table.length < 6) {
-        dispatch({ type: 'SET_THINKING', thinking: true });
-        computerTimeoutRef.current = window.setTimeout(() => {
-          const cs = stateRef.current;
-          if (cs.status !== 'playing') return;
-          if (cs.attacker !== 'computer') return;
-          
-          const card = computerShouldThrow(cs.computerHand, cs.table, cs.trumpSuit, difficulty, cs.playerHand.length);
-          if (card && cs.table.length < 6) {
-            dispatch({ type: 'COMPUTER_THROW', card });
-          } else {
+          setTimeout(() => {
             dispatch({ type: 'END_ROUND', playerTook: false });
-          }
-        }, 600 + Math.random() * 400);
-        return;
-      }
-    }
+          }, 300);
+        }
+      } else {
+        // Computer takes cards
+        dispatch({ type: 'COMPUTER_TAKES' });
+        setScore(prev => prev + 15);
 
-    // Computer defends
-    if (attacker === 'player' && table.length > 0) {
-      const undefended = table.find(p => !p.defense);
-      if (undefended) {
-        dispatch({ type: 'SET_THINKING', thinking: true });
-        computerTimeoutRef.current = window.setTimeout(() => {
-          const cs = stateRef.current;
-          if (cs.status !== 'playing') return;
-          if (cs.attacker !== 'player') return;
-          
-          const currentUndefended = cs.table.find(p => !p.defense);
-          if (!currentUndefended) return;
-          
-          const defenseCard = computerChooseDefense(cs.computerHand, currentUndefended.attack, cs.trumpSuit, difficulty);
-          if (defenseCard) {
-            dispatch({ type: 'COMPUTER_DEFEND', card: defenseCard, attackId: currentUndefended.attack.id });
-            // After defending, check if player can throw
-            setTimeout(() => {
-              const cs2 = stateRef.current;
-              if (cs2.status !== 'playing') return;
-              const updatedTable = cs2.table;
-              const canThrow = cs2.playerHand.some(c => canThrowCard(c, updatedTable));
-              if (canThrow && updatedTable.length < 6) {
-                dispatch({ type: 'SHOW_BUTTONS', take: false, pass: true });
-                dispatch({ type: 'SET_MESSAGE', message: 'Подкиньте карту или нажмите "Бито".' });
-              } else {
-                dispatch({ type: 'END_ROUND', playerTook: false });
-              }
-            }, 300);
+        // After computer takes, player attacks again
+        setTimeout(() => {
+          const cs3 = stateRef.current;
+          if (cs3.status !== 'playing') return;
+          const endCheck = checkGameEnd(cs3);
+          if (endCheck) {
+            dispatch({ type: 'GAME_OVER', message: endCheck.gameOverMessage });
           } else {
-            // Computer takes cards
-            dispatch({ type: 'COMPUTER_TAKES' });
-            setScore(prev => prev + 15);
-
-            // After computer takes, player attacks again
-            setTimeout(() => {
-              const cs2 = stateRef.current;
-              if (cs2.status !== 'playing') return;
-              const endCheck = checkGameEnd(cs2);
-              if (endCheck) {
-                dispatch({ type: 'GAME_OVER', message: endCheck.gameOverMessage });
-              } else {
-                dispatch({ type: 'SET_MESSAGE', message: 'Ваш ход! Выберите карту для атаки.' });
-              }
-            }, 500);
+            dispatch({ type: 'SET_MESSAGE', message: 'Ваш ход! Выберите карту для атаки.' });
           }
-        }, 800 + Math.random() * 600);
-        return;
+        }, 500);
       }
+    }, 800 + Math.random() * 600);
+  }, [difficulty]);
+
+  // Trigger computer actions based on state
+  useEffect(() => {
+    if (state.status !== 'playing' || state.computerThinking) return;
+
+    if (state.attacker === 'computer' && state.table.length === 0) {
+      computerAttack();
+    } else if (state.attacker === 'computer' && state.table.length > 0) {
+      computerThrow();
+    } else if (state.attacker === 'player' && state.table.length > 0) {
+      computerDefend();
     }
-  }, [state.attacker, state.table, state.status, state.computerThinking, state.playerHand.length, difficulty]);
+  }, [state.attacker, state.table, state.status, state.computerThinking, computerAttack, computerThrow, computerDefend]);
 
   // Cleanup timeout
   useEffect(() => {
