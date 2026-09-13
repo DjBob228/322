@@ -643,7 +643,7 @@ export const Game: React.FC<GameProps> = ({ difficulty, onBackToMenu }) => {
       <div className="absolute inset-0 opacity-10 bg-[radial-gradient(circle_at_50%_50%,rgba(255,255,255,0.1)_1px,transparent_1px)] bg-[length:20px_20px] pointer-events-none" />
       {/* Debug indicator */}
       <div className="absolute top-0 left-0 right-0 bg-red-500 text-white text-center text-xs py-0.5 z-50 font-bold">
-        ✅ ВЕРСИЯ v6 — СОРТИРОВКА
+        ✅ ВЕРСИЯ v7 — ПОДСВЕТКА
       </div>
 
       {/* Header */}
@@ -712,8 +712,20 @@ export const Game: React.FC<GameProps> = ({ difficulty, onBackToMenu }) => {
                 {state.deck.length}
               </div>
               {state.trumpCard && (
-                <div className="absolute top-0 left-0 rotate-90 origin-center" style={{ transform: 'rotate(90deg) translate(30%, 0)' }}>
-                  <CardComponent card={state.trumpCard} className="w-10 sm:w-14 opacity-70" />
+                <div 
+                  className="absolute top-1/2 left-1/2"
+                  style={{ 
+                    transform: 'translate(-50%, -50%) rotate(90deg)',
+                    zIndex: -1
+                  }}
+                >
+                  <div className="relative">
+                    <CardComponent card={state.trumpCard} className="w-10 sm:w-14" />
+                    <div 
+                      className="absolute top-0 left-0 w-1/2 h-full bg-green-700"
+                      style={{ zIndex: 1 }}
+                    />
+                  </div>
                 </div>
               )}
             </div>
@@ -809,6 +821,7 @@ export const Game: React.FC<GameProps> = ({ difficulty, onBackToMenu }) => {
                   card={card}
                   isSelected={state.selectedCard?.id === card.id}
                   isPlayable={playableCards.has(card.id)}
+                  isTrump={card.suit === state.trumpSuit}
                   onClick={() => handleCardClick(card)}
                 />
               </div>
