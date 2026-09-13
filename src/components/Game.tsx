@@ -955,16 +955,41 @@ export const Game: React.FC<GameProps> = ({ difficulty, onBackToMenu }) => {
           <div className="text-white/60 text-xs mb-1">
             🤖 Компьютер ({state.computerHand.length})
           </div>
-          <div className="flex justify-center">
-            {state.computerHand.map((card, i) => (
-              <div
-                key={card.id}
-                className="transition-all duration-300"
-                style={{ marginLeft: i > 0 ? '-1.2rem' : '0' }}
-              >
-                <CardComponent card={card} faceDown className="w-10 sm:w-14 md:w-16" />
-              </div>
-            ))}
+          <div className="flex justify-center max-w-full px-2">
+            {state.computerHand.map((card, i) => {
+              // Адаптивное перекрытие и размер карт
+              const cardCount = state.computerHand.length;
+              let marginLeft = '0';
+              let cardSize = 'w-10 sm:w-14 md:w-16';
+              
+              if (i > 0) {
+                if (cardCount <= 6) {
+                  marginLeft = '-1.2rem';
+                } else if (cardCount <= 8) {
+                  marginLeft = '-1.5rem';
+                  cardSize = 'w-9 sm:w-12 md:w-14';
+                } else if (cardCount <= 10) {
+                  marginLeft = '-1.8rem';
+                  cardSize = 'w-8 sm:w-11 md:w-13';
+                } else if (cardCount <= 12) {
+                  marginLeft = '-2rem';
+                  cardSize = 'w-7 sm:w-10 md:w-12';
+                } else {
+                  marginLeft = '-2.2rem';
+                  cardSize = 'w-6 sm:w-9 md:w-11';
+                }
+              }
+              
+              return (
+                <div
+                  key={card.id}
+                  className="transition-all duration-300 flex-shrink-0"
+                  style={{ marginLeft }}
+                >
+                  <CardComponent card={card} faceDown className={cardSize} />
+                </div>
+              );
+            })}
           </div>
         </div>
 
@@ -1006,18 +1031,32 @@ export const Game: React.FC<GameProps> = ({ difficulty, onBackToMenu }) => {
                 animationClass = 'animate-card-fly-to-computer';
               }
               
+              // Адаптивный размер карт на столе
+              const tablePairs = state.table.length;
+              let cardSize = 'w-12 sm:w-16 md:w-20';
+              let defenseOffset = 'top-6 left-6 sm:top-8 sm:left-8';
+              
+              if (tablePairs > 4) {
+                cardSize = 'w-10 sm:w-14 md:w-18';
+                defenseOffset = 'top-5 left-5 sm:top-7 sm:left-7';
+              }
+              if (tablePairs > 5) {
+                cardSize = 'w-9 sm:w-12 md:w-16';
+                defenseOffset = 'top-4 left-4 sm:top-6 sm:left-6';
+              }
+              
               return (
                 <div 
                   key={i} 
                   className="relative animate-card-appear"
                 >
                   <div className={animationClass}>
-                    <CardComponent card={pair.attack} className="w-12 sm:w-16 md:w-20" />
+                    <CardComponent card={pair.attack} className={cardSize} />
                   </div>
                   {pair.defense && (
-                    <div className={`absolute top-6 left-6 sm:top-8 sm:left-8 animate-card-appear`}>
+                    <div className={`absolute ${defenseOffset} animate-card-appear`}>
                       <div className={animationClass}>
-                        <CardComponent card={pair.defense} className="w-12 sm:w-16 md:w-20" />
+                        <CardComponent card={pair.defense} className={cardSize} />
                       </div>
                     </div>
                   )}
