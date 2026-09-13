@@ -23,13 +23,14 @@ export const Menu: React.FC<MenuProps> = ({ onStartGame }) => {
   }, []);
 
   const difficulties: { key: Difficulty; label: string; emoji: string; desc: string }[] = [
+    { key: 'casual', label: 'Казуальная', emoji: '🎯', desc: 'С подсказками по картам' },
     { key: 'easy', label: 'Легко', emoji: '😊', desc: 'Компьютер иногда ошибается' },
     { key: 'medium', label: 'Средне', emoji: '🤔', desc: 'Сбалансированная игра' },
     { key: 'hard', label: 'Сложно', emoji: '😈', desc: 'Оптимальная стратегия' },
   ];
 
   return (
-    <div className="min-h-screen bg-gradient-to-b from-green-900 via-green-800 to-green-950 flex flex-col items-center justify-center p-4 relative overflow-hidden">
+    <div className="min-h-screen bg-gradient-to-b from-green-900 via-green-800 to-green-950 flex flex-col items-center justify-start sm:justify-center p-4 pb-8 relative overflow-y-auto">
       {/* Background decoration */}
       <div className="absolute inset-0 opacity-5">
         <div className="absolute top-10 left-10 text-8xl transform rotate-12">♠</div>

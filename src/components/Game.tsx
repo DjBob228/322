@@ -332,6 +332,7 @@ export const Game: React.FC<GameProps> = ({ difficulty, onBackToMenu }) => {
     const cHand = newDeck.splice(0, 6);
     const firstAttacker = determineFirstAttacker(pHand, cHand, trump.suit);
 
+    const attackerName = firstAttacker === 'computer' ? 'Компьютер' : 'Вы';
     dispatch({
       type: 'INIT',
       deck: newDeck,
@@ -339,7 +340,7 @@ export const Game: React.FC<GameProps> = ({ difficulty, onBackToMenu }) => {
       computerHand: cHand,
       trumpCard: trump,
       attacker: firstAttacker,
-      message: firstAttacker === 'computer' ? 'Компьютер ходит первым...' : 'Ваш ход! Выберите карту для атаки.',
+      message: `${attackerName} ходите первым (меньший козырь)`,
     });
     setScore(0);
   }, []);
@@ -412,17 +413,12 @@ export const Game: React.FC<GameProps> = ({ difficulty, onBackToMenu }) => {
       const defenseCard = computerChooseDefense(cs2.computerHand, currentUndefended.attack, cs2.trumpSuit, difficulty);
       if (defenseCard) {
         dispatch({ type: 'COMPUTER_DEFEND', card: defenseCard, attackId: currentUndefended.attack.id });
-        // Wait for state update, then check if player can throw
+        // Wait for state update, then show "Бито" button
         setTimeout(() => {
           const cs3 = stateRef.current;
           if (cs3.status !== 'playing') return;
-          const canThrow = cs3.playerHand.some(c => canThrowCard(c, cs3.table));
-          if (canThrow && cs3.table.length < 6) {
-            dispatch({ type: 'SHOW_BUTTONS', take: false, pass: true });
-            dispatch({ type: 'SET_MESSAGE', message: 'Подкиньте карту или нажмите "Бито".' });
-          } else {
-            dispatch({ type: 'END_ROUND', playerTook: false });
-          }
+          dispatch({ type: 'SHOW_BUTTONS', take: false, pass: true });
+          dispatch({ type: 'SET_MESSAGE', message: 'Подкиньте карту или нажмите "Бито".' });
         }, 400);
       } else {
         // Computer takes cards
@@ -598,8 +594,8 @@ export const Game: React.FC<GameProps> = ({ difficulty, onBackToMenu }) => {
   // Get playable cards
   const getPlayableCards = (): Set<string> => {
     const playable = new Set<string>();
-    // Подсветка только в лёгком режиме
-    if (difficulty !== 'easy') return playable;
+    // Подсветка только в казуальном режиме
+    if (difficulty !== 'casual') return playable;
     if (state.computerThinking) return playable;
 
     if (state.attacker === 'player') {
@@ -686,33 +682,27 @@ export const Game: React.FC<GameProps> = ({ difficulty, onBackToMenu }) => {
         </div>
 
         {/* Deck & Trump */}
-        <div className="flex items-center justify-center gap-3 shrink-0">
+        <div className="flex items-center justify-center gap-4 shrink-0">
           {state.deck.length > 0 && (
             <div className="relative flex items-center">
-              {state.trumpCard && (
-                <div 
-                  className="relative mr-8 sm:mr-10"
-                  style={{ zIndex: 0 }}
-                >
-                  <div className="relative" style={{ transform: 'rotate(90deg)' }}>
-                    <CardComponent card={state.trumpCard} className="w-10 sm:w-14" />
-                    <div 
-                      className="absolute top-0 left-0 w-1/2 h-full bg-green-700 rounded-r-lg"
-                      style={{ zIndex: 1 }}
-                    />
-                  </div>
-                </div>
-              )}
               <div className="relative" style={{ zIndex: 1 }}>
                 <CardComponent card={state.deck[0]} faceDown className="w-12 sm:w-16" />
                 <div className="absolute -top-1 -right-1 bg-white text-green-800 rounded-full w-4 h-4 sm:w-5 sm:h-5 flex items-center justify-center text-[10px] font-bold shadow">
                   {state.deck.length}
                 </div>
               </div>
+              {state.trumpCard && (
+                <div 
+                  className="absolute left-full ml-2 sm:ml-3"
+                  style={{ zIndex: 0, transform: 'rotate(90deg)' }}
+                >
+                  <CardComponent card={state.trumpCard} className="w-10 sm:w-14 opacity-80" />
+                </div>
+              )}
             </div>
           )}
           {state.trumpSuit && (
-            <div className="text-yellow-300 text-sm sm:text-base font-bold">
+            <div className="text-yellow-300 text-sm sm:text-base font-bold ml-16 sm:ml-20">
               Козырь: {SUIT_SYMBOLS[state.trumpSuit]}
             </div>
           )}
@@ -761,7 +751,16 @@ export const Game: React.FC<GameProps> = ({ difficulty, onBackToMenu }) => {
               onClick={handlePass}
               className="px-3 py-2 bg-blue-500 hover:bg-blue-400 text-white rounded-lg font-bold text-sm transition-colors shadow-lg"
             >
-              ✓ Бито (P)
+              ✓ Бито
+            </button>
+          )}
+          {/* Показываем кнопку "Бито" когда игрок атакует и есть карты на столе */}
+          {state.attacker === 'player' && state.table.length > 0 && !state.showPassButton && !state.selectedCard && !state.computerThinking && (
+            <button
+              onClick={handlePass}
+              className="px-3 py-2 bg-blue-500 hover:bg-blue-400 text-white rounded-lg font-bold text-sm transition-colors shadow-lg"
+            >
+              ✓ Бито
             </button>
           )}
           {state.selectedCard && (
