@@ -47,6 +47,7 @@ interface State {
   animatingCards: 'player-takes' | 'computer-takes' | null;
   computerKnownTrump: Card | null;
   playerKnownTrump: Card | null;
+  cardsShownToComputer: Set<string>;
 }
 
 type Action =
@@ -61,6 +62,7 @@ type Action =
   | { type: 'PLAYER_TAKES' }
   | { type: 'END_ROUND'; playerTook: boolean }
   | { type: 'DRAW_CARDS' }
+  | { type: 'CLEAR_TABLE_AND_DRAW' }
   | { type: 'SET_MESSAGE'; message: string }
   | { type: 'SET_STATUS'; status: GameStatus }
   | { type: 'SET_THINKING'; thinking: boolean }
@@ -168,6 +170,7 @@ function reducer(state: State, action: Action): State {
         lastAttackWasSixes: false,
         computerKnownTrump: null,
         playerKnownTrump: null,
+        cardsShownToComputer: new Set(),
       };
 
     case 'SELECT_CARD':
@@ -178,6 +181,9 @@ function reducer(state: State, action: Action): State {
       const newTable = [...state.table, { attack: action.card, defense: null }];
       // Track last attack cards for pogony check
       const newLastAttackCards = [...state.lastAttackCards, action.card];
+      // Computer sees this card
+      const newCardsShown = new Set(state.cardsShownToComputer);
+      newCardsShown.add(action.card.id);
       return {
         ...state,
         playerHand: newHand,
@@ -186,6 +192,7 @@ function reducer(state: State, action: Action): State {
         showPassButton: false,
         message: 'Ожидание...',
         lastAttackCards: newLastAttackCards,
+        cardsShownToComputer: newCardsShown,
       };
     }
 
@@ -194,6 +201,9 @@ function reducer(state: State, action: Action): State {
       const newTable = state.table.map(p =>
         p.attack.id === action.attackId ? { ...p, defense: action.card } : p
       );
+      // Computer sees this card
+      const newCardsShown = new Set(state.cardsShownToComputer);
+      newCardsShown.add(action.card.id);
       return {
         ...state,
         playerHand: newHand,
@@ -202,6 +212,7 @@ function reducer(state: State, action: Action): State {
         showTakeButton: false,
         message: 'Ожидание...',
         computerThinking: false,
+        cardsShownToComputer: newCardsShown,
       };
     }
 
@@ -272,7 +283,7 @@ function reducer(state: State, action: Action): State {
       return {
         ...state,
         playerHand: newHand,
-        table: [],
+        // Не очищаем стол сразу - компьютер должен подкинуть карты
         selectedCard: null,
         showTakeButton: false,
         showPassButton: false,
@@ -359,6 +370,15 @@ function reducer(state: State, action: Action): State {
         playerKnownTrump: action.playerTrump
       };
 
+    case 'DRAW_CARDS':
+      return drawFromDeck(state);
+
+    case 'CLEAR_TABLE_AND_DRAW': {
+      // Очищаем стол и добираем карты
+      const clearedState = { ...state, table: [], playerTookCards: false };
+      return drawFromDeck(clearedState);
+    }
+
     default:
       return state;
   }
@@ -386,6 +406,7 @@ const initialState: State = {
   animatingCards: null,
   computerKnownTrump: null,
   playerKnownTrump: null,
+  cardsShownToComputer: new Set(),
 };
 
 const HIGH_SCORE_KEY = 'durak_high_score';
@@ -489,6 +510,28 @@ export const Game: React.FC<GameProps> = ({ difficulty, onBackToMenu }) => {
     if (cs.status !== 'playing' || cs.computerThinking) return;
     if (cs.attacker !== 'computer' || cs.table.length === 0) return;
     
+    // Если игрок взял карты, подкидываем без проверки защиты
+    if (cs.playerTookCards) {
+      dispatch({ type: 'SET_THINKING', thinking: true });
+      computerTimeoutRef.current = window.setTimeout(() => {
+        const cs2 = stateRef.current;
+        if (cs2.status !== 'playing' || cs2.attacker !== 'computer') return;
+        
+        const card = computerShouldThrow(cs2.computerHand, cs2.table, cs2.trumpSuit, difficulty, cs2.playerHand.length);
+        if (card && cs2.table.length < 6) {
+          dispatch({ type: 'COMPUTER_THROW', card });
+          // После подкидывания очищаем стол и добираем карты
+          setTimeout(() => {
+            dispatch({ type: 'CLEAR_TABLE_AND_DRAW' });
+          }, 500);
+        } else {
+          // Если нечего подкидывать, очищаем стол и добираем карты
+          dispatch({ type: 'CLEAR_TABLE_AND_DRAW' });
+        }
+      }, 600 + Math.random() * 400);
+      return;
+    }
+    
     const allDefended = cs.table.every(p => p.defense !== null);
     if (!allDefended || cs.playerHand.length === 0 || cs.table.length >= 6) return;
 
@@ -572,7 +615,7 @@ export const Game: React.FC<GameProps> = ({ difficulty, onBackToMenu }) => {
     } else if (state.attacker === 'player' && state.table.length > 0) {
       computerDefend();
     }
-  }, [state.attacker, state.table, state.status, state.computerThinking, computerAttack, computerThrow, computerDefend]);
+  }, [state.attacker, state.table, state.status, state.computerThinking, state.playerTookCards, computerAttack, computerThrow, computerDefend]);
 
   // Cleanup timeout
   useEffect(() => {
@@ -641,13 +684,10 @@ export const Game: React.FC<GameProps> = ({ difficulty, onBackToMenu }) => {
       setScore(prev => Math.max(0, prev - 10));
       playSound('take');
       
-      // После того как игрок взял карты, оба игрока добирают из колоды
-      setTimeout(() => {
-        dispatch({ type: 'DRAW_CARDS' });
-      }, 300);
+      // Компьютер подкинет карты и очистит стол через useEffect
     }, 800);
     
-    // After taking, computer (attacker) will attack again automatically via the effect
+    // After taking, computer (attacker) will throw more cards and then draw
   };
 
   // Player passes (bito)
@@ -821,14 +861,8 @@ export const Game: React.FC<GameProps> = ({ difficulty, onBackToMenu }) => {
 
   // Получаем карты, которые знает противник
   const getComputerKnownCards = (): Set<string> => {
-    const known = new Set<string>();
-    
-    // Противник знает козырь игрока (если игрок ходил первым)
-    if (state.playerKnownTrump) {
-      known.add(state.playerKnownTrump.id);
-    }
-    
-    return known;
+    // Противник знает все карты, которые игрок показал во время игры
+    return state.cardsShownToComputer;
   };
 
   const playableCards = getPlayableCards();
