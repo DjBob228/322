@@ -230,6 +230,7 @@ function reducer(state: State, action: Action): State {
         showTakeButton: false,
         showPassButton: false,
         roundEnded: true,
+        computerThinking: false, // Сбрасываем флаг "думает"
       };
 
       const withCards = drawFromDeck(newState);
@@ -240,6 +241,7 @@ function reducer(state: State, action: Action): State {
         ...withCards,
         message: newAttacker === 'computer' ? 'Компьютер атакует...' : 'Ваш ход! Выберите карту для атаки.',
         roundEnded: false,
+        computerThinking: false, // Сбрасываем флаг "думает"
       };
     }
 
@@ -640,7 +642,7 @@ export const Game: React.FC<GameProps> = ({ difficulty, onBackToMenu }) => {
       <div className="absolute inset-0 opacity-10 bg-[radial-gradient(circle_at_50%_50%,rgba(255,255,255,0.1)_1px,transparent_1px)] bg-[length:20px_20px] pointer-events-none" />
       {/* Debug indicator */}
       <div className="absolute top-0 left-0 right-0 bg-red-500 text-white text-center text-xs py-0.5 z-50 font-bold">
-        ✅ ВЕРСИЯ v4 — ИСПРАВЛЕНА
+        ✅ ВЕРСИЯ v5 — ИСПРАВЛЕНА
       </div>
 
       {/* Header */}
