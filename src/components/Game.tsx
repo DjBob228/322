@@ -22,6 +22,7 @@ import {
 } from '../gameLogic';
 
 type GameStatus = 'playing' | 'paused' | 'gameOver' | 'waiting';
+type SortMode = 'suit' | 'rank' | 'rank-trump';
 
 interface State {
   deck: Card[];
@@ -86,10 +87,16 @@ function checkGameEnd(state: State): State | null {
     return { ...state, status: 'gameOver', gameOverMessage: 'Ничья! Оба игрока избавились от карт.' };
   }
   if (state.playerHand.length === 0) {
-    return { ...state, status: 'gameOver', gameOverMessage: '🎉 Вы победили! Компьютер — дурак!' };
+    const message = state.computerHand.length >= 5 
+      ? '🎉 Вы победили! Компьютер — дурак с погонами!' 
+      : '🎉 Вы победили! Компьютер — дурак!';
+    return { ...state, status: 'gameOver', gameOverMessage: message };
   }
   if (state.computerHand.length === 0) {
-    return { ...state, status: 'gameOver', gameOverMessage: '😞 Вы проиграли! Вы — дурак!' };
+    const message = state.playerHand.length >= 5 
+      ? '😞 Вы проиграли! Вы — дурак с погонами!' 
+      : '😞 Вы проиграли! Вы — дурак!';
+    return { ...state, status: 'gameOver', gameOverMessage: message };
   }
   return null;
 }
@@ -319,6 +326,8 @@ export const Game: React.FC<GameProps> = ({ difficulty, onBackToMenu }) => {
   const [highScore, setHighScore] = useState(() => parseInt(localStorage.getItem(HIGH_SCORE_KEY) || '0'));
   const [gamesPlayed, setGamesPlayed] = useState(() => parseInt(localStorage.getItem(GAMES_PLAYED_KEY) || '0'));
   const [gamesWon, setGamesWon] = useState(() => parseInt(localStorage.getItem(GAMES_WON_KEY) || '0'));
+  const [sortMode, setSortMode] = useState<SortMode>('suit');
+  const [soundEnabled, setSoundEnabled] = useState(() => localStorage.getItem('durak_sound') !== 'false');
 
   const computerTimeoutRef = useRef<number | null>(null);
   const stateRef = useRef(state);
@@ -471,6 +480,7 @@ export const Game: React.FC<GameProps> = ({ difficulty, onBackToMenu }) => {
           // Double-click confirms
           dispatch({ type: 'PLAYER_ATTACK', card });
           dispatch({ type: 'SET_MESSAGE', message: 'Компьютер думает...' });
+          playSound('card');
         } else {
           dispatch({ type: 'SELECT_CARD', card });
         }
@@ -482,6 +492,7 @@ export const Game: React.FC<GameProps> = ({ difficulty, onBackToMenu }) => {
           // Double-click confirms
           dispatch({ type: 'PLAYER_DEFEND', card, attackId: undefended.attack.id });
           dispatch({ type: 'SET_MESSAGE', message: 'Компьютер думает...' });
+          playSound('card');
         } else {
           dispatch({ type: 'SELECT_CARD', card });
         }
@@ -510,6 +521,7 @@ export const Game: React.FC<GameProps> = ({ difficulty, onBackToMenu }) => {
     if (state.status !== 'playing') return;
     dispatch({ type: 'PLAYER_TAKES' });
     setScore(prev => Math.max(0, prev - 10));
+    playSound('take');
     // After taking, computer (attacker) will attack again automatically via the effect
   };
 
@@ -587,9 +599,70 @@ export const Game: React.FC<GameProps> = ({ difficulty, onBackToMenu }) => {
         setGamesWon(newGW);
         localStorage.setItem(HIGH_SCORE_KEY, String(newHS));
         localStorage.setItem(GAMES_WON_KEY, String(newGW));
+        playSound('win');
+      } else if (state.gameOverMessage.includes('проиграли')) {
+        playSound('lose');
       }
     }
   }, [state.status]);
+
+  // Sort cards by mode
+  const sortCards = (hand: Card[]): Card[] => {
+    if (sortMode === 'suit') {
+      return sortHand(hand, state.trumpSuit);
+    } else if (sortMode === 'rank') {
+      return [...hand].sort((a, b) => {
+        const rankOrder = ['6', '7', '8', '9', '10', 'J', 'Q', 'K', 'A'];
+        return rankOrder.indexOf(b.rank) - rankOrder.indexOf(a.rank);
+      });
+    } else {
+      // rank-trump: козыри первыми, потом по рангу
+      return [...hand].sort((a, b) => {
+        const aIsTrump = a.suit === state.trumpSuit ? 0 : 1;
+        const bIsTrump = b.suit === state.trumpSuit ? 0 : 1;
+        if (aIsTrump !== bIsTrump) return aIsTrump - bIsTrump;
+        const rankOrder = ['6', '7', '8', '9', '10', 'J', 'Q', 'K', 'A'];
+        return rankOrder.indexOf(b.rank) - rankOrder.indexOf(a.rank);
+      });
+    }
+  };
+
+  // Play sound
+  const playSound = (type: 'card' | 'win' | 'lose' | 'take') => {
+    if (!soundEnabled) return;
+    const audioContext = new (window.AudioContext || (window as any).webkitAudioContext)();
+    const oscillator = audioContext.createOscillator();
+    const gainNode = audioContext.createGain();
+    
+    oscillator.connect(gainNode);
+    gainNode.connect(audioContext.destination);
+    
+    if (type === 'card') {
+      oscillator.frequency.value = 800;
+      gainNode.gain.setValueAtTime(0.1, audioContext.currentTime);
+      gainNode.gain.exponentialRampToValueAtTime(0.01, audioContext.currentTime + 0.1);
+      oscillator.start(audioContext.currentTime);
+      oscillator.stop(audioContext.currentTime + 0.1);
+    } else if (type === 'win') {
+      oscillator.frequency.value = 523;
+      gainNode.gain.setValueAtTime(0.2, audioContext.currentTime);
+      gainNode.gain.exponentialRampToValueAtTime(0.01, audioContext.currentTime + 0.5);
+      oscillator.start(audioContext.currentTime);
+      oscillator.stop(audioContext.currentTime + 0.5);
+    } else if (type === 'lose') {
+      oscillator.frequency.value = 200;
+      gainNode.gain.setValueAtTime(0.2, audioContext.currentTime);
+      gainNode.gain.exponentialRampToValueAtTime(0.01, audioContext.currentTime + 0.5);
+      oscillator.start(audioContext.currentTime);
+      oscillator.stop(audioContext.currentTime + 0.5);
+    } else if (type === 'take') {
+      oscillator.frequency.value = 300;
+      gainNode.gain.setValueAtTime(0.15, audioContext.currentTime);
+      gainNode.gain.exponentialRampToValueAtTime(0.01, audioContext.currentTime + 0.2);
+      oscillator.start(audioContext.currentTime);
+      oscillator.stop(audioContext.currentTime + 0.2);
+    }
+  };
 
   // Get playable cards
   const getPlayableCards = (): Set<string> => {
@@ -620,7 +693,7 @@ export const Game: React.FC<GameProps> = ({ difficulty, onBackToMenu }) => {
   const playableCards = getPlayableCards();
 
   return (
-    <div className="min-h-screen h-screen bg-gradient-to-b from-green-800 via-green-700 to-green-900 flex flex-col relative overflow-hidden">
+    <div className="min-h-screen h-screen bg-gradient-to-b from-green-800 via-green-700 to-green-900 flex flex-col relative overflow-y-auto pb-4">
       {/* Felt texture */}
       <div className="absolute inset-0 opacity-10 bg-[radial-gradient(circle_at_50%_50%,rgba(255,255,255,0.1)_1px,transparent_1px)] bg-[length:20px_20px] pointer-events-none" />
 
@@ -646,6 +719,27 @@ export const Game: React.FC<GameProps> = ({ difficulty, onBackToMenu }) => {
           <div className="text-white/50 text-xs hidden sm:inline">
             🏆 {highScore}
           </div>
+          <button
+            onClick={() => {
+              const modes: SortMode[] = ['suit', 'rank', 'rank-trump'];
+              const currentIndex = modes.indexOf(sortMode);
+              setSortMode(modes[(currentIndex + 1) % modes.length]);
+            }}
+            className="px-2 py-1.5 sm:px-3 sm:py-2 text-xs sm:text-sm bg-purple-600 hover:bg-purple-500 text-white rounded-lg transition-colors"
+            title={sortMode === 'suit' ? 'По масти' : sortMode === 'rank' ? 'По рангу' : 'По рангу + козыри'}
+          >
+            {sortMode === 'suit' ? '🎨' : sortMode === 'rank' ? '🔢' : '🃏'}
+          </button>
+          <button
+            onClick={() => {
+              const newValue = !soundEnabled;
+              setSoundEnabled(newValue);
+              localStorage.setItem('durak_sound', String(newValue));
+            }}
+            className="px-2 py-1.5 sm:px-3 sm:py-2 text-xs sm:text-sm bg-indigo-600 hover:bg-indigo-500 text-white rounded-lg transition-colors"
+          >
+            {soundEnabled ? '🔊' : '🔇'}
+          </button>
           <button
             onClick={togglePause}
             className="px-2 py-1.5 sm:px-3 sm:py-2 text-xs sm:text-sm bg-yellow-600 hover:bg-yellow-500 text-white rounded-lg transition-colors"
@@ -685,25 +779,20 @@ export const Game: React.FC<GameProps> = ({ difficulty, onBackToMenu }) => {
         <div className="flex items-center justify-center gap-4 shrink-0">
           {state.deck.length > 0 && (
             <div className="relative flex items-center">
+              {state.trumpCard && (
+                <div 
+                  className="absolute right-full mr-2 sm:mr-3"
+                  style={{ zIndex: 0, transform: 'rotate(90deg)' }}
+                >
+                  <CardComponent card={state.trumpCard} className="w-10 sm:w-14 opacity-80" />
+                </div>
+              )}
               <div className="relative" style={{ zIndex: 1 }}>
                 <CardComponent card={state.deck[0]} faceDown className="w-12 sm:w-16" />
                 <div className="absolute -top-1 -right-1 bg-white text-green-800 rounded-full w-4 h-4 sm:w-5 sm:h-5 flex items-center justify-center text-[10px] font-bold shadow">
                   {state.deck.length}
                 </div>
               </div>
-              {state.trumpCard && (
-                <div 
-                  className="absolute left-full ml-2 sm:ml-3"
-                  style={{ zIndex: 0, transform: 'rotate(90deg)' }}
-                >
-                  <CardComponent card={state.trumpCard} className="w-10 sm:w-14 opacity-80" />
-                </div>
-              )}
-            </div>
-          )}
-          {state.trumpSuit && (
-            <div className="text-yellow-300 text-sm sm:text-base font-bold ml-16 sm:ml-20">
-              Козырь: {SUIT_SYMBOLS[state.trumpSuit]}
             </div>
           )}
         </div>
@@ -784,13 +873,15 @@ export const Game: React.FC<GameProps> = ({ difficulty, onBackToMenu }) => {
 
         {/* Player Hand */}
         <div className="flex flex-col items-center shrink-0 mt-2">
-          <div className="flex justify-center flex-wrap">
-            {sortHand(state.playerHand, state.trumpSuit).map((card, i) => (
+          <div className="flex justify-center flex-wrap max-w-full px-2">
+            {sortCards(state.playerHand).map((card, i) => {
+              const overlap = state.playerHand.length > 6 ? Math.max(0.3, 1 - (state.playerHand.length - 6) * 0.1) : 1;
+              return (
               <div
                 key={card.id}
-                className="transition-all duration-200"
+                className="transition-all duration-200 flex-shrink-0"
                 style={{
-                  marginLeft: i > 0 ? (state.playerHand.length > 8 ? '-0.6rem' : '-0.4rem') : '0',
+                  marginLeft: i > 0 ? `-${(1 - overlap) * 100}%` : '0',
                 }}
               >
                 <CardComponent
@@ -801,7 +892,8 @@ export const Game: React.FC<GameProps> = ({ difficulty, onBackToMenu }) => {
                   onClick={() => handleCardClick(card)}
                 />
               </div>
-            ))}
+              );
+            })}
           </div>
         </div>
       </div>
