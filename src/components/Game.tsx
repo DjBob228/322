@@ -42,6 +42,7 @@ interface State {
   computerThinking: boolean;
   roundEnded: boolean;
   playerTookCards: boolean;
+  computerTookCards: boolean;
   lastAttackCards: Card[];
   lastAttackWasSixes: boolean;
   animatingCards: 'player-takes' | 'computer-takes' | null;
@@ -166,6 +167,7 @@ function reducer(state: State, action: Action): State {
         computerThinking: false,
         roundEnded: false,
         playerTookCards: false,
+        computerTookCards: false,
         lastAttackCards: [],
         lastAttackWasSixes: false,
         computerKnownTrump: null,
@@ -273,6 +275,8 @@ function reducer(state: State, action: Action): State {
         showPassButton: false,
         message: 'Ожидание...',
         computerThinking: false,
+        computerTookCards: true, // Компьютер взял карты
+        playerTookCards: false,
       };
       return drawFromDeck(newState);
     }
@@ -288,16 +292,29 @@ function reducer(state: State, action: Action): State {
         showTakeButton: false,
         showPassButton: false,
         message: 'Вы взяли карты. Компьютер подкидывает...',
-        playerTookCards: true,
+        playerTookCards: true, // Игрок взял карты
+        computerTookCards: false,
         computerThinking: false, // Сбрасываем флаг, чтобы бот мог действовать
       };
     }
 
     case 'END_ROUND': {
-      // Если игрок брал карты в этом раунде, атакующий не меняется
-      const newAttacker: Attacker = state.playerTookCards
-        ? state.attacker
-        : (state.attacker === 'player' ? 'computer' : 'player');
+      // Логика передачи хода:
+      // - Если игрок взял карты → ход остается у компьютера
+      // - Если компьютер взял карты → ход переходит к игроку
+      // - Если никто не взял карты (бито) → ход переходит к другому игроку
+      let newAttacker: Attacker;
+      
+      if (state.playerTookCards) {
+        // Игрок взял карты - ход остается у компьютера
+        newAttacker = 'computer';
+      } else if (state.computerTookCards) {
+        // Компьютер взял карты - ход переходит к игроку
+        newAttacker = 'player';
+      } else {
+        // Никто не взял карты (бито) - ход переходит к другому игроку
+        newAttacker = state.attacker === 'player' ? 'computer' : 'player';
+      }
 
       const newState = {
         ...state,
@@ -309,6 +326,7 @@ function reducer(state: State, action: Action): State {
         roundEnded: true,
         computerThinking: false,
         playerTookCards: false, // Сбрасываем флаг
+        computerTookCards: false, // Сбрасываем флаг
         lastAttackCards: [], // Сбрасываем последние атакующие карты
         lastAttackWasSixes: false,
       };
@@ -323,6 +341,7 @@ function reducer(state: State, action: Action): State {
         roundEnded: false,
         computerThinking: false,
         playerTookCards: false,
+        computerTookCards: false,
       };
     }
 
@@ -335,6 +354,8 @@ function reducer(state: State, action: Action): State {
         selectedCard: null,
         showTakeButton: false,
         showPassButton: false,
+        playerTookCards: false,
+        computerTookCards: false,
       };
       const withCards = drawFromDeck(newState);
       const endCheck = checkGameEnd(withCards);
@@ -380,6 +401,7 @@ function reducer(state: State, action: Action): State {
         ...state, 
         table: [], 
         playerTookCards: false,
+        computerTookCards: false,
         computerThinking: false // Сбрасываем флаг, чтобы бот мог продолжить
       };
       return drawFromDeck(clearedState);
@@ -407,6 +429,7 @@ const initialState: State = {
   computerThinking: false,
   roundEnded: false,
   playerTookCards: false,
+  computerTookCards: false,
   lastAttackCards: [],
   lastAttackWasSixes: false,
   animatingCards: null,
@@ -526,13 +549,13 @@ export const Game: React.FC<GameProps> = ({ difficulty, onBackToMenu }) => {
         const card = computerShouldThrow(cs2.computerHand, cs2.table, cs2.trumpSuit, difficulty, cs2.playerHand.length);
         if (card && cs2.table.length < 6) {
           dispatch({ type: 'COMPUTER_THROW', card });
-          // После подкидывания очищаем стол и добираем карты
+          // После подкидывания заканчиваем раунд (ход остается у компьютера)
           setTimeout(() => {
-            dispatch({ type: 'CLEAR_TABLE_AND_DRAW' });
+            dispatch({ type: 'END_ROUND', playerTook: true });
           }, 500);
         } else {
-          // Если нечего подкидывать, очищаем стол и добираем карты
-          dispatch({ type: 'CLEAR_TABLE_AND_DRAW' });
+          // Если нечего подкидывать, заканчиваем раунд (ход остается у компьютера)
+          dispatch({ type: 'END_ROUND', playerTook: true });
         }
       }, 600 + Math.random() * 400);
       return;
@@ -594,16 +617,9 @@ export const Game: React.FC<GameProps> = ({ difficulty, onBackToMenu }) => {
           dispatch({ type: 'COMPUTER_TAKES' });
           dispatch({ type: 'SET_ANIMATING', animation: null });
           
-          // After computer takes, player attacks again
+          // After computer takes, end round and transfer turn to player
           setTimeout(() => {
-            const cs3 = stateRef.current;
-            if (cs3.status !== 'playing') return;
-            const endCheck = checkGameEnd(cs3);
-            if (endCheck) {
-              dispatch({ type: 'GAME_OVER', message: endCheck.gameOverMessage });
-            } else {
-              dispatch({ type: 'SET_MESSAGE', message: 'Ваш ход! Выберите карту для атаки.' });
-            }
+            dispatch({ type: 'END_ROUND', playerTook: false });
           }, 800);
         }, 1000);
       }
