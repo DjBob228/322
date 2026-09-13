@@ -41,6 +41,8 @@ interface State {
   computerThinking: boolean;
   roundEnded: boolean;
   playerTookCards: boolean;
+  lastAttackCards: Card[];
+  lastAttackWasSixes: boolean;
 }
 
 type Action =
@@ -87,14 +89,47 @@ function checkGameEnd(state: State): State | null {
   if (state.playerHand.length === 0 && state.computerHand.length === 0) {
     return { ...state, status: 'gameOver', gameOverMessage: 'Ничья! Оба игрока избавились от карт.' };
   }
+  
+  // Check for pogony (погоны) conditions
+  const checkPogony = (loserHand: Card[], attacker: Attacker, defender: Attacker): boolean => {
+    // Pogony conditions:
+    // 1. Attacker's last attack was with non-trump sixes
+    // 2. Defender couldn't beat them
+    // 3. Defender has cards left
+    
+    if (loserHand.length === 0) return false;
+    
+    // Check if last attack was all non-trump sixes
+    const lastAttack = state.lastAttackCards;
+    if (lastAttack.length === 0) return false;
+    
+    const allNonTrumpSixes = lastAttack.every(card => 
+      card.rank === '6' && card.suit !== state.trumpSuit
+    );
+    
+    if (!allNonTrumpSixes) return false;
+    
+    // Check if defender had cards and couldn't beat
+    // If defender had cards and could beat, pogony doesn't count
+    // We check if any defense was successful
+    const allDefended = state.table.every(pair => pair.defense !== null);
+    if (allDefended) return false; // Defender beat the cards, no pogony
+    
+    return true;
+  };
+  
   if (state.playerHand.length === 0) {
-    const message = state.computerHand.length >= 5 
+    // Player won, check if computer got pogony
+    const hasPogony = checkPogony(state.computerHand, 'player', 'computer');
+    const message = hasPogony
       ? '🎉 Вы победили! Компьютер — дурак с погонами!' 
       : '🎉 Вы победили! Компьютер — дурак!';
     return { ...state, status: 'gameOver', gameOverMessage: message };
   }
   if (state.computerHand.length === 0) {
-    const message = state.playerHand.length >= 5 
+    // Computer won, check if player got pogony
+    const hasPogony = checkPogony(state.playerHand, 'computer', 'player');
+    const message = hasPogony
       ? '😞 Вы проиграли! Вы — дурак с погонами!' 
       : '😞 Вы проиграли! Вы — дурак!';
     return { ...state, status: 'gameOver', gameOverMessage: message };
@@ -123,6 +158,8 @@ function reducer(state: State, action: Action): State {
         computerThinking: false,
         roundEnded: false,
         playerTookCards: false,
+        lastAttackCards: [],
+        lastAttackWasSixes: false,
       };
 
     case 'SELECT_CARD':
@@ -131,6 +168,8 @@ function reducer(state: State, action: Action): State {
     case 'PLAYER_ATTACK': {
       const newHand = state.playerHand.filter(c => c.id !== action.card.id);
       const newTable = [...state.table, { attack: action.card, defense: null }];
+      // Track last attack cards for pogony check
+      const newLastAttackCards = [...state.lastAttackCards, action.card];
       return {
         ...state,
         playerHand: newHand,
@@ -138,6 +177,7 @@ function reducer(state: State, action: Action): State {
         selectedCard: null,
         showPassButton: false,
         message: 'Ожидание...',
+        lastAttackCards: newLastAttackCards,
       };
     }
 
@@ -160,6 +200,8 @@ function reducer(state: State, action: Action): State {
     case 'COMPUTER_ATTACK': {
       const newHand = state.computerHand.filter(c => c.id !== action.card.id);
       const newTable = [...state.table, { attack: action.card, defense: null }];
+      // Track last attack cards for pogony check
+      const newLastAttackCards = [...state.lastAttackCards, action.card];
       return {
         ...state,
         computerHand: newHand,
@@ -167,6 +209,7 @@ function reducer(state: State, action: Action): State {
         showTakeButton: true,
         message: 'Компьютер атаковал. Защищайтесь!',
         computerThinking: false,
+        lastAttackCards: newLastAttackCards,
       };
     }
 
@@ -188,6 +231,8 @@ function reducer(state: State, action: Action): State {
     case 'COMPUTER_THROW': {
       const newHand = state.computerHand.filter(c => c.id !== action.card.id);
       const newTable = [...state.table, { attack: action.card, defense: null }];
+      // Track last attack cards for pogony check
+      const newLastAttackCards = [...state.lastAttackCards, action.card];
       return {
         ...state,
         computerHand: newHand,
@@ -244,6 +289,8 @@ function reducer(state: State, action: Action): State {
         roundEnded: true,
         computerThinking: false,
         playerTookCards: false, // Сбрасываем флаг
+        lastAttackCards: [], // Сбрасываем последние атакующие карты
+        lastAttackWasSixes: false,
       };
 
       const withCards = drawFromDeck(newState);
@@ -316,6 +363,8 @@ const initialState: State = {
   computerThinking: false,
   roundEnded: false,
   playerTookCards: false,
+  lastAttackCards: [],
+  lastAttackWasSixes: false,
 };
 
 const HIGH_SCORE_KEY = 'durak_high_score';
@@ -792,20 +841,20 @@ export const Game: React.FC<GameProps> = ({ difficulty, onBackToMenu }) => {
           </div>
         </div>
 
-        {/* Deck & Trump */}
-        <div className="flex items-center justify-center gap-4 shrink-0">
+        {/* Deck & Trump - positioned in corner for desktop */}
+        <div className="absolute top-20 left-2 sm:top-24 sm:left-4 z-10">
           {state.deck.length > 0 && (
             <div className="relative flex items-center">
               {state.trumpCard && (
                 <div 
-                  className="absolute right-full mr-2 sm:mr-3"
+                  className="absolute right-full mr-1 sm:mr-2"
                   style={{ zIndex: 0, transform: 'rotate(90deg)' }}
                 >
-                  <CardComponent card={state.trumpCard} className="w-10 sm:w-14 opacity-80" />
+                  <CardComponent card={state.trumpCard} className="w-8 sm:w-12 opacity-80" />
                 </div>
               )}
               <div className="relative" style={{ zIndex: 1 }}>
-                <CardComponent card={state.deck[0]} faceDown className="w-12 sm:w-16" />
+                <CardComponent card={state.deck[0]} faceDown className="w-10 sm:w-14" />
                 <div className="absolute -top-1 -right-1 bg-white text-green-800 rounded-full w-4 h-4 sm:w-5 sm:h-5 flex items-center justify-center text-[10px] font-bold shadow">
                   {state.deck.length}
                 </div>
@@ -814,10 +863,14 @@ export const Game: React.FC<GameProps> = ({ difficulty, onBackToMenu }) => {
           )}
         </div>
 
-        {/* Table */}
-        <div className="flex-1 min-h-[100px] sm:min-h-[130px] bg-green-600/20 rounded-xl border-2 border-green-500/20 flex items-center justify-center flex-wrap gap-1 sm:gap-3 p-2 sm:p-3">
+        {/* Table - positioned based on who is being attacked */}
+        <div 
+          className={`flex-1 min-h-[100px] sm:min-h-[130px] bg-green-600/20 rounded-xl border-2 border-green-500/20 flex items-center flex-wrap gap-1 sm:gap-3 p-2 sm:p-3 transition-all duration-500 ${
+            state.attacker === 'player' ? 'justify-center mt-8 sm:mt-12' : 'justify-center mb-8 sm:mb-12'
+          }`}
+        >
           {state.table.length === 0 ? (
-            <div className="text-green-300/40 text-xs sm:text-base">
+            <div className="text-green-300/40 text-xs sm:text-base mx-auto">
               {state.attacker === 'player' ? 'Выберите карту для атаки' : 'Ожидание...'}
             </div>
           ) : (
