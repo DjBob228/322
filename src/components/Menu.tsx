@@ -15,6 +15,7 @@ export const Menu: React.FC<MenuProps> = ({ onStartGame }) => {
   const [highScore, setHighScore] = useState(0);
   const [gamesPlayed, setGamesPlayed] = useState(0);
   const [gamesWon, setGamesWon] = useState(0);
+  const [showHowToPlay, setShowHowToPlay] = useState(false);
 
   useEffect(() => {
     setHighScore(parseInt(localStorage.getItem(HIGH_SCORE_KEY) || '0'));
@@ -112,42 +113,70 @@ export const Menu: React.FC<MenuProps> = ({ onStartGame }) => {
           🎮 Начать игру
         </button>
 
-        {/* Controls Info */}
-        <div className="mt-6 bg-black/20 backdrop-blur-sm rounded-xl p-4 border border-white/10">
-          <h3 className="text-white/80 text-sm font-medium mb-2 text-center">🎮 Управление</h3>
-          <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 text-xs text-white/60">
-            <div className="flex items-center gap-2">
-              <kbd className="px-1.5 py-0.5 bg-white/10 rounded text-white/80">Enter</kbd>
-              <span>Подтвердить</span>
-            </div>
-            <div className="flex items-center gap-2">
-              <kbd className="px-1.5 py-0.5 bg-white/10 rounded text-white/80">Esc</kbd>
-              <span>Пауза</span>
-            </div>
-            <div className="flex items-center gap-2">
-              <span className="text-lg">👆</span>
-              <span>Касание/Клик</span>
-            </div>
-          </div>
-        </div>
+        {/* How to Play Button */}
+        <button
+          onClick={() => setShowHowToPlay(true)}
+          className="w-full mt-3 py-2 bg-white/10 hover:bg-white/20 text-white/80 text-sm rounded-lg
+            transition-all duration-200 border border-white/20"
+        >
+          📖 Как играть
+        </button>
 
-        {/* Rules */}
-        <details className="mt-4 bg-black/20 backdrop-blur-sm rounded-xl border border-white/10">
-          <summary className="p-3 text-white/80 text-sm font-medium cursor-pointer hover:text-white">
-            📖 Правила игры
-          </summary>
-          <div className="px-4 pb-4 text-white/60 text-xs space-y-2">
-            <p>• Колода из 36 карт (от 6 до туза)</p>
-            <p>• Козырная масть определяется последней картой колоды</p>
-            <p>• Каждый получает 6 карт. Ходит тот, у кого младший козырь</p>
-            <p>• Атакующий кладёт карту, защищающийся должен побить</p>
-            <p>• Бить можно картой той же масти старше или любым козырем</p>
-            <p>• Можно подкидывать карты того же номинала, что на столе</p>
-            <p>• Если не можете отбиться — берёте все карты со стола</p>
-            <p>• После раунда игроки добирают карты до 6 из колоды</p>
-            <p>• Проигрывает тот, у кого остались карты (дурак!)</p>
+        {/* How to Play Modal */}
+        {showHowToPlay && (
+          <div className="fixed inset-0 z-50 bg-black/70 backdrop-blur-sm flex items-center justify-center p-4">
+            <div className="bg-gradient-to-b from-green-800 to-green-900 rounded-2xl p-6 max-w-md w-full max-h-[80vh] overflow-y-auto border-2 border-green-600/50 shadow-2xl">
+              <h2 className="text-2xl font-bold text-white mb-4 text-center">📖 Как играть</h2>
+              
+              <div className="space-y-4 text-white/90 text-sm">
+                <div>
+                  <h3 className="font-bold text-green-300 mb-2">🎯 Цель игры</h3>
+                  <p>Избавиться от всех карт раньше противника. Проигрывает тот, у кого остались карты (дурак!)</p>
+                </div>
+
+                <div>
+                  <h3 className="font-bold text-green-300 mb-2">🃏 Правила</h3>
+                  <ul className="space-y-1 text-white/80">
+                    <li>• Колода из 36 карт (от 6 до туза)</li>
+                    <li>• Козырная масть определяется последней картой колоды</li>
+                    <li>• Каждый получает 6 карт. Ходит тот, у кого младший козырь</li>
+                    <li>• Атакующий кладёт карту, защищающийся должен побить</li>
+                    <li>• Бить можно картой той же масти старше или любым козырем</li>
+                    <li>• Можно подкидывать карты того же номинала, что на столе</li>
+                    <li>• Если не можете отбиться — берёте все карты со стола</li>
+                    <li>• После раунда игроки добирают карты до 6 из колоды</li>
+                  </ul>
+                </div>
+
+                <div>
+                  <h3 className="font-bold text-green-300 mb-2">🎮 Управление</h3>
+                  <ul className="space-y-1 text-white/80">
+                    <li>• <kbd className="px-1.5 py-0.5 bg-white/10 rounded text-white">Enter</kbd> — Подтвердить выбор карты</li>
+                    <li>• <kbd className="px-1.5 py-0.5 bg-white/10 rounded text-white">Esc</kbd> — Пауза</li>
+                    <li>• 👆 Касание/Клик — Выбор карты</li>
+                  </ul>
+                </div>
+
+                <div>
+                  <h3 className="font-bold text-green-300 mb-2">⭐ Особенности</h3>
+                  <ul className="space-y-1 text-white/80">
+                    <li>• Подсветка доступных карт в казуальном режиме</li>
+                    <li>• Система "погонов" — если проигравший остался с 5+ картами</li>
+                    <li>• Отслеживание карт, которые видел противник</li>
+                  </ul>
+                </div>
+              </div>
+
+              <button
+                onClick={() => setShowHowToPlay(false)}
+                className="w-full mt-6 py-3 bg-gradient-to-r from-green-500 to-green-600 hover:from-green-400 hover:to-green-500
+                  text-white font-bold rounded-lg transition-all duration-200 active:scale-95"
+              >
+                Понятно!
+              </button>
+            </div>
           </div>
-        </details>
+        )}
       </div>
     </div>
   );
