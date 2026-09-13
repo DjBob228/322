@@ -352,13 +352,16 @@ export const Game: React.FC<GameProps> = ({ difficulty, onBackToMenu }) => {
     if (state.status !== 'playing') return;
     if (state.computerThinking) return;
 
-    const s = stateRef.current;
+    // Use state directly for condition checks
+    const { attacker, table, playerHand, computerHand, trumpSuit } = state;
 
     // Computer attacks (first card)
-    if (s.attacker === 'computer' && s.table.length === 0 && !s.roundEnded) {
+    if (attacker === 'computer' && table.length === 0) {
       dispatch({ type: 'SET_THINKING', thinking: true });
       computerTimeoutRef.current = window.setTimeout(() => {
         const cs = stateRef.current;
+        if (cs.status !== 'playing') return;
+        
         const card = computerChooseAttack(cs.computerHand, cs.table, cs.trumpSuit, difficulty);
         if (card) {
           dispatch({ type: 'COMPUTER_ATTACK', card });
@@ -369,13 +372,16 @@ export const Game: React.FC<GameProps> = ({ difficulty, onBackToMenu }) => {
       return;
     }
 
-    // Computer throws more cards (after player defended)
-    if (s.attacker === 'computer' && s.table.length > 0) {
-      const allDefended = s.table.every(p => p.defense !== null);
-      if (allDefended && s.playerHand.length > 0) {
+    // Computer throws more cards (after player defended all)
+    if (attacker === 'computer' && table.length > 0) {
+      const allDefended = table.every(p => p.defense !== null);
+      if (allDefended && playerHand.length > 0 && table.length < 6) {
         dispatch({ type: 'SET_THINKING', thinking: true });
         computerTimeoutRef.current = window.setTimeout(() => {
           const cs = stateRef.current;
+          if (cs.status !== 'playing') return;
+          if (cs.attacker !== 'computer') return;
+          
           const card = computerShouldThrow(cs.computerHand, cs.table, cs.trumpSuit, difficulty, cs.playerHand.length);
           if (card && cs.table.length < 6) {
             dispatch({ type: 'COMPUTER_THROW', card });
@@ -388,14 +394,17 @@ export const Game: React.FC<GameProps> = ({ difficulty, onBackToMenu }) => {
     }
 
     // Computer defends
-    if (s.attacker === 'player' && s.table.length > 0) {
-      const undefended = s.table.find(p => !p.defense);
+    if (attacker === 'player' && table.length > 0) {
+      const undefended = table.find(p => !p.defense);
       if (undefended) {
         dispatch({ type: 'SET_THINKING', thinking: true });
         computerTimeoutRef.current = window.setTimeout(() => {
           const cs = stateRef.current;
+          if (cs.status !== 'playing') return;
+          if (cs.attacker !== 'player') return;
+          
           const currentUndefended = cs.table.find(p => !p.defense);
-          if (!currentUndefended) return; // Already handled
+          if (!currentUndefended) return;
           
           const defenseCard = computerChooseDefense(cs.computerHand, currentUndefended.attack, cs.trumpSuit, difficulty);
           if (defenseCard) {
@@ -403,6 +412,7 @@ export const Game: React.FC<GameProps> = ({ difficulty, onBackToMenu }) => {
             // After defending, check if player can throw
             setTimeout(() => {
               const cs2 = stateRef.current;
+              if (cs2.status !== 'playing') return;
               const updatedTable = cs2.table;
               const canThrow = cs2.playerHand.some(c => canThrowCard(c, updatedTable));
               if (canThrow && updatedTable.length < 6) {
@@ -420,6 +430,7 @@ export const Game: React.FC<GameProps> = ({ difficulty, onBackToMenu }) => {
             // After computer takes, player attacks again
             setTimeout(() => {
               const cs2 = stateRef.current;
+              if (cs2.status !== 'playing') return;
               const endCheck = checkGameEnd(cs2);
               if (endCheck) {
                 dispatch({ type: 'GAME_OVER', message: endCheck.gameOverMessage });
@@ -432,7 +443,7 @@ export const Game: React.FC<GameProps> = ({ difficulty, onBackToMenu }) => {
         return;
       }
     }
-  }, [state.attacker, state.table, state.status, state.computerThinking, state.roundEnded, difficulty]);
+  }, [state.attacker, state.table, state.status, state.computerThinking, state.playerHand.length, difficulty]);
 
   // Cleanup timeout
   useEffect(() => {
