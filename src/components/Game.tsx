@@ -998,11 +998,6 @@ export const Game: React.FC<GameProps> = ({ difficulty, onBackToMenu }) => {
             </div>
           ) : (
             state.table.map((pair, i) => {
-              // Смещаем карты к тому на кого ходят
-              // Когда игрок атакует - карты ближе к компьютеру (вверху, отрицательный yOffset)
-              // Когда компьютер атакует - карты ближе к игроку (внизу, положительный yOffset)
-              const yOffset = state.attacker === 'player' ? '-60px' : '60px';
-              
               // Анимация взятия карт
               let animationClass = '';
               if (state.animatingCards === 'player-takes') {
@@ -1015,7 +1010,6 @@ export const Game: React.FC<GameProps> = ({ difficulty, onBackToMenu }) => {
                 <div 
                   key={i} 
                   className={`relative animate-card-appear ${animationClass}`}
-                  style={{ transform: `translateY(${yOffset})` }}
                 >
                   <CardComponent card={pair.attack} className="w-12 sm:w-16 md:w-20" />
                   {pair.defense && (
