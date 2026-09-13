@@ -528,14 +528,14 @@ export const Game: React.FC<GameProps> = ({ difficulty, onBackToMenu }) => {
   useEffect(() => {
     const handleKeyDown = (e: KeyboardEvent) => {
       if (state.status === 'paused') {
-        if (e.key === 'Escape' || e.key === 'p' || e.key === 'P') {
+        if (e.key === 'Escape') {
           dispatch({ type: 'SET_STATUS', status: 'playing' });
         }
         return;
       }
 
       if (state.status === 'gameOver') {
-        if (e.key === 'Enter' || e.key === ' ') {
+        if (e.key === 'Enter') {
           e.preventDefault();
           initGame();
         }
@@ -549,7 +549,7 @@ export const Game: React.FC<GameProps> = ({ difficulty, onBackToMenu }) => {
         return;
       }
 
-      if (e.key === ' ' || e.key === 'Enter') {
+      if (e.key === 'Enter') {
         e.preventDefault();
         if (state.selectedCard) {
           confirmPlay();
@@ -558,27 +558,11 @@ export const Game: React.FC<GameProps> = ({ difficulty, onBackToMenu }) => {
         }
         return;
       }
-
-      if (e.key === 't' || e.key === 'T') {
-        if (state.showTakeButton) handleTake();
-        return;
-      }
-
-      if (e.key === 'p' || e.key === 'P') {
-        if (state.showPassButton) handlePass();
-        return;
-      }
-
-      // Number keys to select cards
-      const num = parseInt(e.key);
-      if (num >= 1 && num <= state.playerHand.length) {
-        handleCardClick(state.playerHand[num - 1]);
-      }
     };
 
     window.addEventListener('keydown', handleKeyDown);
     return () => window.removeEventListener('keydown', handleKeyDown);
-  }, [state.status, state.selectedCard, state.playerHand, state.showTakeButton, state.showPassButton, state.table, state.attacker]);
+  }, [state.status, state.selectedCard, state.showPassButton]);
 
   // Toggle pause
   const togglePause = () => {
@@ -614,6 +598,8 @@ export const Game: React.FC<GameProps> = ({ difficulty, onBackToMenu }) => {
   // Get playable cards
   const getPlayableCards = (): Set<string> => {
     const playable = new Set<string>();
+    // Подсветка только в лёгком режиме
+    if (difficulty !== 'easy') return playable;
     if (state.computerThinking) return playable;
 
     if (state.attacker === 'player') {
@@ -641,10 +627,6 @@ export const Game: React.FC<GameProps> = ({ difficulty, onBackToMenu }) => {
     <div className="min-h-screen h-screen bg-gradient-to-b from-green-800 via-green-700 to-green-900 flex flex-col relative overflow-hidden">
       {/* Felt texture */}
       <div className="absolute inset-0 opacity-10 bg-[radial-gradient(circle_at_50%_50%,rgba(255,255,255,0.1)_1px,transparent_1px)] bg-[length:20px_20px] pointer-events-none" />
-      {/* Debug indicator */}
-      <div className="absolute top-0 left-0 right-0 bg-red-500 text-white text-center text-xs py-0.5 z-50 font-bold">
-        ✅ ВЕРСИЯ v7 — ПОДСВЕТКА
-      </div>
 
       {/* Header */}
       <div className="relative z-10 flex items-center justify-between p-2 sm:p-3 bg-black/20 backdrop-blur-sm shrink-0">
@@ -706,28 +688,27 @@ export const Game: React.FC<GameProps> = ({ difficulty, onBackToMenu }) => {
         {/* Deck & Trump */}
         <div className="flex items-center justify-center gap-3 shrink-0">
           {state.deck.length > 0 && (
-            <div className="relative">
-              <CardComponent card={state.deck[0]} faceDown className="w-12 sm:w-16" />
-              <div className="absolute -top-1 -right-1 bg-white text-green-800 rounded-full w-4 h-4 sm:w-5 sm:h-5 flex items-center justify-center text-[10px] font-bold shadow">
-                {state.deck.length}
-              </div>
+            <div className="relative flex items-center">
               {state.trumpCard && (
                 <div 
-                  className="absolute top-1/2 left-1/2"
-                  style={{ 
-                    transform: 'translate(-50%, -50%) rotate(90deg)',
-                    zIndex: -1
-                  }}
+                  className="relative mr-8 sm:mr-10"
+                  style={{ zIndex: 0 }}
                 >
-                  <div className="relative">
+                  <div className="relative" style={{ transform: 'rotate(90deg)' }}>
                     <CardComponent card={state.trumpCard} className="w-10 sm:w-14" />
                     <div 
-                      className="absolute top-0 left-0 w-1/2 h-full bg-green-700"
+                      className="absolute top-0 left-0 w-1/2 h-full bg-green-700 rounded-r-lg"
                       style={{ zIndex: 1 }}
                     />
                   </div>
                 </div>
               )}
+              <div className="relative" style={{ zIndex: 1 }}>
+                <CardComponent card={state.deck[0]} faceDown className="w-12 sm:w-16" />
+                <div className="absolute -top-1 -right-1 bg-white text-green-800 rounded-full w-4 h-4 sm:w-5 sm:h-5 flex items-center justify-center text-[10px] font-bold shadow">
+                  {state.deck.length}
+                </div>
+              </div>
             </div>
           )}
           {state.trumpSuit && (
@@ -803,11 +784,7 @@ export const Game: React.FC<GameProps> = ({ difficulty, onBackToMenu }) => {
         </div>
 
         {/* Player Hand */}
-        <div className="flex flex-col items-center shrink-0">
-          <div className="text-white/60 text-xs mb-1">
-            🃏 Вы ({state.playerHand.length})
-            {state.attacker === 'player' ? ' — Атакуете' : ' — Защищаетесь'}
-          </div>
+        <div className="flex flex-col items-center shrink-0 mt-2">
           <div className="flex justify-center flex-wrap">
             {sortHand(state.playerHand, state.trumpSuit).map((card, i) => (
               <div
@@ -826,9 +803,6 @@ export const Game: React.FC<GameProps> = ({ difficulty, onBackToMenu }) => {
                 />
               </div>
             ))}
-          </div>
-          <div className="text-white/30 text-[10px] mt-1 hidden sm:block">
-            1-{state.playerHand.length} — выбор | Enter — подтвердить | T — взять | P — бито | Esc — пауза
           </div>
         </div>
       </div>

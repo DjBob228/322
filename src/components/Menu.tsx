@@ -37,10 +37,6 @@ export const Menu: React.FC<MenuProps> = ({ onStartGame }) => {
         <div className="absolute bottom-20 left-20 text-8xl transform rotate-45">♦</div>
         <div className="absolute bottom-10 right-10 text-8xl transform -rotate-45">♣</div>
       </div>
-      {/* Debug indicator */}
-      <div className="absolute top-0 left-0 right-0 bg-red-500 text-white text-center text-xs py-0.5 z-50 font-bold">
-        ✅ МЕНЮ v7 — ПОДСВЕТКА
-      </div>
 
       <div className="relative z-10 max-w-md w-full">
         {/* Title */}
@@ -120,20 +116,8 @@ export const Menu: React.FC<MenuProps> = ({ onStartGame }) => {
           <h3 className="text-white/80 text-sm font-medium mb-2 text-center">🎮 Управление</h3>
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 text-xs text-white/60">
             <div className="flex items-center gap-2">
-              <kbd className="px-1.5 py-0.5 bg-white/10 rounded text-white/80">1-9</kbd>
-              <span>Выбор карты</span>
-            </div>
-            <div className="flex items-center gap-2">
               <kbd className="px-1.5 py-0.5 bg-white/10 rounded text-white/80">Enter</kbd>
               <span>Подтвердить</span>
-            </div>
-            <div className="flex items-center gap-2">
-              <kbd className="px-1.5 py-0.5 bg-white/10 rounded text-white/80">T</kbd>
-              <span>Взять карты</span>
-            </div>
-            <div className="flex items-center gap-2">
-              <kbd className="px-1.5 py-0.5 bg-white/10 rounded text-white/80">P</kbd>
-              <span>Бито</span>
             </div>
             <div className="flex items-center gap-2">
               <kbd className="px-1.5 py-0.5 bg-white/10 rounded text-white/80">Esc</kbd>
