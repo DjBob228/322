@@ -29,13 +29,17 @@ export const Menu: React.FC<MenuProps> = ({ onStartGame }) => {
   ];
 
   return (
-    <div className="min-h-screen bg-gradient-to-b from-green-900 via-green-800 to-green-950 flex flex-col items-center justify-center p-4 relative overflow-hidden">
+    <div className="min-h-screen bg-gradient-to-b from-blue-900 via-blue-800 to-blue-950 flex flex-col items-center justify-center p-4 relative overflow-hidden">
       {/* Background decoration */}
       <div className="absolute inset-0 opacity-5">
         <div className="absolute top-10 left-10 text-8xl transform rotate-12">♠</div>
         <div className="absolute top-20 right-20 text-8xl transform -rotate-12">♥</div>
         <div className="absolute bottom-20 left-20 text-8xl transform rotate-45">♦</div>
         <div className="absolute bottom-10 right-10 text-8xl transform -rotate-45">♣</div>
+      </div>
+      {/* Debug indicator */}
+      <div className="absolute top-0 left-0 right-0 bg-red-500 text-white text-center text-xs py-0.5 z-50 font-bold">
+        ✅ МЕНЮ v3 — ИСПРАВЛЕНО
       </div>
 
       <div className="relative z-10 max-w-md w-full">
@@ -44,7 +48,7 @@ export const Menu: React.FC<MenuProps> = ({ onStartGame }) => {
           <h1 className="text-4xl sm:text-5xl font-bold text-white mb-2 drop-shadow-lg">
             🃏 Дурак
           </h1>
-          <p className="text-green-200/70 text-sm sm:text-base">
+          <p className="text-blue-200/70 text-sm sm:text-base">
             Классическая карточная игра
           </p>
         </div>
@@ -82,7 +86,7 @@ export const Menu: React.FC<MenuProps> = ({ onStartGame }) => {
                 onClick={() => setSelectedDifficulty(d.key)}
                 className={`w-full p-3 sm:p-4 rounded-xl text-left transition-all duration-200 border-2
                   ${selectedDifficulty === d.key
-                    ? 'bg-green-600/40 border-green-400 shadow-lg shadow-green-500/20'
+                    ? 'bg-blue-600/40 border-blue-400 shadow-lg shadow-blue-500/20'
                     : 'bg-black/20 border-transparent hover:bg-black/30 hover:border-white/20'
                   }`}
               >
@@ -104,8 +108,8 @@ export const Menu: React.FC<MenuProps> = ({ onStartGame }) => {
         {/* Start Button */}
         <button
           onClick={() => onStartGame(selectedDifficulty)}
-          className="w-full py-4 bg-gradient-to-r from-yellow-500 to-orange-500 hover:from-yellow-400 hover:to-orange-400
-            text-white font-bold text-lg rounded-xl shadow-lg shadow-orange-500/30
+          className="w-full py-4 bg-gradient-to-r from-cyan-500 to-blue-500 hover:from-cyan-400 hover:to-blue-400
+            text-white font-bold text-lg rounded-xl shadow-lg shadow-blue-500/30
             transition-all duration-200 active:scale-95 hover:scale-[1.02]"
         >
           🎮 Начать игру
