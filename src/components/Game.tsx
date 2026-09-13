@@ -41,6 +41,7 @@ interface State {
   showPassButton: boolean;
   computerThinking: boolean;
   roundEnded: boolean;
+  playerJustTook: boolean; // Игрок только что взял карты, компьютер может подкидывать
   lastAttackCards: Card[];
   lastAttackWasSixes: boolean;
   animatingCards: 'player-takes' | 'computer-takes' | null;
@@ -164,6 +165,7 @@ function reducer(state: State, action: Action): State {
         showPassButton: false,
         computerThinking: false,
         roundEnded: false,
+        playerJustTook: false,
         lastAttackCards: [],
         lastAttackWasSixes: false,
         computerKnownTrump: null,
@@ -272,6 +274,7 @@ function reducer(state: State, action: Action): State {
         showPassButton: false,
         message: 'Ожидание...',
         computerThinking: false,
+        playerJustTook: false,
       };
       return drawFromDeck(newState);
     }
@@ -279,18 +282,18 @@ function reducer(state: State, action: Action): State {
     case 'PLAYER_TAKES': {
       const tableCards = state.table.flatMap(p => [p.attack, ...(p.defense ? [p.defense] : [])]);
       const newHand = [...state.playerHand, ...tableCards];
-      // Очищаем стол и добираем карты
-      const newState = {
+      // НЕ очищаем стол - компьютер должен подкинуть карты перед окончанием раунда
+      return {
         ...state,
         playerHand: newHand,
-        table: [],
+        table: state.table, // Оставляем стол
         selectedCard: null,
         showTakeButton: false,
         showPassButton: false,
-        message: 'Вы взяли карты',
+        message: 'Вы взяли карты. Компьютер подкидывает...',
         computerThinking: false,
+        playerJustTook: true, // Помечаем, что игрок взял карты
       };
-      return drawFromDeck(newState);
     }
 
     case 'END_ROUND': {
@@ -312,13 +315,14 @@ function reducer(state: State, action: Action): State {
 
       const newState = {
         ...state,
-        table: [],
+        table: [], // Очищаем стол
         attacker: newAttacker,
         selectedCard: null,
         showTakeButton: false,
         showPassButton: false,
         roundEnded: true,
         computerThinking: false,
+        playerJustTook: false, // Сбрасываем флаг
         lastAttackCards: [],
         lastAttackWasSixes: false,
       };
@@ -332,6 +336,7 @@ function reducer(state: State, action: Action): State {
         message: newAttacker === 'computer' ? 'Компьютер атакует...' : 'Ваш ход! Выберите карту для атаки.',
         roundEnded: false,
         computerThinking: false,
+        playerJustTook: false,
       };
     }
 
@@ -344,6 +349,7 @@ function reducer(state: State, action: Action): State {
         selectedCard: null,
         showTakeButton: false,
         showPassButton: false,
+        playerJustTook: false,
       };
       const withCards = drawFromDeck(newState);
       const endCheck = checkGameEnd(withCards);
@@ -388,7 +394,8 @@ function reducer(state: State, action: Action): State {
       const clearedState = { 
         ...state, 
         table: [], 
-        computerThinking: false // Сбрасываем флаг, чтобы бот мог продолжить
+        computerThinking: false,
+        playerJustTook: false
       };
       return drawFromDeck(clearedState);
     }
@@ -414,6 +421,7 @@ const initialState: State = {
   showPassButton: false,
   computerThinking: false,
   roundEnded: false,
+  playerJustTook: false,
   lastAttackCards: [],
   lastAttackWasSixes: false,
   animatingCards: null,
@@ -523,6 +531,31 @@ export const Game: React.FC<GameProps> = ({ difficulty, onBackToMenu }) => {
     if (cs.status !== 'playing' || cs.computerThinking) return;
     if (cs.attacker !== 'computer' || cs.table.length === 0) return;
     
+    // Если игрок только что взял карты, компьютер может подкидывать без проверки защиты
+    if (cs.playerJustTook) {
+      if (cs.table.length >= 6) {
+        // Максимум карт на столе, заканчиваем раунд
+        dispatch({ type: 'END_ROUND', playerTook: true, computerTook: false });
+        return;
+      }
+
+      dispatch({ type: 'SET_THINKING', thinking: true });
+      computerTimeoutRef.current = window.setTimeout(() => {
+        const cs2 = stateRef.current;
+        if (cs2.status !== 'playing' || cs2.attacker !== 'computer') return;
+        
+        const card = computerShouldThrow(cs2.computerHand, cs2.table, cs2.trumpSuit, difficulty, cs2.playerHand.length);
+        if (card && cs2.table.length < 6) {
+          dispatch({ type: 'COMPUTER_THROW', card });
+        } else {
+          // Нечего подкидывать, заканчиваем раунд
+          dispatch({ type: 'END_ROUND', playerTook: true, computerTook: false });
+        }
+      }, 600 + Math.random() * 400);
+      return;
+    }
+    
+    // Обычная логика подкидывания
     const allDefended = cs.table.every(p => p.defense !== null);
     if (!allDefended || cs.playerHand.length === 0 || cs.table.length >= 6) return;
 
@@ -592,14 +625,14 @@ export const Game: React.FC<GameProps> = ({ difficulty, onBackToMenu }) => {
   useEffect(() => {
     if (state.status !== 'playing' || state.computerThinking) return;
 
-    if (state.attacker === 'computer' && state.table.length === 0) {
+    if (state.attacker === 'computer' && state.table.length === 0 && !state.playerJustTook) {
       computerAttack();
     } else if (state.attacker === 'computer' && state.table.length > 0) {
       computerThrow();
     } else if (state.attacker === 'player' && state.table.length > 0) {
       computerDefend();
     }
-  }, [state.attacker, state.table, state.status, state.computerThinking, computerAttack, computerThrow, computerDefend]);
+  }, [state.attacker, state.table, state.status, state.computerThinking, state.playerJustTook, computerAttack, computerThrow, computerDefend]);
 
   // Cleanup timeout
   useEffect(() => {
@@ -668,11 +701,8 @@ export const Game: React.FC<GameProps> = ({ difficulty, onBackToMenu }) => {
       setScore(prev => Math.max(0, prev - 10));
       playSound('take');
       
-      // После взятия карт заканчиваем раунд
-      // Ход остается у атакующего (компьютера)
-      setTimeout(() => {
-        dispatch({ type: 'END_ROUND', playerTook: true, computerTook: false });
-      }, 500);
+      // НЕ вызываем END_ROUND сразу - даём компьютеру возможность подкинуть карты
+      // computerThrow автоматически обработает playerJustTook и подкинет карты или закончит раунд
     }, 800);
   };
 
