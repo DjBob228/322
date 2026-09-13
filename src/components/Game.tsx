@@ -143,6 +143,7 @@ function reducer(state: State, action: Action): State {
         selectedCard: null,
         showTakeButton: false,
         message: 'Компьютер думает...',
+        computerThinking: false,
       };
     }
 
@@ -634,20 +635,20 @@ export const Game: React.FC<GameProps> = ({ difficulty, onBackToMenu }) => {
   const playableCards = getPlayableCards();
 
   return (
-    <div className="min-h-screen h-screen bg-gradient-to-b from-blue-800 via-blue-700 to-blue-900 flex flex-col relative overflow-hidden">
+    <div className="min-h-screen h-screen bg-gradient-to-b from-green-800 via-green-700 to-green-900 flex flex-col relative overflow-hidden">
       {/* Felt texture */}
       <div className="absolute inset-0 opacity-10 bg-[radial-gradient(circle_at_50%_50%,rgba(255,255,255,0.1)_1px,transparent_1px)] bg-[length:20px_20px] pointer-events-none" />
       {/* Debug indicator */}
       <div className="absolute top-0 left-0 right-0 bg-red-500 text-white text-center text-xs py-0.5 z-50 font-bold">
-        ✅ ВЕРСИЯ v3 — ИСПРАВЛЕНА
+        ✅ ВЕРСИЯ v4 — ИСПРАВЛЕНА
       </div>
 
       {/* Header */}
-      <div className="relative z-10 flex items-center justify-between p-2 sm:p-3 bg-black/30 backdrop-blur-sm shrink-0 border-b border-blue-400/20">
+      <div className="relative z-10 flex items-center justify-between p-2 sm:p-3 bg-black/20 backdrop-blur-sm shrink-0">
         <div className="flex items-center gap-2">
           <button
             onClick={onBackToMenu}
-            className="px-2 py-1.5 sm:px-3 sm:py-2 text-xs sm:text-sm bg-blue-700 hover:bg-blue-600 text-white rounded-lg transition-colors"
+            className="px-2 py-1.5 sm:px-3 sm:py-2 text-xs sm:text-sm bg-gray-700 hover:bg-gray-600 text-white rounded-lg transition-colors"
           >
             ← Меню
           </button>
@@ -715,16 +716,16 @@ export const Game: React.FC<GameProps> = ({ difficulty, onBackToMenu }) => {
             </div>
           )}
           {state.trumpSuit && (
-            <div className="text-cyan-300 text-sm sm:text-base font-bold">
+            <div className="text-yellow-300 text-sm sm:text-base font-bold">
               Козырь: {SUIT_SYMBOLS[state.trumpSuit]}
             </div>
           )}
         </div>
 
         {/* Table */}
-        <div className="flex-1 min-h-[100px] sm:min-h-[130px] bg-blue-600/20 rounded-xl border-2 border-blue-500/20 flex items-center justify-center flex-wrap gap-1 sm:gap-3 p-2 sm:p-3">
+        <div className="flex-1 min-h-[100px] sm:min-h-[130px] bg-green-600/20 rounded-xl border-2 border-green-500/20 flex items-center justify-center flex-wrap gap-1 sm:gap-3 p-2 sm:p-3">
           {state.table.length === 0 ? (
-            <div className="text-blue-300/40 text-xs sm:text-base">
+            <div className="text-green-300/40 text-xs sm:text-base">
               {state.attacker === 'player' ? 'Выберите карту для атаки' : 'Ожидание...'}
             </div>
           ) : (
@@ -779,8 +780,8 @@ export const Game: React.FC<GameProps> = ({ difficulty, onBackToMenu }) => {
 
         {/* Message */}
         <div className="text-center shrink-0">
-          <div className="inline-block px-3 py-1 bg-black/50 backdrop-blur-sm rounded-full border border-blue-400/30">
-            <span className="text-white text-xs sm:text-sm font-medium">
+          <div className="inline-block px-3 py-1 bg-black/30 backdrop-blur-sm rounded-full">
+            <span className="text-white text-xs sm:text-sm">
               {state.computerThinking ? '🤔 Компьютер думает...' : state.message}
             </span>
           </div>
