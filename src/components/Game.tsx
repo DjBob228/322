@@ -1009,11 +1009,13 @@ export const Game: React.FC<GameProps> = ({ difficulty, onBackToMenu }) => {
               return (
                 <div 
                   key={i} 
-                  className={`relative animate-card-appear ${animationClass}`}
+                  className="relative animate-card-appear"
                 >
-                  <CardComponent card={pair.attack} className="w-12 sm:w-16 md:w-20" />
+                  <div className={animationClass}>
+                    <CardComponent card={pair.attack} className="w-12 sm:w-16 md:w-20" />
+                  </div>
                   {pair.defense && (
-                    <div className={`absolute top-2 left-2 sm:top-3 sm:left-3 animate-card-appear ${animationClass}`}>
+                    <div className={`absolute top-6 left-6 sm:top-8 sm:left-8 animate-card-appear ${animationClass}`}>
                       <CardComponent card={pair.defense} className="w-12 sm:w-16 md:w-20" />
                     </div>
                   )}

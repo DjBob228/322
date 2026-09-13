@@ -74,6 +74,20 @@
   }
 }
 
+.animate-card-fly-to-player {
+  animation: card-fly-to-player 0.8s ease-in forwards;
+  will-change: transform, opacity;
+  position: relative;
+  z-index: 10;
+}
+
+.animate-card-fly-to-computer {
+  animation: card-fly-to-computer 0.8s ease-in forwards;
+  will-change: transform, opacity;
+  position: relative;
+  z-index: 10;
+}
+
 @keyframes bounce-subtle {
   0%, 100% {
     transform: translateY(0);
@@ -148,14 +162,6 @@
 
 .animate-card-from-deck {
   animation: card-from-deck 0.5s ease-out;
-}
-
-.animate-card-fly-to-player {
-  animation: card-fly-to-player 0.8s ease-in forwards;
-}
-
-.animate-card-fly-to-computer {
-  animation: card-fly-to-computer 0.8s ease-in forwards;
 }
 
 .animate-bounce-subtle {
