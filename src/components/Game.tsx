@@ -43,6 +43,7 @@ interface State {
   playerTookCards: boolean;
   lastAttackCards: Card[];
   lastAttackWasSixes: boolean;
+  animatingCards: 'player-takes' | 'computer-takes' | null;
 }
 
 type Action =
@@ -62,7 +63,8 @@ type Action =
   | { type: 'SET_THINKING'; thinking: boolean }
   | { type: 'SHOW_BUTTONS'; take: boolean; pass: boolean }
   | { type: 'GAME_OVER'; message: string }
-  | { type: 'COMPUTER_PASS' };
+  | { type: 'COMPUTER_PASS' }
+  | { type: 'SET_ANIMATING'; animation: 'player-takes' | 'computer-takes' | null };
 
 function drawFromDeck(state: State): State {
   let deck = [...state.deck];
@@ -341,6 +343,9 @@ function reducer(state: State, action: Action): State {
     case 'GAME_OVER':
       return { ...state, status: 'gameOver', gameOverMessage: action.message };
 
+    case 'SET_ANIMATING':
+      return { ...state, animatingCards: action.animation };
+
     default:
       return state;
   }
@@ -365,6 +370,7 @@ const initialState: State = {
   playerTookCards: false,
   lastAttackCards: [],
   lastAttackWasSixes: false,
+  animatingCards: null,
 };
 
 const HIGH_SCORE_KEY = 'durak_high_score';
@@ -491,9 +497,13 @@ export const Game: React.FC<GameProps> = ({ difficulty, onBackToMenu }) => {
         dispatch({ type: 'SET_MESSAGE', message: 'Компьютер берёт карты' });
         setScore(prev => prev + 15);
 
+        // Start animation
+        dispatch({ type: 'SET_ANIMATING', animation: 'computer-takes' });
+
         // Wait before adding cards to hand
         setTimeout(() => {
           dispatch({ type: 'COMPUTER_TAKES' });
+          dispatch({ type: 'SET_ANIMATING', animation: null });
           
           // After computer takes, player attacks again
           setTimeout(() => {
@@ -581,9 +591,17 @@ export const Game: React.FC<GameProps> = ({ difficulty, onBackToMenu }) => {
   // Player takes cards
   const handleTake = () => {
     if (state.status !== 'playing') return;
-    dispatch({ type: 'PLAYER_TAKES' });
-    setScore(prev => Math.max(0, prev - 10));
-    playSound('take');
+    
+    // Start animation
+    dispatch({ type: 'SET_ANIMATING', animation: 'player-takes' });
+    
+    setTimeout(() => {
+      dispatch({ type: 'PLAYER_TAKES' });
+      dispatch({ type: 'SET_ANIMATING', animation: null });
+      setScore(prev => Math.max(0, prev - 10));
+      playSound('take');
+    }, 800);
+    
     // After taking, computer (attacker) will attack again automatically via the effect
   };
 
@@ -841,20 +859,20 @@ export const Game: React.FC<GameProps> = ({ difficulty, onBackToMenu }) => {
           </div>
         </div>
 
-        {/* Deck & Trump - positioned in corner for desktop */}
-        <div className="absolute top-20 left-2 sm:top-24 sm:left-4 z-10">
+        {/* Deck & Trump */}
+        <div className="flex items-center justify-center gap-4 shrink-0">
           {state.deck.length > 0 && (
             <div className="relative flex items-center">
               {state.trumpCard && (
                 <div 
-                  className="absolute right-full mr-1 sm:mr-2"
+                  className="absolute right-full mr-2 sm:mr-3"
                   style={{ zIndex: 0, transform: 'rotate(90deg)' }}
                 >
-                  <CardComponent card={state.trumpCard} className="w-8 sm:w-12 opacity-80" />
+                  <CardComponent card={state.trumpCard} className="w-10 sm:w-14 opacity-80" />
                 </div>
               )}
               <div className="relative" style={{ zIndex: 1 }}>
-                <CardComponent card={state.deck[0]} faceDown className="w-10 sm:w-14" />
+                <CardComponent card={state.deck[0]} faceDown className="w-12 sm:w-16" />
                 <div className="absolute -top-1 -right-1 bg-white text-green-800 rounded-full w-4 h-4 sm:w-5 sm:h-5 flex items-center justify-center text-[10px] font-bold shadow">
                   {state.deck.length}
                 </div>
@@ -863,27 +881,40 @@ export const Game: React.FC<GameProps> = ({ difficulty, onBackToMenu }) => {
           )}
         </div>
 
-        {/* Table - positioned based on who is being attacked */}
-        <div 
-          className={`flex-1 min-h-[100px] sm:min-h-[130px] bg-green-600/20 rounded-xl border-2 border-green-500/20 flex items-center flex-wrap gap-1 sm:gap-3 p-2 sm:p-3 transition-all duration-500 ${
-            state.attacker === 'player' ? 'justify-center mt-8 sm:mt-12' : 'justify-center mb-8 sm:mb-12'
-          }`}
-        >
+        {/* Table */}
+        <div className="flex-1 min-h-[100px] sm:min-h-[130px] bg-green-600/20 rounded-xl border-2 border-green-500/20 flex items-center justify-center flex-wrap gap-1 sm:gap-3 p-2 sm:p-3 relative">
           {state.table.length === 0 ? (
-            <div className="text-green-300/40 text-xs sm:text-base mx-auto">
+            <div className="text-green-300/40 text-xs sm:text-base">
               {state.attacker === 'player' ? 'Выберите карту для атаки' : 'Ожидание...'}
             </div>
           ) : (
-            state.table.map((pair, i) => (
-              <div key={i} className="relative animate-card-appear">
-                <CardComponent card={pair.attack} className="w-12 sm:w-16 md:w-20" />
-                {pair.defense && (
-                  <div className="absolute top-2 left-2 sm:top-3 sm:left-3 animate-card-appear">
-                    <CardComponent card={pair.defense} className="w-12 sm:w-16 md:w-20" />
-                  </div>
-                )}
-              </div>
-            ))
+            state.table.map((pair, i) => {
+              // Смещаем карты к тому на кого ходят
+              const yOffset = state.attacker === 'player' ? '20px' : '-20px';
+              
+              // Анимация взятия карт
+              let animationClass = '';
+              if (state.animatingCards === 'player-takes') {
+                animationClass = 'animate-card-fly-to-player';
+              } else if (state.animatingCards === 'computer-takes') {
+                animationClass = 'animate-card-fly-to-computer';
+              }
+              
+              return (
+                <div 
+                  key={i} 
+                  className={`relative animate-card-appear transition-transform duration-500 ${animationClass}`}
+                  style={{ transform: `translateY(${yOffset})` }}
+                >
+                  <CardComponent card={pair.attack} className="w-12 sm:w-16 md:w-20" />
+                  {pair.defense && (
+                    <div className={`absolute top-2 left-2 sm:top-3 sm:left-3 animate-card-appear ${animationClass}`}>
+                      <CardComponent card={pair.defense} className="w-12 sm:w-16 md:w-20" />
+                    </div>
+                  )}
+                </div>
+              );
+            })
           )}
         </div>
 
