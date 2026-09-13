@@ -955,41 +955,29 @@ export const Game: React.FC<GameProps> = ({ difficulty, onBackToMenu }) => {
           <div className="text-white/60 text-xs mb-1">
             🤖 Компьютер ({state.computerHand.length})
           </div>
-          <div className="flex justify-center max-w-full px-2">
-            {state.computerHand.map((card, i) => {
-              // Адаптивное перекрытие и размер карт
-              const cardCount = state.computerHand.length;
-              let marginLeft = '0';
-              let cardSize = 'w-10 sm:w-14 md:w-16';
-              
-              if (i > 0) {
-                if (cardCount <= 6) {
-                  marginLeft = '-1.2rem';
-                } else if (cardCount <= 8) {
-                  marginLeft = '-1.5rem';
-                  cardSize = 'w-9 sm:w-12 md:w-14';
-                } else if (cardCount <= 10) {
-                  marginLeft = '-1.8rem';
-                  cardSize = 'w-8 sm:w-11 md:w-13';
-                } else if (cardCount <= 12) {
-                  marginLeft = '-2rem';
-                  cardSize = 'w-7 sm:w-10 md:w-12';
-                } else {
-                  marginLeft = '-2.2rem';
-                  cardSize = 'w-6 sm:w-9 md:w-11';
-                }
-              }
-              
-              return (
+          <div className="flex justify-center max-w-full px-2 overflow-visible">
+            <div 
+              className="flex"
+              style={{
+                transform: state.computerHand.length > 8 
+                  ? `scale(${Math.max(0.5, 1 - (state.computerHand.length - 8) * 0.05)})`
+                  : undefined,
+                transformOrigin: 'center',
+                transition: 'transform 0.3s ease'
+              }}
+            >
+              {state.computerHand.map((card, i) => (
                 <div
                   key={card.id}
-                  className="transition-all duration-300 flex-shrink-0"
-                  style={{ marginLeft }}
+                  className="transition-all duration-300"
+                  style={{ 
+                    marginLeft: i > 0 ? '-1.2rem' : '0',
+                  }}
                 >
-                  <CardComponent card={card} faceDown className={cardSize} />
+                  <CardComponent card={card} faceDown className="w-10 sm:w-14 md:w-16" />
                 </div>
-              );
-            })}
+              ))}
+            </div>
           </div>
         </div>
 
@@ -1016,54 +1004,52 @@ export const Game: React.FC<GameProps> = ({ difficulty, onBackToMenu }) => {
         </div>
 
         {/* Table */}
-        <div className="flex-1 min-h-[100px] sm:min-h-[130px] bg-green-600/20 rounded-xl border-2 border-green-500/20 flex items-center justify-center flex-wrap gap-1 sm:gap-3 p-2 sm:p-3 relative overflow-hidden">
-          {state.table.length === 0 ? (
-            <div className="text-green-300/40 text-xs sm:text-base">
-              {state.attacker === 'player' ? 'Выберите карту для атаки' : 'Ожидание...'}
-            </div>
-          ) : (
-            state.table.map((pair, i) => {
-              // Анимация взятия карт
-              let animationClass = '';
-              if (state.animatingCards === 'player-takes') {
-                animationClass = 'animate-card-fly-to-player';
-              } else if (state.animatingCards === 'computer-takes') {
-                animationClass = 'animate-card-fly-to-computer';
-              }
-              
-              // Адаптивный размер карт на столе
-              const tablePairs = state.table.length;
-              let cardSize = 'w-12 sm:w-16 md:w-20';
-              let defenseOffset = 'top-6 left-6 sm:top-8 sm:left-8';
-              
-              if (tablePairs > 4) {
-                cardSize = 'w-10 sm:w-14 md:w-18';
-                defenseOffset = 'top-5 left-5 sm:top-7 sm:left-7';
-              }
-              if (tablePairs > 5) {
-                cardSize = 'w-9 sm:w-12 md:w-16';
-                defenseOffset = 'top-4 left-4 sm:top-6 sm:left-6';
-              }
-              
-              return (
-                <div 
-                  key={i} 
-                  className="relative animate-card-appear"
-                >
-                  <div className={animationClass}>
-                    <CardComponent card={pair.attack} className={cardSize} />
-                  </div>
-                  {pair.defense && (
-                    <div className={`absolute ${defenseOffset} animate-card-appear`}>
-                      <div className={animationClass}>
-                        <CardComponent card={pair.defense} className={cardSize} />
-                      </div>
+        <div className="flex-1 min-h-[100px] sm:min-h-[130px] bg-green-600/20 rounded-xl border-2 border-green-500/20 flex items-center justify-center p-2 sm:p-3 relative">
+          <div 
+            className="flex flex-wrap gap-1 sm:gap-3 items-center justify-center"
+            style={{
+              transform: state.table.length > 4 
+                ? `scale(${Math.max(0.6, 1 - (state.table.length - 4) * 0.08)})`
+                : undefined,
+              transformOrigin: 'center',
+              transition: 'transform 0.3s ease'
+            }}
+          >
+            {state.table.length === 0 ? (
+              <div className="text-green-300/40 text-xs sm:text-base">
+                {state.attacker === 'player' ? 'Выберите карту для атаки' : 'Ожидание...'}
+              </div>
+            ) : (
+              state.table.map((pair, i) => {
+                // Анимация взятия карт
+                let animationClass = '';
+                if (state.animatingCards === 'player-takes') {
+                  animationClass = 'animate-card-fly-to-player';
+                } else if (state.animatingCards === 'computer-takes') {
+                  animationClass = 'animate-card-fly-to-computer';
+                }
+                
+                return (
+                  <div 
+                    key={i} 
+                    className="relative animate-card-appear"
+                    style={{ width: '4.5rem', height: '6.5rem' }}
+                  >
+                    <div className={animationClass}>
+                      <CardComponent card={pair.attack} className="w-12 sm:w-16 md:w-20" />
                     </div>
-                  )}
-                </div>
-              );
-            })
-          )}
+                    {pair.defense && (
+                      <div className="absolute top-6 left-6 sm:top-8 sm:left-8 animate-card-appear">
+                        <div className={animationClass}>
+                          <CardComponent card={pair.defense} className="w-12 sm:w-16 md:w-20" />
+                        </div>
+                      </div>
+                    )}
+                  </div>
+                );
+              })
+            )}
+          </div>
         </div>
 
         {/* Action Buttons */}
