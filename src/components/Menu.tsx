@@ -31,7 +31,7 @@ export const Menu: React.FC<MenuProps> = ({ onStartGame }) => {
   ];
 
   return (
-    <div className="min-h-screen bg-gradient-to-b from-green-900 via-green-800 to-green-950 flex flex-col items-center justify-start sm:justify-center p-4 pb-8 relative overflow-y-auto">
+    <div className="min-h-screen bg-gradient-to-b from-green-900 via-green-800 to-green-950 flex flex-col items-center justify-center p-4 relative overflow-y-auto">
       {/* Background decoration */}
       <div className="absolute inset-0 opacity-5">
         <div className="absolute top-10 left-10 text-8xl transform rotate-12">♠</div>
@@ -43,10 +43,10 @@ export const Menu: React.FC<MenuProps> = ({ onStartGame }) => {
       <div className="relative z-10 max-w-md w-full">
         {/* Title */}
         <div className="text-center mb-8">
-          <h1 className="text-4xl sm:text-5xl font-bold text-white mb-2 drop-shadow-lg">
+          <h1 className="text-5xl font-bold text-white mb-2 drop-shadow-lg">
             🃏 Дурак
           </h1>
-          <p className="text-green-200/70 text-sm sm:text-base">
+          <p className="text-green-200/70 text-base">
             Классическая карточная игра
           </p>
         </div>
@@ -82,7 +82,7 @@ export const Menu: React.FC<MenuProps> = ({ onStartGame }) => {
               <button
                 key={d.key}
                 onClick={() => setSelectedDifficulty(d.key)}
-                className={`w-full p-3 sm:p-4 rounded-xl text-left transition-all duration-200 border-2
+                className={`w-full p-4 rounded-xl text-left transition-all duration-200 border-2
                   ${selectedDifficulty === d.key
                     ? 'bg-green-600/40 border-green-400 shadow-lg shadow-green-500/20'
                     : 'bg-black/20 border-transparent hover:bg-black/30 hover:border-white/20'
@@ -91,7 +91,7 @@ export const Menu: React.FC<MenuProps> = ({ onStartGame }) => {
                 <div className="flex items-center gap-3">
                   <span className="text-2xl">{d.emoji}</span>
                   <div>
-                    <div className="text-white font-bold text-sm sm:text-base">{d.label}</div>
+                    <div className="text-white font-bold text-base">{d.label}</div>
                     <div className="text-white/50 text-xs">{d.desc}</div>
                   </div>
                   {selectedDifficulty === d.key && (

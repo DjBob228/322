@@ -30,7 +30,7 @@ export const CardComponent: React.FC<CardProps> = ({
   if (faceDown) {
     return (
       <div
-        className={`relative w-16 h-22 sm:w-20 sm:h-28 md:w-24 md:h-34 rounded-lg shadow-md 
+        className={`relative w-16 h-22 rounded-lg shadow-md 
           bg-gradient-to-br from-blue-700 to-blue-900 border-2 border-blue-500
           flex items-center justify-center transition-all duration-200 ${className}`}
         style={{
@@ -47,9 +47,9 @@ export const CardComponent: React.FC<CardProps> = ({
   return (
     <div
       onClick={onClick}
-      className={`relative w-16 sm:w-20 md:w-24 rounded-lg shadow-md 
+      className={`relative w-16 rounded-lg shadow-md 
         bg-white border-2 transition-all duration-200 cursor-pointer
-        select-none flex flex-col items-center justify-between p-1 sm:p-1.5
+        select-none flex flex-col items-center justify-between p-1
         ${isSelected ? 'border-yellow-400 -translate-y-3 shadow-yellow-200 shadow-lg scale-105' : ''}
         ${isPlayable && !isSelected && isTrump ? 'border-purple-400 hover:-translate-y-2 hover:shadow-lg shadow-purple-200' : ''}
         ${isPlayable && !isSelected && !isTrump ? 'border-green-400 hover:-translate-y-2 hover:shadow-lg' : ''}
@@ -63,15 +63,15 @@ export const CardComponent: React.FC<CardProps> = ({
       }}
     >
       <div className="self-start text-left" style={{ color: suitColor }}>
-        <div className="text-xs sm:text-sm font-bold leading-tight">{card.rank}</div>
-        <div className="text-xs sm:text-sm leading-tight">{suitSymbol}</div>
+        <div className="text-xs font-bold leading-tight">{card.rank}</div>
+        <div className="text-xs leading-tight">{suitSymbol}</div>
       </div>
-      <div className="text-2xl sm:text-3xl md:text-4xl" style={{ color: suitColor }}>
+      <div className="text-2xl" style={{ color: suitColor }}>
         {suitSymbol}
       </div>
       <div className="self-end text-right rotate-180" style={{ color: suitColor }}>
-        <div className="text-xs sm:text-sm font-bold leading-tight">{card.rank}</div>
-        <div className="text-xs sm:text-sm leading-tight">{suitSymbol}</div>
+        <div className="text-xs font-bold leading-tight">{card.rank}</div>
+        <div className="text-xs leading-tight">{suitSymbol}</div>
       </div>
     </div>
   );
@@ -79,7 +79,7 @@ export const CardComponent: React.FC<CardProps> = ({
 
 export const CardPlaceholder: React.FC<{ label?: string }> = ({ label }) => (
   <div
-    className="w-16 sm:w-20 md:w-24 rounded-lg border-2 border-dashed border-gray-400 opacity-30
+    className="w-16 rounded-lg border-2 border-dashed border-gray-400 opacity-30
       flex items-center justify-center"
     style={{ aspectRatio: '2.5/3.5' }}
   >

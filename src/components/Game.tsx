@@ -903,25 +903,25 @@ export const Game: React.FC<GameProps> = ({ difficulty, onBackToMenu }) => {
       <div className="absolute inset-0 opacity-10 bg-[radial-gradient(circle_at_50%_50%,rgba(255,255,255,0.1)_1px,transparent_1px)] bg-[length:20px_20px] pointer-events-none" />
 
       {/* Header */}
-      <div className="relative z-10 flex items-center justify-between p-2 sm:p-3 bg-black/20 backdrop-blur-sm shrink-0">
+      <div className="relative z-10 flex items-center justify-between p-3 bg-black/20 backdrop-blur-sm shrink-0">
         <div className="flex items-center gap-2">
           <button
             onClick={() => setShowExitConfirm(true)}
-            className="px-2 py-1.5 sm:px-3 sm:py-2 text-xs sm:text-sm bg-gray-700 hover:bg-gray-600 text-white rounded-lg transition-colors"
+            className="px-3 py-2 text-sm bg-gray-700 hover:bg-gray-600 text-white rounded-lg transition-colors"
           >
             ← Меню
           </button>
-          <span className="text-white/60 text-xs hidden md:inline">
+          <span className="text-white/60 text-sm">
             {difficulty === 'casual' ? '🎯 Легко (Казуальная)' : difficulty === 'easy' ? '😊 Легко' : difficulty === 'medium' ? '🤔 Средне' : '😈 Сложно'}
           </span>
         </div>
 
-        <div className="flex items-center gap-2 sm:gap-3">
-          <div className="text-white text-xs sm:text-sm">
+        <div className="flex items-center gap-3">
+          <div className="text-white text-sm">
             <span className="text-yellow-300 font-bold">{score}</span>
-            <span className="text-white/50 hidden sm:inline"> очков</span>
+            <span className="text-white/50"> очков</span>
           </div>
-          <div className="text-white/50 text-xs hidden sm:inline">
+          <div className="text-white/50 text-sm">
             🏆 {highScore}
           </div>
           <button
@@ -930,7 +930,7 @@ export const Game: React.FC<GameProps> = ({ difficulty, onBackToMenu }) => {
               const currentIndex = modes.indexOf(sortMode);
               setSortMode(modes[(currentIndex + 1) % modes.length]);
             }}
-            className="px-2 py-1.5 sm:px-3 sm:py-2 text-xs sm:text-sm bg-purple-600 hover:bg-purple-500 text-white rounded-lg transition-colors"
+            className="px-3 py-2 text-sm bg-purple-600 hover:bg-purple-500 text-white rounded-lg transition-colors"
             title={sortMode === 'suit' ? 'По масти' : sortMode === 'rank' ? 'По рангу' : 'По рангу + козыри'}
           >
             {sortMode === 'suit' ? '🎨' : sortMode === 'rank' ? '🔢' : '🃏'}
@@ -941,7 +941,7 @@ export const Game: React.FC<GameProps> = ({ difficulty, onBackToMenu }) => {
               setSoundEnabled(newValue);
               localStorage.setItem('durak_sound', String(newValue));
             }}
-            className="px-2 py-1.5 sm:px-3 sm:py-2 text-xs sm:text-sm bg-indigo-600 hover:bg-indigo-500 text-white rounded-lg transition-colors"
+            className="px-3 py-2 text-sm bg-indigo-600 hover:bg-indigo-500 text-white rounded-lg transition-colors"
           >
             {soundEnabled ? '🔊' : '🔇'}
           </button>
@@ -949,7 +949,7 @@ export const Game: React.FC<GameProps> = ({ difficulty, onBackToMenu }) => {
       </div>
 
       {/* Game Board */}
-      <div className="relative z-10 flex-1 flex flex-col p-2 sm:p-3 gap-1 sm:gap-2 max-w-5xl mx-auto w-full min-h-0">
+      <div className="relative z-10 flex-1 flex flex-col p-3 gap-2 max-w-5xl mx-auto w-full min-h-0">
         {/* Computer Hand */}
         <div className="flex flex-col items-center shrink-0">
           <div className="text-white/60 text-xs mb-1">
@@ -974,7 +974,7 @@ export const Game: React.FC<GameProps> = ({ difficulty, onBackToMenu }) => {
                     marginLeft: i > 0 ? '-1.2rem' : '0',
                   }}
                 >
-                  <CardComponent card={card} faceDown className="w-10 sm:w-14 md:w-16" />
+                  <CardComponent card={card} faceDown className="w-14" />
                 </div>
               ))}
             </div>
@@ -987,15 +987,15 @@ export const Game: React.FC<GameProps> = ({ difficulty, onBackToMenu }) => {
             <div className="relative flex items-center">
               {state.trumpCard && (
                 <div 
-                  className="absolute right-full mr-2 sm:mr-3"
+                  className="absolute right-full mr-3"
                   style={{ zIndex: 0, transform: 'rotate(90deg)' }}
                 >
-                  <CardComponent card={state.trumpCard} className="w-10 sm:w-14 opacity-80" />
+                  <CardComponent card={state.trumpCard} className="w-14 opacity-80" />
                 </div>
               )}
               <div className="relative" style={{ zIndex: 1 }}>
-                <CardComponent card={state.deck[0]} faceDown className="w-12 sm:w-16" />
-                <div className="absolute -top-1 -right-1 bg-white text-green-800 rounded-full w-4 h-4 sm:w-5 sm:h-5 flex items-center justify-center text-[10px] font-bold shadow">
+                <CardComponent card={state.deck[0]} faceDown className="w-16" />
+                <div className="absolute -top-1 -right-1 bg-white text-green-800 rounded-full w-5 h-5 flex items-center justify-center text-[10px] font-bold shadow">
                   {state.deck.length}
                 </div>
               </div>
@@ -1004,9 +1004,9 @@ export const Game: React.FC<GameProps> = ({ difficulty, onBackToMenu }) => {
         </div>
 
         {/* Table */}
-        <div className="flex-1 min-h-[100px] sm:min-h-[130px] bg-green-600/20 rounded-xl border-2 border-green-500/20 flex items-center justify-center p-2 sm:p-3 relative">
+        <div className="flex-1 min-h-[130px] bg-green-600/20 rounded-xl border-2 border-green-500/20 flex items-center justify-center p-3 relative">
           <div 
-            className="flex flex-wrap gap-1 sm:gap-3 items-center justify-center"
+            className="flex flex-wrap gap-3 items-center justify-center"
             style={{
               transform: state.table.length > 4 
                 ? `scale(${Math.max(0.6, 1 - (state.table.length - 4) * 0.08)})`
@@ -1016,7 +1016,7 @@ export const Game: React.FC<GameProps> = ({ difficulty, onBackToMenu }) => {
             }}
           >
             {state.table.length === 0 ? (
-              <div className="text-green-300/40 text-xs sm:text-base">
+              <div className="text-green-300/40 text-base">
                 {state.attacker === 'player' ? 'Выберите карту для атаки' : 'Ожидание...'}
               </div>
             ) : (
@@ -1036,12 +1036,12 @@ export const Game: React.FC<GameProps> = ({ difficulty, onBackToMenu }) => {
                     style={{ width: '4.5rem', height: '6.5rem' }}
                   >
                     <div className={animationClass}>
-                      <CardComponent card={pair.attack} className="w-12 sm:w-16 md:w-20" />
+                      <CardComponent card={pair.attack} className="w-16" />
                     </div>
                     {pair.defense && (
-                      <div className="absolute top-6 left-6 sm:top-8 sm:left-8 animate-card-appear">
+                      <div className="absolute top-8 left-8 animate-card-appear">
                         <div className={animationClass}>
-                          <CardComponent card={pair.defense} className="w-12 sm:w-16 md:w-20" />
+                          <CardComponent card={pair.defense} className="w-16" />
                         </div>
                       </div>
                     )}
@@ -1100,7 +1100,7 @@ export const Game: React.FC<GameProps> = ({ difficulty, onBackToMenu }) => {
         {/* Message */}
         <div className="text-center shrink-0">
           <div className="inline-block px-3 py-1 bg-black/30 backdrop-blur-sm rounded-full">
-            <span className="text-white text-xs sm:text-sm">
+            <span className="text-white text-sm">
               {state.message}
             </span>
           </div>
@@ -1113,22 +1113,23 @@ export const Game: React.FC<GameProps> = ({ difficulty, onBackToMenu }) => {
               // Calculate overlap based on number of cards
               const cardCount = state.playerHand.length;
               let marginLeft = '0';
-              let cardSize = 'w-16 sm:w-20 md:w-24'; // Default size
+              let cardSize = 'w-20'; // Default size
               
               if (i > 0) {
                 if (cardCount <= 6) {
-                  marginLeft = '-1.5rem'; // Normal spacing
+                  marginLeft = '-1.5rem';
                 } else if (cardCount <= 8) {
-                  marginLeft = '-2rem'; // More overlap
+                  marginLeft = '-2rem';
+                  cardSize = 'w-18';
                 } else if (cardCount <= 10) {
-                  marginLeft = '-2.5rem'; // Even more overlap
-                  cardSize = 'w-14 sm:w-18 md:w-22'; // Smaller cards
+                  marginLeft = '-2.5rem';
+                  cardSize = 'w-16';
                 } else if (cardCount <= 12) {
-                  marginLeft = '-3rem'; // Maximum overlap
-                  cardSize = 'w-12 sm:w-16 md:w-20'; // Even smaller
+                  marginLeft = '-3rem';
+                  cardSize = 'w-14';
                 } else {
-                  marginLeft = '-3.5rem'; // Extreme overlap for 13+ cards
-                  cardSize = 'w-10 sm:w-14 md:w-18'; // Smallest
+                  marginLeft = '-3.5rem';
+                  cardSize = 'w-12';
                 }
               }
               
@@ -1157,23 +1158,23 @@ export const Game: React.FC<GameProps> = ({ difficulty, onBackToMenu }) => {
       {/* Game Over Overlay */}
       {state.status === 'gameOver' && (
         <div className="absolute inset-0 z-50 bg-black/70 backdrop-blur-sm flex items-center justify-center animate-fade-in">
-          <div className="bg-gray-800 rounded-2xl p-6 sm:p-8 text-center shadow-2xl border border-gray-600 max-w-sm mx-4 animate-scale-in">
-            <h2 className="text-2xl sm:text-3xl font-bold text-white mb-2">Игра окончена</h2>
-            <p className="text-base sm:text-lg text-yellow-300 mb-4">{state.gameOverMessage}</p>
+          <div className="bg-gray-800 rounded-2xl p-8 text-center shadow-2xl border border-gray-600 max-w-sm mx-4 animate-scale-in">
+            <h2 className="text-3xl font-bold text-white mb-2">Игра окончена</h2>
+            <p className="text-lg text-yellow-300 mb-4">{state.gameOverMessage}</p>
             <div className="grid grid-cols-2 gap-2 mb-4 text-sm">
-              <div className="bg-gray-700 rounded-lg p-2 sm:p-3">
+              <div className="bg-gray-700 rounded-lg p-3">
                 <div className="text-gray-400 text-xs">Счёт</div>
-                <div className="text-xl sm:text-2xl font-bold text-white">{score}</div>
+                <div className="text-2xl font-bold text-white">{score}</div>
               </div>
-              <div className="bg-gray-700 rounded-lg p-2 sm:p-3">
+              <div className="bg-gray-700 rounded-lg p-3">
                 <div className="text-gray-400 text-xs">Рекорд</div>
-                <div className="text-xl sm:text-2xl font-bold text-yellow-400">{highScore}</div>
+                <div className="text-2xl font-bold text-yellow-400">{highScore}</div>
               </div>
-              <div className="bg-gray-700 rounded-lg p-2 sm:p-3">
+              <div className="bg-gray-700 rounded-lg p-3">
                 <div className="text-gray-400 text-xs">Побед</div>
                 <div className="text-lg font-bold text-green-400">{gamesWon}</div>
               </div>
-              <div className="bg-gray-700 rounded-lg p-2 sm:p-3">
+              <div className="bg-gray-700 rounded-lg p-3">
                 <div className="text-gray-400 text-xs">Игр</div>
                 <div className="text-lg font-bold text-blue-400">{gamesPlayed}</div>
               </div>
