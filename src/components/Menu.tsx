@@ -149,15 +149,6 @@ export const Menu: React.FC<MenuProps> = ({ onStartGame }) => {
                 </div>
 
                 <div>
-                  <h3 className="font-bold text-green-300 mb-2">🎮 Управление</h3>
-                  <ul className="space-y-1 text-white/80">
-                    <li>• <kbd className="px-1.5 py-0.5 bg-white/10 rounded text-white">Enter</kbd> — Подтвердить выбор карты</li>
-                    <li>• <kbd className="px-1.5 py-0.5 bg-white/10 rounded text-white">Esc</kbd> — Пауза</li>
-                    <li>• 👆 Касание/Клик — Выбор карты</li>
-                  </ul>
-                </div>
-
-                <div>
                   <h3 className="font-bold text-green-300 mb-2">⭐ Особенности</h3>
                   <ul className="space-y-1 text-white/80">
                     <li>• Подсветка доступных карт в казуальном режиме</li>

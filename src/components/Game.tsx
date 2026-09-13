@@ -769,50 +769,7 @@ export const Game: React.FC<GameProps> = ({ difficulty, onBackToMenu }) => {
     setScore(prev => prev + 5);
   };
 
-  // Keyboard controls
-  useEffect(() => {
-    const handleKeyDown = (e: KeyboardEvent) => {
-      if (state.status === 'paused') {
-        if (e.key === 'Escape') {
-          dispatch({ type: 'SET_STATUS', status: 'playing' });
-        }
-        return;
-      }
 
-      if (state.status === 'gameOver') {
-        if (e.key === 'Enter') {
-          e.preventDefault();
-          initGame();
-        }
-        return;
-      }
-
-      if (state.status !== 'playing') return;
-
-      if (e.key === 'Escape') {
-        dispatch({ type: 'SET_STATUS', status: 'paused' });
-        return;
-      }
-
-      if (e.key === 'Enter') {
-        e.preventDefault();
-        if (state.selectedCard) {
-          confirmPlay();
-        } else if (state.showPassButton) {
-          handlePass();
-        }
-        return;
-      }
-    };
-
-    window.addEventListener('keydown', handleKeyDown);
-    return () => window.removeEventListener('keydown', handleKeyDown);
-  }, [state.status, state.selectedCard, state.showPassButton]);
-
-  // Toggle pause
-  const togglePause = () => {
-    dispatch({ type: 'SET_STATUS', status: state.status === 'paused' ? 'playing' : 'paused' });
-  };
 
   // Restart game
   const restartGame = () => {
@@ -987,12 +944,6 @@ export const Game: React.FC<GameProps> = ({ difficulty, onBackToMenu }) => {
             className="px-2 py-1.5 sm:px-3 sm:py-2 text-xs sm:text-sm bg-indigo-600 hover:bg-indigo-500 text-white rounded-lg transition-colors"
           >
             {soundEnabled ? '🔊' : '🔇'}
-          </button>
-          <button
-            onClick={togglePause}
-            className="px-2 py-1.5 sm:px-3 sm:py-2 text-xs sm:text-sm bg-yellow-600 hover:bg-yellow-500 text-white rounded-lg transition-colors"
-          >
-            {state.status === 'paused' ? '▶' : '⏸'}
           </button>
         </div>
       </div>
@@ -1179,36 +1130,6 @@ export const Game: React.FC<GameProps> = ({ difficulty, onBackToMenu }) => {
           </div>
         </div>
       </div>
-
-      {/* Pause Overlay */}
-      {state.status === 'paused' && (
-        <div className="absolute inset-0 z-50 bg-black/70 backdrop-blur-sm flex items-center justify-center animate-fade-in">
-          <div className="bg-gray-800 rounded-2xl p-6 sm:p-8 text-center shadow-2xl border border-gray-600 animate-scale-in">
-            <h2 className="text-2xl sm:text-3xl font-bold text-white mb-4">⏸ Пауза</h2>
-            <div className="space-y-3">
-              <button
-                onClick={() => dispatch({ type: 'SET_STATUS', status: 'playing' })}
-                className="block w-full px-6 py-3 bg-green-500 hover:bg-green-400 text-white rounded-lg font-bold transition-colors"
-              >
-                ▶ Продолжить
-              </button>
-              <button
-                onClick={restartGame}
-                className="block w-full px-6 py-3 bg-blue-500 hover:bg-blue-400 text-white rounded-lg font-bold transition-colors"
-              >
-                🔄 Начать заново
-              </button>
-              <button
-                onClick={onBackToMenu}
-                className="block w-full px-6 py-3 bg-gray-600 hover:bg-gray-500 text-white rounded-lg font-bold transition-colors"
-              >
-                ← В меню
-              </button>
-            </div>
-            <p className="mt-4 text-gray-400 text-xs">Esc или P — продолжить</p>
-          </div>
-        </div>
-      )}
 
       {/* Game Over Overlay */}
       {state.status === 'gameOver' && (
