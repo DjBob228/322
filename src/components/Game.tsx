@@ -991,7 +991,7 @@ export const Game: React.FC<GameProps> = ({ difficulty, onBackToMenu }) => {
         </div>
 
         {/* Table */}
-        <div className="flex-1 min-h-[100px] sm:min-h-[130px] bg-green-600/20 rounded-xl border-2 border-green-500/20 flex items-center justify-center flex-wrap gap-1 sm:gap-3 p-2 sm:p-3 relative">
+        <div className="flex-1 min-h-[100px] sm:min-h-[130px] bg-green-600/20 rounded-xl border-2 border-green-500/20 flex items-center justify-center flex-wrap gap-1 sm:gap-3 p-2 sm:p-3 relative overflow-hidden">
           {state.table.length === 0 ? (
             <div className="text-green-300/40 text-xs sm:text-base">
               {state.attacker === 'player' ? 'Выберите карту для атаки' : 'Ожидание...'}
@@ -1015,8 +1015,10 @@ export const Game: React.FC<GameProps> = ({ difficulty, onBackToMenu }) => {
                     <CardComponent card={pair.attack} className="w-12 sm:w-16 md:w-20" />
                   </div>
                   {pair.defense && (
-                    <div className={`absolute top-6 left-6 sm:top-8 sm:left-8 animate-card-appear ${animationClass}`}>
-                      <CardComponent card={pair.defense} className="w-12 sm:w-16 md:w-20" />
+                    <div className={`absolute top-6 left-6 sm:top-8 sm:left-8 animate-card-appear`}>
+                      <div className={animationClass}>
+                        <CardComponent card={pair.defense} className="w-12 sm:w-16 md:w-20" />
+                      </div>
                     </div>
                   )}
                 </div>

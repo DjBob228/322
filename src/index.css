@@ -47,45 +47,35 @@
 @keyframes card-fly-to-player {
   0% {
     opacity: 1;
-    transform: scale(1) translateY(0);
-  }
-  50% {
-    opacity: 0.8;
-    transform: scale(0.8) translateY(100px);
+    transform: translateY(0);
   }
   100% {
     opacity: 0;
-    transform: scale(0.3) translateY(300px);
+    transform: translateY(200px);
   }
 }
 
 @keyframes card-fly-to-computer {
   0% {
     opacity: 1;
-    transform: scale(1) translateY(0);
-  }
-  50% {
-    opacity: 0.8;
-    transform: scale(0.8) translateY(-100px);
+    transform: translateY(0);
   }
   100% {
     opacity: 0;
-    transform: scale(0.3) translateY(-300px);
+    transform: translateY(-200px);
   }
 }
 
 .animate-card-fly-to-player {
-  animation: card-fly-to-player 0.8s ease-in forwards;
-  will-change: transform, opacity;
-  position: relative;
-  z-index: 10;
+  animation: card-fly-to-player 0.6s ease-out forwards;
+  pointer-events: none;
+  box-shadow: none !important;
 }
 
 .animate-card-fly-to-computer {
-  animation: card-fly-to-computer 0.8s ease-in forwards;
-  will-change: transform, opacity;
-  position: relative;
-  z-index: 10;
+  animation: card-fly-to-computer 0.6s ease-out forwards;
+  pointer-events: none;
+  box-shadow: none !important;
 }
 
 @keyframes bounce-subtle {
