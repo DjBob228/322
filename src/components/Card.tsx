@@ -6,6 +6,7 @@ interface CardProps {
   isSelected?: boolean;
   isPlayable?: boolean;
   isTrump?: boolean;
+  isKnownByComputer?: boolean;
   onClick?: () => void;
   faceDown?: boolean;
   className?: string;
@@ -17,6 +18,7 @@ export const CardComponent: React.FC<CardProps> = ({
   isSelected = false,
   isPlayable = false,
   isTrump = false,
+  isKnownByComputer = false,
   onClick,
   faceDown = false,
   className = '',
@@ -51,7 +53,8 @@ export const CardComponent: React.FC<CardProps> = ({
         ${isSelected ? 'border-yellow-400 -translate-y-3 shadow-yellow-200 shadow-lg scale-105' : ''}
         ${isPlayable && !isSelected && isTrump ? 'border-purple-400 hover:-translate-y-2 hover:shadow-lg shadow-purple-200' : ''}
         ${isPlayable && !isSelected && !isTrump ? 'border-green-400 hover:-translate-y-2 hover:shadow-lg' : ''}
-        ${!isSelected && !isPlayable ? 'border-gray-200 hover:border-gray-300' : ''}
+        ${isKnownByComputer && !isSelected && !isPlayable ? 'border-orange-400 shadow-orange-200 shadow-md' : ''}
+        ${!isSelected && !isPlayable && !isKnownByComputer ? 'border-gray-200 hover:border-gray-300' : ''}
         ${onClick ? 'active:scale-95' : ''}
         animate-card-appear ${className}`}
       style={{

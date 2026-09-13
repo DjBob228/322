@@ -19,6 +19,7 @@ import {
   computerChooseDefense,
   computerShouldThrow,
   sortHand,
+  findLowestTrump,
 } from '../gameLogic';
 
 type GameStatus = 'playing' | 'paused' | 'gameOver' | 'waiting';
@@ -44,6 +45,8 @@ interface State {
   lastAttackCards: Card[];
   lastAttackWasSixes: boolean;
   animatingCards: 'player-takes' | 'computer-takes' | null;
+  computerKnownTrump: Card | null;
+  playerKnownTrump: Card | null;
 }
 
 type Action =
@@ -64,7 +67,8 @@ type Action =
   | { type: 'SHOW_BUTTONS'; take: boolean; pass: boolean }
   | { type: 'GAME_OVER'; message: string }
   | { type: 'COMPUTER_PASS' }
-  | { type: 'SET_ANIMATING'; animation: 'player-takes' | 'computer-takes' | null };
+  | { type: 'SET_ANIMATING'; animation: 'player-takes' | 'computer-takes' | null }
+  | { type: 'SET_KNOWN_TRUMPS'; computerTrump: Card | null; playerTrump: Card | null };
 
 function drawFromDeck(state: State): State {
   let deck = [...state.deck];
@@ -162,6 +166,8 @@ function reducer(state: State, action: Action): State {
         playerTookCards: false,
         lastAttackCards: [],
         lastAttackWasSixes: false,
+        computerKnownTrump: null,
+        playerKnownTrump: null,
       };
 
     case 'SELECT_CARD':
@@ -346,6 +352,13 @@ function reducer(state: State, action: Action): State {
     case 'SET_ANIMATING':
       return { ...state, animatingCards: action.animation };
 
+    case 'SET_KNOWN_TRUMPS':
+      return { 
+        ...state, 
+        computerKnownTrump: action.computerTrump,
+        playerKnownTrump: action.playerTrump
+      };
+
     default:
       return state;
   }
@@ -371,6 +384,8 @@ const initialState: State = {
   lastAttackCards: [],
   lastAttackWasSixes: false,
   animatingCards: null,
+  computerKnownTrump: null,
+  playerKnownTrump: null,
 };
 
 const HIGH_SCORE_KEY = 'durak_high_score';
@@ -404,7 +419,24 @@ export const Game: React.FC<GameProps> = ({ difficulty, onBackToMenu }) => {
     const cHand = newDeck.splice(0, 6);
     const firstAttacker = determineFirstAttacker(pHand, cHand, trump.suit);
 
-    const attackerName = firstAttacker === 'computer' ? 'Компьютер' : 'Вы';
+    // Находим наименьшие козыри
+    const playerLowestTrump = findLowestTrump(pHand, trump.suit);
+    const computerLowestTrump = findLowestTrump(cHand, trump.suit);
+
+    let message = '';
+    let computerKnownTrump: Card | null = null;
+    let playerKnownTrump: Card | null = null;
+
+    if (firstAttacker === 'computer') {
+      // Компьютер ходит первым - показываем его наименьший козырь
+      message = `Компьютер ходит первым (меньший козырь: ${computerLowestTrump?.rank || 'нет'})`;
+      computerKnownTrump = computerLowestTrump;
+    } else {
+      // Игрок ходит первым - запоминаем его наименьший козырь
+      message = 'Вы ходите первым (меньший козырь)';
+      playerKnownTrump = playerLowestTrump;
+    }
+
     dispatch({
       type: 'INIT',
       deck: newDeck,
@@ -412,8 +444,16 @@ export const Game: React.FC<GameProps> = ({ difficulty, onBackToMenu }) => {
       computerHand: cHand,
       trumpCard: trump,
       attacker: firstAttacker,
-      message: `${attackerName} ходите первым (меньший козырь)`,
+      message,
     });
+
+    // Устанавливаем известные козыри через отдельное действие
+    if (computerKnownTrump || playerKnownTrump) {
+      setTimeout(() => {
+        dispatch({ type: 'SET_KNOWN_TRUMPS', computerTrump: computerKnownTrump, playerTrump: playerKnownTrump });
+      }, 0);
+    }
+
     setScore(0);
   }, []);
 
@@ -600,6 +640,11 @@ export const Game: React.FC<GameProps> = ({ difficulty, onBackToMenu }) => {
       dispatch({ type: 'SET_ANIMATING', animation: null });
       setScore(prev => Math.max(0, prev - 10));
       playSound('take');
+      
+      // После того как игрок взял карты, оба игрока добирают из колоды
+      setTimeout(() => {
+        dispatch({ type: 'DRAW_CARDS' });
+      }, 300);
     }, 800);
     
     // After taking, computer (attacker) will attack again automatically via the effect
@@ -774,7 +819,20 @@ export const Game: React.FC<GameProps> = ({ difficulty, onBackToMenu }) => {
     return playable;
   };
 
+  // Получаем карты, которые знает противник
+  const getComputerKnownCards = (): Set<string> => {
+    const known = new Set<string>();
+    
+    // Противник знает козырь игрока (если игрок ходил первым)
+    if (state.playerKnownTrump) {
+      known.add(state.playerKnownTrump.id);
+    }
+    
+    return known;
+  };
+
   const playableCards = getPlayableCards();
+  const computerKnownCards = getComputerKnownCards();
 
   return (
     <div className="min-h-screen h-screen bg-gradient-to-b from-green-800 via-green-700 to-green-900 flex flex-col relative overflow-y-auto pb-4">
@@ -830,12 +888,6 @@ export const Game: React.FC<GameProps> = ({ difficulty, onBackToMenu }) => {
           >
             {state.status === 'paused' ? '▶' : '⏸'}
           </button>
-          <button
-            onClick={restartGame}
-            className="px-2 py-1.5 sm:px-3 sm:py-2 text-xs sm:text-sm bg-red-600 hover:bg-red-500 text-white rounded-lg transition-colors"
-          >
-            🔄
-          </button>
         </div>
       </div>
 
@@ -890,7 +942,9 @@ export const Game: React.FC<GameProps> = ({ difficulty, onBackToMenu }) => {
           ) : (
             state.table.map((pair, i) => {
               // Смещаем карты к тому на кого ходят
-              const yOffset = state.attacker === 'player' ? '20px' : '-20px';
+              // Когда игрок атакует - карты ближе к компьютеру (вверху, отрицательный yOffset)
+              // Когда компьютер атакует - карты ближе к игроку (внизу, положительный yOffset)
+              const yOffset = state.attacker === 'player' ? '-60px' : '60px';
               
               // Анимация взятия карт
               let animationClass = '';
@@ -903,7 +957,7 @@ export const Game: React.FC<GameProps> = ({ difficulty, onBackToMenu }) => {
               return (
                 <div 
                   key={i} 
-                  className={`relative animate-card-appear transition-transform duration-500 ${animationClass}`}
+                  className={`relative animate-card-appear ${animationClass}`}
                   style={{ transform: `translateY(${yOffset})` }}
                 >
                   <CardComponent card={pair.attack} className="w-12 sm:w-16 md:w-20" />
@@ -979,6 +1033,7 @@ export const Game: React.FC<GameProps> = ({ difficulty, onBackToMenu }) => {
               // Calculate overlap based on number of cards
               const cardCount = state.playerHand.length;
               let marginLeft = '0';
+              let cardSize = 'w-16 sm:w-20 md:w-24'; // Default size
               
               if (i > 0) {
                 if (cardCount <= 6) {
@@ -987,8 +1042,13 @@ export const Game: React.FC<GameProps> = ({ difficulty, onBackToMenu }) => {
                   marginLeft = '-2rem'; // More overlap
                 } else if (cardCount <= 10) {
                   marginLeft = '-2.5rem'; // Even more overlap
-                } else {
+                  cardSize = 'w-14 sm:w-18 md:w-22'; // Smaller cards
+                } else if (cardCount <= 12) {
                   marginLeft = '-3rem'; // Maximum overlap
+                  cardSize = 'w-12 sm:w-16 md:w-20'; // Even smaller
+                } else {
+                  marginLeft = '-3.5rem'; // Extreme overlap for 13+ cards
+                  cardSize = 'w-10 sm:w-14 md:w-18'; // Smallest
                 }
               }
               
@@ -1003,7 +1063,9 @@ export const Game: React.FC<GameProps> = ({ difficulty, onBackToMenu }) => {
                   isSelected={state.selectedCard?.id === card.id}
                   isPlayable={playableCards.has(card.id)}
                   isTrump={card.suit === state.trumpSuit}
+                  isKnownByComputer={computerKnownCards.has(card.id)}
                   onClick={() => handleCardClick(card)}
+                  className={cardSize}
                 />
               </div>
               );
