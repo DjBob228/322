@@ -376,7 +376,12 @@ function reducer(state: State, action: Action): State {
 
     case 'CLEAR_TABLE_AND_DRAW': {
       // Очищаем стол и добираем карты
-      const clearedState = { ...state, table: [], playerTookCards: false };
+      const clearedState = { 
+        ...state, 
+        table: [], 
+        playerTookCards: false,
+        computerThinking: false // Сбрасываем флаг, чтобы бот мог продолжить
+      };
       return drawFromDeck(clearedState);
     }
 
@@ -685,10 +690,17 @@ export const Game: React.FC<GameProps> = ({ difficulty, onBackToMenu }) => {
       setScore(prev => Math.max(0, prev - 10));
       playSound('take');
       
-      // Компьютер подкинет карты и очистит стол через useEffect
+      // Ждём обновления состояния и вызываем подкидывание карт
+      setTimeout(() => {
+        // Сбрасываем computerThinking принудительно
+        dispatch({ type: 'SET_THINKING', thinking: false });
+        
+        // Вызываем подкидывание карт
+        setTimeout(() => {
+          computerThrow();
+        }, 300);
+      }, 500);
     }, 800);
-    
-    // After taking, computer (attacker) will throw more cards and then draw
   };
 
   // Player passes (bito)
