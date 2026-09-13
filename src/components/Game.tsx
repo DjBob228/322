@@ -289,6 +289,7 @@ function reducer(state: State, action: Action): State {
         showPassButton: false,
         message: 'Вы взяли карты. Компьютер подкидывает...',
         playerTookCards: true,
+        computerThinking: false, // Сбрасываем флаг, чтобы бот мог действовать
       };
     }
 
