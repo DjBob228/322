@@ -807,7 +807,7 @@ export const Game: React.FC<GameProps> = ({ difficulty, onBackToMenu }) => {
     } else if (sortMode === 'rank') {
       return [...hand].sort((a, b) => {
         const rankOrder = ['6', '7', '8', '9', '10', 'J', 'Q', 'K', 'A'];
-        return rankOrder.indexOf(b.rank) - rankOrder.indexOf(a.rank);
+        return rankOrder.indexOf(a.rank) - rankOrder.indexOf(b.rank);
       });
     } else {
       // rank-trump: козыри первыми, потом по рангу
@@ -816,7 +816,7 @@ export const Game: React.FC<GameProps> = ({ difficulty, onBackToMenu }) => {
         const bIsTrump = b.suit === state.trumpSuit ? 0 : 1;
         if (aIsTrump !== bIsTrump) return aIsTrump - bIsTrump;
         const rankOrder = ['6', '7', '8', '9', '10', 'J', 'Q', 'K', 'A'];
-        return rankOrder.indexOf(b.rank) - rankOrder.indexOf(a.rank);
+        return rankOrder.indexOf(a.rank) - rankOrder.indexOf(b.rank);
       });
     }
   };

@@ -154,8 +154,8 @@ export function sortHand(hand: Card[], trumpSuit: Suit | null): Card[] {
       return a.suit.localeCompare(b.suit);
     }
 
-    // Одна масть - сортируем по рангу (туз первый, 6 последний)
-    return RANK_VALUES[b.rank] - RANK_VALUES[a.rank];
+    // Одна масть - сортируем по рангу (6 первый, туз последний)
+    return RANK_VALUES[a.rank] - RANK_VALUES[b.rank];
   });
 }
 
