@@ -1115,22 +1115,22 @@ export const Game: React.FC<GameProps> = ({ difficulty, onBackToMenu }) => {
               let marginLeft = '0';
               let cardSize = 'w-20'; // Default size
               
-              if (i > 0) {
-                if (cardCount <= 6) {
-                  marginLeft = '-1.5rem';
-                } else if (cardCount <= 8) {
-                  marginLeft = '-2rem';
-                  cardSize = 'w-18';
-                } else if (cardCount <= 10) {
-                  marginLeft = '-2.5rem';
-                  cardSize = 'w-16';
-                } else if (cardCount <= 12) {
-                  marginLeft = '-3rem';
-                  cardSize = 'w-14';
-                } else {
-                  marginLeft = '-3.5rem';
-                  cardSize = 'w-12';
-                }
+              // Apply same size to ALL cards
+              if (cardCount <= 6) {
+                cardSize = 'w-20';
+                marginLeft = i > 0 ? '-1.5rem' : '0';
+              } else if (cardCount <= 8) {
+                cardSize = 'w-18';
+                marginLeft = i > 0 ? '-2rem' : '0';
+              } else if (cardCount <= 10) {
+                cardSize = 'w-16';
+                marginLeft = i > 0 ? '-2.5rem' : '0';
+              } else if (cardCount <= 12) {
+                cardSize = 'w-14';
+                marginLeft = i > 0 ? '-3rem' : '0';
+              } else {
+                cardSize = 'w-12';
+                marginLeft = i > 0 ? '-3.5rem' : '0';
               }
               
               return (
