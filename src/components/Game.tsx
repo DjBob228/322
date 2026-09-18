@@ -500,6 +500,17 @@ export const Game: React.FC<GameProps> = ({ difficulty, onBackToMenu }) => {
   const [showExitConfirm, setShowExitConfirm] = useState(false);
   const [showFirstTurnMessage, setShowFirstTurnMessage] = useState(false);
   const [firstTurnMessageText, setFirstTurnMessageText] = useState('');
+  const [screenWidth, setScreenWidth] = useState(typeof window !== 'undefined' ? window.innerWidth : 1024);
+
+  // Track screen width for responsive card sizing
+  useEffect(() => {
+    const handleResize = () => {
+      setScreenWidth(window.innerWidth);
+    };
+    
+    window.addEventListener('resize', handleResize);
+    return () => window.removeEventListener('resize', handleResize);
+  }, []);
 
   const computerTimeoutRef = useRef<number | null>(null);
   const stateRef = useRef(state);
@@ -1187,29 +1198,23 @@ export const Game: React.FC<GameProps> = ({ difficulty, onBackToMenu }) => {
         <div className="flex flex-col items-center shrink-0 mt-2 w-full">
           <div className="flex justify-center w-full px-4">
             {sortCards(state.playerHand).map((card, i) => {
-              // Calculate overlap based on number of cards
               const cardCount = state.playerHand.length;
-              let marginLeft = '0';
-              let cardSize = 'w-20'; // Default size
+              const cardWidth = 80; // w-20 = 5rem = 80px
+              const availableWidth = screenWidth - 64; // minus padding (px-4 = 32px * 2)
+              const totalCardsWidth = cardCount * cardWidth;
               
-              // No overlap until cards reach screen edges
-              if (cardCount <= 8) {
-                // First 8 cards: full size, no overlap
-                cardSize = 'w-20';
-                marginLeft = '0';
-              } else if (cardCount <= 10) {
-                // 9-10 cards: slightly smaller with minimal overlap
-                cardSize = 'w-18';
-                marginLeft = i > 0 ? '-1rem' : '0';
-              } else if (cardCount <= 12) {
-                // 11-12 cards: smaller with moderate overlap
-                cardSize = 'w-16';
-                marginLeft = i > 0 ? '-1.5rem' : '0';
-              } else {
-                // 13+ cards: maximum overlap
-                cardSize = 'w-14';
-                marginLeft = i > 0 ? '-2rem' : '0';
+              // Calculate if we need overlap
+              let marginLeft = '0';
+              
+              if (totalCardsWidth > availableWidth && i > 0) {
+                // Calculate overlap percentage needed
+                const overlapNeeded = totalCardsWidth - availableWidth;
+                const overlapPerCard = overlapNeeded / (cardCount - 1);
+                const overlapPercent = (overlapPerCard / cardWidth) * 100;
+                marginLeft = `-${overlapPercent}%`;
               }
+              
+              const cardSize = 'w-20'; // Always use full size
               
               return (
               <div
