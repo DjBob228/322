@@ -1101,7 +1101,7 @@ export const Game: React.FC<GameProps> = ({ difficulty, onBackToMenu }) => {
       }} />
 
       {/* Header */}
-      <div className="relative z-10 flex items-center justify-between p-3 bg-black/20 backdrop-blur-sm shrink-0">
+      <div className="relative z-10 flex items-center justify-between p-3 bg-black/30 shrink-0" style={{ transform: 'translateZ(0)' }}>
         <div className="flex items-center gap-2">
           <button
             onClick={() => setShowExitConfirm(true)}
