@@ -1115,22 +1115,22 @@ export const Game: React.FC<GameProps> = ({ difficulty, onBackToMenu }) => {
               let marginLeft = '0';
               let cardSize = 'w-20'; // Default size
               
-              // Apply same size to ALL cards with minimal shrinking
+              // Apply same size to ALL cards with balanced shrinking
               if (cardCount <= 6) {
                 cardSize = 'w-20';
-                marginLeft = i > 0 ? '-1rem' : '0';
+                marginLeft = i > 0 ? '-1.2rem' : '0';
               } else if (cardCount <= 8) {
                 cardSize = 'w-18';
-                marginLeft = i > 0 ? '-1.2rem' : '0';
+                marginLeft = i > 0 ? '-1.5rem' : '0';
               } else if (cardCount <= 10) {
                 cardSize = 'w-16';
-                marginLeft = i > 0 ? '-1.4rem' : '0';
+                marginLeft = i > 0 ? '-1.7rem' : '0';
               } else if (cardCount <= 12) {
                 cardSize = 'w-14';
-                marginLeft = i > 0 ? '-1.5rem' : '0';
+                marginLeft = i > 0 ? '-1.8rem' : '0';
               } else {
                 cardSize = 'w-12';
-                marginLeft = i > 0 ? '-1.6rem' : '0';
+                marginLeft = i > 0 ? '-2rem' : '0';
               }
               
               return (

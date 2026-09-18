@@ -50,7 +50,7 @@ export const CardComponent: React.FC<CardProps> = ({
       className={`relative w-16 rounded-lg shadow-md 
         bg-white border-2 transition-all duration-200 cursor-pointer
         select-none flex flex-col items-center justify-between p-1
-        ${isSelected ? 'border-yellow-400 -translate-y-3 shadow-yellow-200 shadow-lg scale-105' : ''}
+        ${isSelected ? 'border-yellow-400 -translate-y-3 shadow-yellow-200 shadow-lg scale-105 z-50' : 'hover:z-40'}
         ${isPlayable && !isSelected && isTrump ? 'border-purple-400 hover:-translate-y-2 hover:shadow-lg shadow-purple-200' : ''}
         ${isPlayable && !isSelected && !isTrump ? 'border-green-400 hover:-translate-y-2 hover:shadow-lg' : ''}
         ${isKnownByComputer && !isSelected && !isPlayable ? 'border-orange-400 shadow-orange-200 shadow-md' : ''}
