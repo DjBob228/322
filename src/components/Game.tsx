@@ -299,7 +299,13 @@ function reducer(state: State, action: Action): State {
         playerJustTook: false,
         lastTableRanks: new Set<string>(),
       };
-      return drawFromDeck(newState);
+      const withCards = drawFromDeck(newState);
+      
+      // Проверяем, не закончилась ли игра
+      const endCheck = checkGameEnd(withCards);
+      if (endCheck) return endCheck;
+      
+      return withCards;
     }
 
     case 'PLAYER_TAKES': {
@@ -311,7 +317,7 @@ function reducer(state: State, action: Action): State {
         if (p.defense) ranks.add(p.defense.rank);
       });
       
-      return {
+      const newState = {
         ...state,
         selectedCard: null,
         showTakeButton: false,
@@ -321,6 +327,12 @@ function reducer(state: State, action: Action): State {
         playerJustTook: true, // Помечаем, что игрок взял карты
         lastTableRanks: ranks, // Сохраняем ранги для подкидывания
       };
+      
+      // Проверяем, не закончилась ли игра
+      const endCheck = checkGameEnd(newState);
+      if (endCheck) return endCheck;
+      
+      return newState;
     }
 
     case 'PLAYER_COLLECT_ALL': {
@@ -334,7 +346,7 @@ function reducer(state: State, action: Action): State {
         newCardsShown.add(card.id);
       });
       
-      return {
+      const newState = {
         ...state,
         playerHand: newHand,
         table: [], // Очищаем стол
@@ -342,6 +354,12 @@ function reducer(state: State, action: Action): State {
         lastTableRanks: new Set<string>(),
         cardsShownToComputer: newCardsShown,
       };
+      
+      // Проверяем, не закончилась ли игра
+      const endCheck = checkGameEnd(newState);
+      if (endCheck) return endCheck;
+      
+      return newState;
     }
 
     case 'END_ROUND': {
