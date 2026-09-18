@@ -1211,7 +1211,10 @@ export const Game: React.FC<GameProps> = ({ difficulty, onBackToMenu }) => {
                 const overlapNeeded = totalCardsWidth - availableWidth;
                 const overlapPerCard = overlapNeeded / (cardCount - 1);
                 const overlapPercent = (overlapPerCard / cardWidth) * 100;
-                marginLeft = `-${overlapPercent}%`;
+                // Limit maximum overlap to 50% to prevent cards from spreading
+                const maxOverlapPercent = 50;
+                const finalOverlapPercent = Math.min(overlapPercent, maxOverlapPercent);
+                marginLeft = `-${finalOverlapPercent}%`;
               }
               
               const cardSize = 'w-20'; // Always use full size
