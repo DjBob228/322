@@ -63,6 +63,7 @@ type Action =
   | { type: 'COMPUTER_THROW_AFTER_TAKE'; card: Card }
   | { type: 'COMPUTER_TAKES' }
   | { type: 'PLAYER_TAKES' }
+  | { type: 'PLAYER_COLLECT_ALL' }
   | { type: 'END_ROUND'; playerTook: boolean; computerTook: boolean }
   | { type: 'DRAW_CARDS' }
   | { type: 'CLEAR_TABLE_AND_DRAW' }
@@ -306,9 +307,7 @@ function reducer(state: State, action: Action): State {
     }
 
     case 'PLAYER_TAKES': {
-      const tableCards = state.table.flatMap(p => [p.attack, ...(p.defense ? [p.defense] : [])]);
-      const newHand = [...state.playerHand, ...tableCards];
-      
+      // НЕ очищаем стол сразу - бот должен подкинуть карты на стол
       // Сохраняем ранги карт со стола для возможности подкидывания
       const ranks = new Set<string>();
       state.table.forEach(p => {
@@ -318,8 +317,6 @@ function reducer(state: State, action: Action): State {
       
       return {
         ...state,
-        playerHand: newHand,
-        table: [], // Очищаем стол - все карты у игрока
         selectedCard: null,
         showTakeButton: false,
         showPassButton: false,
@@ -327,6 +324,20 @@ function reducer(state: State, action: Action): State {
         computerThinking: false,
         playerJustTook: true, // Помечаем, что игрок взял карты
         lastTableRanks: ranks, // Сохраняем ранги для подкидывания
+      };
+    }
+
+    case 'PLAYER_COLLECT_ALL': {
+      // Забираем все карты со стола в руку игрока
+      const tableCards = state.table.flatMap(p => [p.attack, ...(p.defense ? [p.defense] : [])]);
+      const newHand = [...state.playerHand, ...tableCards];
+      
+      return {
+        ...state,
+        playerHand: newHand,
+        table: [], // Очищаем стол
+        playerJustTook: false,
+        lastTableRanks: new Set<string>(),
       };
     }
 
@@ -586,12 +597,13 @@ export const Game: React.FC<GameProps> = ({ difficulty, onBackToMenu }) => {
     
     // Если игрок только что взял карты, компьютер может подкидывать карты тех же рангов
     if (cs.playerJustTook) {
-      // Проверяем, можно ли подкинуть (максимум 6 карт на столе, но стол уже пустой)
+      // Проверяем, можно ли подкинуть (максимум 6 карт на столе)
       // Используем lastTableRanks для определения какие карты можно подкинуть
       const throwableCards = cs.computerHand.filter(c => cs.lastTableRanks.has(c.rank));
       
-      if (throwableCards.length === 0) {
-        // Нечего подкидывать, заканчиваем раунд
+      if (throwableCards.length === 0 || cs.table.length >= 6) {
+        // Нечего подкидывать или стол полон, забираем все карты со стола
+        dispatch({ type: 'PLAYER_COLLECT_ALL' });
         dispatch({ type: 'END_ROUND', playerTook: true, computerTook: false });
         return;
       }
@@ -611,12 +623,29 @@ export const Game: React.FC<GameProps> = ({ difficulty, onBackToMenu }) => {
             return RANK_VALUES[a.rank] - RANK_VALUES[b.rank];
           });
         
-        if (throwable.length > 0 && difficulty !== 'easy') {
-          // Подкидываем карту
+        if (throwable.length > 0 && difficulty !== 'easy' && cs2.table.length < 6) {
+          // Подкидываем карту на стол (чтобы она была видна)
           const card = throwable[0];
-          dispatch({ type: 'COMPUTER_THROW_AFTER_TAKE', card });
+          dispatch({ type: 'COMPUTER_THROW', card });
+          
+          // После подкидывания проверяем, можно ли еще подкинуть
+          setTimeout(() => {
+            const cs3 = stateRef.current;
+            if (cs3.status !== 'playing') return;
+            
+            const canThrowMore = cs3.computerHand.some(c => cs3.lastTableRanks.has(c.rank));
+            if (canThrowMore && cs3.table.length < 6) {
+              // Можно еще подкинуть
+              computerThrow();
+            } else {
+              // Нечего подкидывать, забираем все карты со стола
+              dispatch({ type: 'PLAYER_COLLECT_ALL' });
+              dispatch({ type: 'END_ROUND', playerTook: true, computerTook: false });
+            }
+          }, 800);
         } else {
-          // Нечего подкидывать или легкий режим, заканчиваем раунд
+          // Нечего подкидывать или легкий режим, забираем все карты со стола
+          dispatch({ type: 'PLAYER_COLLECT_ALL' });
           dispatch({ type: 'END_ROUND', playerTook: true, computerTook: false });
         }
       }, 600 + Math.random() * 400);
