@@ -62,7 +62,7 @@ export const CardComponent: React.FC<CardProps> = ({
       }}
     >
       {isKnownByComputer && !isSelected && (
-        <div className="absolute -top-2 -right-2 text-sm bg-red-500 rounded-full w-5 h-5 flex items-center justify-center shadow-lg z-10">
+        <div className="absolute -top-3 left-1/2 transform -translate-x-1/2 text-sm bg-red-500 rounded-full w-5 h-5 flex items-center justify-center shadow-lg z-10">
           👁️
         </div>
       )}

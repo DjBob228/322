@@ -937,19 +937,35 @@ export const Game: React.FC<GameProps> = ({ difficulty, onBackToMenu }) => {
         });
       }
     } else if (difficulty === 'medium') {
-      // Средняя: противник знает все козыри, которые кидал игрок и бот
+      // Средняя: противник знает все козыри, которые кидал игрок
+      // Показываем козыри из cardsShownToComputer
       state.playerHand.forEach(card => {
         if (card.suit === state.trumpSuit && state.cardsShownToComputer.has(card.id)) {
           known.add(card.id);
         }
       });
+      // В конце игры также показываем оставшиеся козыри
+      if (state.deck.length === 0) {
+        state.playerHand.forEach(card => {
+          if (card.suit === state.trumpSuit) {
+            known.add(card.id);
+          }
+        });
+      }
     } else if (difficulty === 'hard') {
       // Сложная: противник знает все карты, которые игрок кидал
+      // Показываем все карты из cardsShownToComputer
       state.playerHand.forEach(card => {
         if (state.cardsShownToComputer.has(card.id)) {
           known.add(card.id);
         }
       });
+      // В конце игры также показываем все оставшиеся карты
+      if (state.deck.length === 0) {
+        state.playerHand.forEach(card => {
+          known.add(card.id);
+        });
+      }
     }
     
     return known;
