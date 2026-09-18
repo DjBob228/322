@@ -109,15 +109,15 @@ function checkGameEnd(state: State): State | null {
   // Check for pogony (погоны) conditions
   const checkPogony = (loserHand: Card[], attacker: Attacker, defender: Attacker): boolean => {
     // Pogony conditions:
-    // 1. Attacker's last attack was with non-trump sixes
+    // 1. Attacker's last attack was with exactly 2 non-trump sixes
     // 2. Defender couldn't beat them
     // 3. Defender has cards left
     
     if (loserHand.length === 0) return false;
     
-    // Check if last attack was all non-trump sixes
+    // Check if last attack was exactly 2 non-trump sixes
     const lastAttack = state.lastAttackCards;
-    if (lastAttack.length === 0) return false;
+    if (lastAttack.length !== 2) return false; // Must be exactly 2 cards
     
     const allNonTrumpSixes = lastAttack.every(card => 
       card.rank === '6' && card.suit !== state.trumpSuit
@@ -125,9 +125,8 @@ function checkGameEnd(state: State): State | null {
     
     if (!allNonTrumpSixes) return false;
     
-    // Check if defender had cards and couldn't beat
-    // If defender had cards and could beat, pogony doesn't count
-    // We check if any defense was successful
+    // Check if defender couldn't beat the cards
+    // If defender beat all cards, pogony doesn't count
     const allDefended = state.table.every(pair => pair.defense !== null);
     if (allDefended) return false; // Defender beat the cards, no pogony
     

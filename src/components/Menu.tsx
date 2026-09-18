@@ -186,7 +186,6 @@ export const Menu: React.FC<MenuProps> = ({ onStartGame }) => {
                   <h3 className="font-bold text-green-300 mb-2">⭐ Особенности</h3>
                   <ul className="space-y-1 text-white/80">
                     <li>• Подсветка доступных карт в казуальном режиме</li>
-                    <li>• Система "погонов" — если проигравший остался с 5+ картами</li>
                     <li>• Глазик над картой показывает, что противник знает эту карту</li>
                   </ul>
                 </div>
@@ -201,13 +200,11 @@ export const Menu: React.FC<MenuProps> = ({ onStartGame }) => {
                 </div>
 
                 <div>
-                  <h3 className="font-bold text-green-300 mb-2">🎲 Подкидывание карт</h3>
-                  <ul className="space-y-1 text-white/80">
-                    <li>• <strong>Легкая:</strong> 60% шанс подкинуть</li>
-                    <li>• <strong>Обычная:</strong> 50% шанс подкинуть</li>
-                    <li>• <strong>Средняя:</strong> 75% шанс подкинуть</li>
-                    <li>• <strong>Сложная:</strong> Всегда подкидывает</li>
-                  </ul>
+                  <h3 className="font-bold text-green-300 mb-2">🎖️ Система погонов</h3>
+                  <div className="text-white/80 text-sm space-y-2">
+                    <p>Погоны — это <strong>пара некозырных шестёрок</strong> в последнем ходе. Если атакующий завершает кон этими картами и защищающийся не может их отбить, проигравший объявляется "дураком с погонами".</p>
+                    <p className="text-white/60 text-xs">Ключевые условия: ровно 2 некозырные шестёрки, защищающийся не может их отбить. Если защищающийся смог отбить — погоны не засчитываются.</p>
+                  </div>
                 </div>
               </div>
 
