@@ -23,6 +23,7 @@ import {
 } from '../gameLogic';
 import { RANK_VALUES, type DeckSize } from '../types';
 import { type Theme, themes, getNextTheme } from '../themes';
+import { backgroundMusic } from '../backgroundMusic';
 
 type GameStatus = 'playing' | 'paused' | 'gameOver' | 'waiting';
 type SortMode = 'suit' | 'rank' | 'rank-trump';
@@ -525,6 +526,7 @@ export const Game: React.FC<GameProps> = ({ difficulty, deckSize, onBackToMenu }
   const [gamesWon, setGamesWon] = useState(() => parseInt(localStorage.getItem(GAMES_WON_KEY) || '0'));
   const [sortMode, setSortMode] = useState<SortMode>('suit');
   const [soundEnabled, setSoundEnabled] = useState(() => localStorage.getItem('durak_sound') !== 'false');
+  const [musicEnabled, setMusicEnabled] = useState(() => localStorage.getItem('durak_music') === 'true');
   const [currentTheme, setCurrentTheme] = useState<Theme>(() => 
     (localStorage.getItem('durak_theme') as Theme) || 'green'
   );
@@ -556,6 +558,15 @@ export const Game: React.FC<GameProps> = ({ difficulty, deckSize, onBackToMenu }
       }
     };
   }, []);
+
+  // Start/stop background music based on setting
+  useEffect(() => {
+    if (musicEnabled) {
+      backgroundMusic.start();
+    } else {
+      backgroundMusic.stop();
+    }
+  }, [musicEnabled]);
 
   // Track screen width for responsive card sizing
   useEffect(() => {
@@ -1146,6 +1157,26 @@ export const Game: React.FC<GameProps> = ({ difficulty, deckSize, onBackToMenu }
             className="px-3 py-2 text-sm bg-indigo-600 hover:bg-indigo-500 text-white rounded-lg transition-colors"
           >
             {soundEnabled ? '🔊' : '🔇'}
+          </button>
+          <button
+            onClick={() => {
+              const newValue = !musicEnabled;
+              setMusicEnabled(newValue);
+              localStorage.setItem('durak_music', String(newValue));
+              if (newValue) {
+                backgroundMusic.start();
+              } else {
+                backgroundMusic.stop();
+              }
+            }}
+            className={`px-3 py-2 text-sm rounded-lg transition-colors ${
+              musicEnabled
+                ? 'bg-cyan-600 hover:bg-cyan-500 text-white'
+                : 'bg-gray-600 hover:bg-gray-500 text-white/80'
+            }`}
+            title={musicEnabled ? 'Музыка включена' : 'Музыка выключена'}
+          >
+            {musicEnabled ? '🎵' : '🔇'}
           </button>
           <button
             onClick={changeTheme}
