@@ -24,10 +24,10 @@ export const Menu: React.FC<MenuProps> = ({ onStartGame }) => {
   }, []);
 
   const difficulties: { key: Difficulty; label: string; emoji: string; desc: string }[] = [
-    { key: 'casual', label: 'Легко (Казуальная)', emoji: '🎯', desc: 'С подсказками по картам' },
-    { key: 'easy', label: 'Легко', emoji: '😊', desc: 'Компьютер иногда ошибается' },
-    { key: 'medium', label: 'Средне', emoji: '🤔', desc: 'Сбалансированная игра' },
-    { key: 'hard', label: 'Сложно', emoji: '😈', desc: 'Оптимальная стратегия' },
+    { key: 'casual', label: 'Легкая', emoji: '🎯', desc: 'С подсказками по картам' },
+    { key: 'easy', label: 'Обычная', emoji: '😊', desc: 'Компьютер иногда ошибается' },
+    { key: 'medium', label: 'Средняя', emoji: '🤔', desc: 'Сбалансированная игра' },
+    { key: 'hard', label: 'Сложная', emoji: '😈', desc: 'Оптимальная стратегия' },
   ];
 
   return (

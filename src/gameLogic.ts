@@ -96,7 +96,7 @@ export function computerChooseAttack(
     return RANK_VALUES[a.rank] - RANK_VALUES[b.rank];
   });
 
-  if (difficulty === 'medium') {
+  if (difficulty === 'casual' || difficulty === 'medium') {
     // Sometimes play higher cards
     if (Math.random() > 0.6) {
       return sorted[Math.floor(Math.random() * Math.min(3, sorted.length))];
@@ -132,7 +132,7 @@ export function computerChooseDefense(
     return RANK_VALUES[a.rank] - RANK_VALUES[b.rank];
   });
 
-  if (difficulty === 'medium') {
+  if (difficulty === 'casual' || difficulty === 'medium') {
     return sorted[0];
   }
 

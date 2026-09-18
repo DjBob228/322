@@ -912,7 +912,7 @@ export const Game: React.FC<GameProps> = ({ difficulty, onBackToMenu }) => {
             ← Меню
           </button>
           <span className="text-white/60 text-sm">
-            {difficulty === 'casual' ? '🎯 Легко (Казуальная)' : difficulty === 'easy' ? '😊 Легко' : difficulty === 'medium' ? '🤔 Средне' : '😈 Сложно'}
+            {difficulty === 'casual' ? '🎯 Легкая' : difficulty === 'easy' ? '😊 Обычная' : difficulty === 'medium' ? '🤔 Средняя' : '😈 Сложная'}
           </span>
         </div>
 
