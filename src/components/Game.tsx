@@ -503,6 +503,25 @@ export const Game: React.FC<GameProps> = ({ difficulty, onBackToMenu }) => {
   const [showFirstTurnMessage, setShowFirstTurnMessage] = useState(false);
   const [firstTurnMessageText, setFirstTurnMessageText] = useState('');
   const [screenWidth, setScreenWidth] = useState(typeof window !== 'undefined' ? window.innerWidth : 1024);
+  
+  // Audio context for sounds
+  const audioContextRef = useRef<AudioContext | null>(null);
+  
+  // Initialize audio context once
+  useEffect(() => {
+    if (typeof window !== 'undefined') {
+      const AudioContextClass = window.AudioContext || (window as any).webkitAudioContext;
+      if (AudioContextClass) {
+        audioContextRef.current = new AudioContextClass();
+      }
+    }
+    
+    return () => {
+      if (audioContextRef.current) {
+        audioContextRef.current.close();
+      }
+    };
+  }, []);
 
   // Track screen width for responsive card sizing
   useEffect(() => {
@@ -868,10 +887,16 @@ export const Game: React.FC<GameProps> = ({ difficulty, onBackToMenu }) => {
   };
 
   // Play sound
-  const playSound = (type: 'card' | 'win' | 'lose' | 'take') => {
-    if (!soundEnabled) return;
+  const playSound = async (type: 'card' | 'win' | 'lose' | 'take') => {
+    if (!soundEnabled || !audioContextRef.current) return;
+    
     try {
-      const audioContext = new (window.AudioContext || (window as any).webkitAudioContext)();
+      // Resume audio context if suspended (required by browsers after user interaction)
+      if (audioContextRef.current.state === 'suspended') {
+        await audioContextRef.current.resume();
+      }
+      
+      const audioContext = audioContextRef.current;
       const oscillator = audioContext.createOscillator();
       const gainNode = audioContext.createGain();
       

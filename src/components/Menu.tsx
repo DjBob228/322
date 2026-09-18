@@ -11,7 +11,7 @@ const GAMES_PLAYED_KEY = 'durak_games_played';
 const GAMES_WON_KEY = 'durak_games_won';
 
 export const Menu: React.FC<MenuProps> = ({ onStartGame }) => {
-  const [selectedDifficulty, setSelectedDifficulty] = useState<Difficulty>('medium');
+  const [selectedDifficulty, setSelectedDifficulty] = useState<Difficulty>('casual');
   const [highScore, setHighScore] = useState(0);
   const [gamesPlayed, setGamesPlayed] = useState(0);
   const [gamesWon, setGamesWon] = useState(0);
