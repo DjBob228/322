@@ -1211,15 +1211,14 @@ export const Game: React.FC<GameProps> = ({ difficulty, onBackToMenu }) => {
                 if (totalCardsWidth <= availableWidth) {
                   marginLeft = '0';
                 } else {
-                  // Calculate overlap needed
+                  // Calculate overlap needed in pixels
                   const overlapNeeded = totalCardsWidth - availableWidth;
                   const overlapPerCard = overlapNeeded / (cardCount - 1);
-                  const overlapPercent = (overlapPerCard / cardWidth) * 100;
                   
-                  // Limit maximum overlap to 45%
-                  const maxOverlapPercent = 45;
-                  const finalOverlapPercent = Math.min(overlapPercent, maxOverlapPercent);
-                  marginLeft = `-${finalOverlapPercent}%`;
+                  // Limit maximum overlap to 36px (45% of 80px card width)
+                  const maxOverlapPx = 36;
+                  const finalOverlapPx = Math.min(overlapPerCard, maxOverlapPx);
+                  marginLeft = `-${finalOverlapPx}px`;
                 }
               }
               
