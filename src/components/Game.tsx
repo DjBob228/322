@@ -1179,28 +1179,6 @@ export const Game: React.FC<GameProps> = ({ difficulty, deckSize, onBackToMenu }
           </div>
         </div>
 
-        {/* Deck & Trump */}
-        <div className="flex items-center justify-center gap-4 shrink-0">
-          {state.deck.length > 0 && (
-            <div className="relative flex items-center">
-              {state.trumpCard && (
-                <div 
-                  className="absolute right-full mr-3"
-                  style={{ zIndex: 0, transform: 'rotate(90deg)' }}
-                >
-                  <CardComponent card={state.trumpCard} className="w-14 opacity-80" />
-                </div>
-              )}
-              <div className="relative" style={{ zIndex: 1 }}>
-                <CardComponent card={state.deck[0]} faceDown className="w-16" />
-                <div className="absolute -top-1 -right-1 bg-white text-green-800 rounded-full w-5 h-5 flex items-center justify-center text-[10px] font-bold shadow">
-                  {state.deck.length}
-                </div>
-              </div>
-            </div>
-          )}
-        </div>
-
         {/* Table */}
         <div className={`flex-1 min-h-[130px] ${theme.tableBg} rounded-xl border-2 ${theme.tableBorder} flex items-center justify-center p-3 relative overflow-hidden`}>
           {/* Table pattern */}
@@ -1212,6 +1190,26 @@ export const Game: React.FC<GameProps> = ({ difficulty, deckSize, onBackToMenu }
             `,
             backgroundSize: '40px 40px, 40px 40px, 30px 30px'
           }} />
+          
+          {/* Deck & Trump - positioned at right center of table */}
+          {state.deck.length > 0 && (
+            <div className="absolute right-4 top-1/2 -translate-y-1/2 flex items-center gap-2 z-20">
+              {state.trumpCard && (
+                <div 
+                  style={{ transform: 'rotate(90deg)' }}
+                >
+                  <CardComponent card={state.trumpCard} className="w-12 opacity-80" />
+                </div>
+              )}
+              <div className="relative">
+                <CardComponent card={state.deck[0]} faceDown className="w-14" />
+                <div className="absolute -top-1 -right-1 bg-white text-green-800 rounded-full w-5 h-5 flex items-center justify-center text-[10px] font-bold shadow">
+                  {state.deck.length}
+                </div>
+              </div>
+            </div>
+          )}
+          
           <div 
             className="flex flex-wrap gap-3 items-center justify-center relative z-10"
             style={{
