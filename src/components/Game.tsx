@@ -97,10 +97,12 @@ function drawFromDeck(state: State): State {
 }
 
 function checkGameEnd(state: State): State | null {
-  if (state.deck.length > 0) return null;
+  // Проверяем ничью даже если колода пуста
   if (state.playerHand.length === 0 && state.computerHand.length === 0) {
     return { ...state, status: 'gameOver', gameOverMessage: 'Ничья! Оба игрока избавились от карт.' };
   }
+  
+  if (state.deck.length > 0) return null;
   
   // Check for pogony (погоны) conditions
   const checkPogony = (loserHand: Card[], attacker: Attacker, defender: Attacker): boolean => {
