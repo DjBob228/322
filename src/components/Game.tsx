@@ -505,6 +505,7 @@ export const Game: React.FC<GameProps> = ({ difficulty, onBackToMenu }) => {
   );
   const [showExitConfirm, setShowExitConfirm] = useState(false);
   const [showFirstTurnMessage, setShowFirstTurnMessage] = useState(false);
+  const [isFadingOut, setIsFadingOut] = useState(false);
   const [firstTurnMessageText, setFirstTurnMessageText] = useState('');
   const [screenWidth, setScreenWidth] = useState(typeof window !== 'undefined' ? window.innerWidth : 1024);
   
@@ -599,11 +600,18 @@ export const Game: React.FC<GameProps> = ({ difficulty, onBackToMenu }) => {
     // Показываем модальное окно с информацией о первом ходе
     setFirstTurnMessageText(firstTurnText);
     setShowFirstTurnMessage(true);
+    setIsFadingOut(false);
     
-    // Автоматически скрываем через 2.5 секунды
+    // Начинаем плавное исчезновение через 3.5 секунды
+    setTimeout(() => {
+      setIsFadingOut(true);
+    }, 3500);
+    
+    // Полностью скрываем через 4.5 секунды (после анимации)
     setTimeout(() => {
       setShowFirstTurnMessage(false);
-    }, 2500);
+      setIsFadingOut(false);
+    }, 4500);
 
     setScore(0);
   }, []);
@@ -1311,7 +1319,9 @@ export const Game: React.FC<GameProps> = ({ difficulty, onBackToMenu }) => {
 
       {/* First Turn Message - small notification in top-right */}
       {showFirstTurnMessage && (
-        <div className="absolute top-20 right-4 z-50 animate-slide-in-right pointer-events-none">
+        <div className={`absolute top-20 right-4 z-50 pointer-events-none transition-opacity duration-1000 ${
+          isFadingOut ? 'opacity-0' : 'opacity-100 animate-slide-in-right'
+        }`}>
           <div className={`bg-gradient-to-br ${theme.background} rounded-xl p-4 shadow-2xl border-2 ${theme.tableBorder} max-w-xs`}>
             <div className="text-white text-sm font-bold whitespace-pre-line leading-relaxed">
               {firstTurnMessageText}
