@@ -1154,21 +1154,6 @@ export const Game: React.FC<GameProps> = ({ difficulty, deckSize, onBackToMenu }
           >
             {theme.emoji}
           </button>
-          <button
-            onClick={() => {
-              const newValue = !hintsEnabled;
-              setHintsEnabled(newValue);
-              localStorage.setItem('durak_hints', String(newValue));
-            }}
-            className={`px-3 py-2 text-sm rounded-lg transition-colors ${
-              hintsEnabled
-                ? 'bg-purple-600 hover:bg-purple-500 text-white'
-                : 'bg-gray-600 hover:bg-gray-500 text-white/80'
-            }`}
-            title={hintsEnabled ? 'Подсказки включены' : 'Подсказки выключены'}
-          >
-            💡
-          </button>
         </div>
       </div>
 

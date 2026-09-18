@@ -1,6 +1,9 @@
 import type React from 'react';
 import { useState, useEffect } from 'react';
 import { type Difficulty, type DeckSize } from '../types';
+import { type Theme, themes, getNextTheme } from '../themes';
+
+type SortMode = 'suit' | 'rank' | 'rank-trump';
 
 interface MenuProps {
   onStartGame: (difficulty: Difficulty, deckSize: DeckSize) => void;
@@ -18,6 +21,29 @@ export const Menu: React.FC<MenuProps> = ({ onStartGame }) => {
   const [gamesWon, setGamesWon] = useState(0);
   const [showHowToPlay, setShowHowToPlay] = useState(false);
   const [hintsEnabled, setHintsEnabled] = useState(() => localStorage.getItem('durak_hints') !== 'false');
+  const [sortMode, setSortMode] = useState<SortMode>(() => 
+    (localStorage.getItem('durak_sort') as SortMode) || 'suit'
+  );
+  const [soundEnabled, setSoundEnabled] = useState(() => localStorage.getItem('durak_sound') !== 'false');
+  const [currentTheme, setCurrentTheme] = useState<Theme>(() => 
+    (localStorage.getItem('durak_theme') as Theme) || 'green'
+  );
+
+  const theme = themes[currentTheme];
+
+  const changeSortMode = () => {
+    const modes: SortMode[] = ['suit', 'rank', 'rank-trump'];
+    const currentIndex = modes.indexOf(sortMode);
+    const newMode = modes[(currentIndex + 1) % modes.length];
+    setSortMode(newMode);
+    localStorage.setItem('durak_sort', newMode);
+  };
+
+  const changeTheme = () => {
+    const nextTheme = getNextTheme(currentTheme);
+    setCurrentTheme(nextTheme);
+    localStorage.setItem('durak_theme', nextTheme);
+  };
 
   useEffect(() => {
     setHighScore(parseInt(localStorage.getItem(HIGH_SCORE_KEY) || '0'));
@@ -26,7 +52,7 @@ export const Menu: React.FC<MenuProps> = ({ onStartGame }) => {
   }, []);
 
   const difficulties: { key: Difficulty; label: string; emoji: string; desc: string }[] = [
-    { key: 'easy', label: 'Легкая', emoji: '😊', desc: 'Компьютер иногда ошибается' },
+    { key: 'easy', label: 'Легкая', emoji: '😊', desc: 'Ваш козырь в начале + козыри в конце игры' },
     { key: 'medium', label: 'Средняя', emoji: '🤔', desc: 'Запоминает козыри' },
     { key: 'hard', label: 'Сложная', emoji: '😈', desc: 'Запоминает все карты' },
   ];
@@ -152,6 +178,39 @@ export const Menu: React.FC<MenuProps> = ({ onStartGame }) => {
             }`}
           >
             {hintsEnabled ? '💡 Подсказки: ВКЛ' : '💡 Подсказки: ВЫКЛ'}
+          </button>
+        </div>
+
+        {/* Settings Buttons */}
+        <div className="grid grid-cols-3 gap-3 mb-4">
+          <button
+            onClick={changeSortMode}
+            className="py-3 px-2 bg-purple-600 hover:bg-purple-500 text-white rounded-xl font-bold text-sm transition-colors"
+            title={sortMode === 'suit' ? 'По масти' : sortMode === 'rank' ? 'По рангу' : 'По рангу + козыри'}
+          >
+            {sortMode === 'suit' ? '🎨 По масти' : sortMode === 'rank' ? '🔢 По рангу' : '🃏 Козыри'}
+          </button>
+          <button
+            onClick={() => {
+              const newValue = !soundEnabled;
+              setSoundEnabled(newValue);
+              localStorage.setItem('durak_sound', String(newValue));
+            }}
+            className={`py-3 px-2 rounded-xl font-bold text-sm transition-colors ${
+              soundEnabled
+                ? 'bg-indigo-600 hover:bg-indigo-500 text-white'
+                : 'bg-gray-600 hover:bg-gray-500 text-white/80'
+            }`}
+            title={soundEnabled ? 'Звук включен' : 'Звук выключен'}
+          >
+            {soundEnabled ? '🔊 Звук' : '🔇 Звук'}
+          </button>
+          <button
+            onClick={changeTheme}
+            className="py-3 px-2 bg-pink-600 hover:bg-pink-500 text-white rounded-xl font-bold text-sm transition-colors"
+            title={`Тема: ${theme.name}`}
+          >
+            {theme.emoji} {theme.name}
           </button>
         </div>
 
