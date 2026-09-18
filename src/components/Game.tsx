@@ -1007,10 +1007,12 @@ export const Game: React.FC<GameProps> = ({ difficulty, onBackToMenu }) => {
           known.add(card.id);
         }
       });
-      // В конце игры знает ВСЕ карты игрока
+      // В конце игры знает только козыри игрока
       if (state.deck.length === 0) {
         state.playerHand.forEach(card => {
-          known.add(card.id);
+          if (card.suit === state.trumpSuit) {
+            known.add(card.id);
+          }
         });
       }
     } else if (difficulty === 'hard') {
@@ -1056,7 +1058,7 @@ export const Game: React.FC<GameProps> = ({ difficulty, onBackToMenu }) => {
             ← Меню
           </button>
           <span className="text-white/60 text-sm">
-            {difficulty === 'casual' ? '🎯 Легкая' : difficulty === 'easy' ? '😊 Обычная' : difficulty === 'medium' ? '🤔 Средняя (запоминает козыри)' : '😈 Сложная (запоминает всё)'}
+            {difficulty === 'casual' ? '🎯 Легкая' : difficulty === 'easy' ? '😊 Обычная' : difficulty === 'medium' ? '🤔 Средняя (запоминает козыри)' : '😈 Сложная (запоминает все карты)'}
           </span>
         </div>
 
