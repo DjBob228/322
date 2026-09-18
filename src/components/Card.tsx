@@ -30,7 +30,7 @@ export const CardComponent: React.FC<CardProps> = ({
   if (faceDown) {
     return (
       <div
-        className={`relative w-16 h-22 rounded-lg shadow-md 
+        className={`relative w-16 rounded-lg shadow-md 
           bg-gradient-to-br from-blue-700 to-blue-900 border-2 border-blue-500
           flex items-center justify-center transition-all duration-200 ${className}`}
         style={{

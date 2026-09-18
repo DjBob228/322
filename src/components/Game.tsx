@@ -1238,15 +1238,15 @@ export const Game: React.FC<GameProps> = ({ difficulty, deckSize, onBackToMenu }
                   <div 
                     key={i} 
                     className="relative animate-card-appear"
-                    style={{ width: '4.5rem', height: '6.5rem' }}
+                    style={{ width: '5rem', height: '7rem' }}
                   >
                     <div className={animationClass}>
-                      <CardComponent card={pair.attack} className="w-16" />
+                      <CardComponent card={pair.attack} className="w-20" />
                     </div>
                     {pair.defense && (
                       <div className="absolute top-8 left-8 animate-card-appear">
                         <div className={animationClass}>
-                          <CardComponent card={pair.defense} className="w-16" />
+                          <CardComponent card={pair.defense} className="w-20" />
                         </div>
                       </div>
                     )}
