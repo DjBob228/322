@@ -1028,12 +1028,13 @@ export const Game: React.FC<GameProps> = ({ difficulty, onBackToMenu }) => {
   return (
     <div className={`min-h-screen h-screen bg-gradient-to-b ${theme.background} flex flex-col relative overflow-y-auto pb-4`}>
       {/* Felt texture with pattern */}
-      <div className="absolute inset-0 opacity-10 pointer-events-none" style={{
+      <div className="absolute inset-0 opacity-30 pointer-events-none" style={{
         backgroundImage: `
-          radial-gradient(circle at 50% 50%, rgba(255,255,255,0.1) 1px, transparent 1px),
-          repeating-linear-gradient(45deg, transparent, transparent 10px, ${theme.patternColor} 10px, ${theme.patternColor} 11px)
+          radial-gradient(circle at 50% 50%, rgba(255,255,255,0.15) 1px, transparent 1px),
+          repeating-linear-gradient(45deg, transparent, transparent 15px, rgba(255,255,255,0.08) 15px, rgba(255,255,255,0.08) 16px),
+          repeating-linear-gradient(-45deg, transparent, transparent 15px, rgba(255,255,255,0.08) 15px, rgba(255,255,255,0.08) 16px)
         `,
-        backgroundSize: '20px 20px, 20px 20px'
+        backgroundSize: '20px 20px, 30px 30px, 30px 30px'
       }} />
 
       {/* Header */}
@@ -1147,11 +1148,13 @@ export const Game: React.FC<GameProps> = ({ difficulty, onBackToMenu }) => {
         {/* Table */}
         <div className={`flex-1 min-h-[130px] ${theme.tableBg} rounded-xl border-2 ${theme.tableBorder} flex items-center justify-center p-3 relative overflow-hidden`}>
           {/* Table pattern */}
-          <div className="absolute inset-0 opacity-5 pointer-events-none" style={{
+          <div className="absolute inset-0 opacity-20 pointer-events-none" style={{
             backgroundImage: `
-              repeating-linear-gradient(45deg, transparent, transparent 15px, rgba(255,255,255,0.1) 15px, rgba(255,255,255,0.1) 16px),
-              repeating-linear-gradient(-45deg, transparent, transparent 15px, rgba(255,255,255,0.1) 15px, rgba(255,255,255,0.1) 16px)
-            `
+              repeating-linear-gradient(45deg, transparent, transparent 20px, rgba(255,255,255,0.15) 20px, rgba(255,255,255,0.15) 21px),
+              repeating-linear-gradient(-45deg, transparent, transparent 20px, rgba(255,255,255,0.15) 20px, rgba(255,255,255,0.15) 21px),
+              radial-gradient(circle at 50% 50%, rgba(255,255,255,0.05) 2px, transparent 2px)
+            `,
+            backgroundSize: '40px 40px, 40px 40px, 30px 30px'
           }} />
           <div 
             className="flex flex-wrap gap-3 items-center justify-center relative z-10"
@@ -1164,7 +1167,7 @@ export const Game: React.FC<GameProps> = ({ difficulty, onBackToMenu }) => {
             }}
           >
             {state.table.length === 0 ? (
-              <div className="text-green-300/40 text-base">
+              <div className={`${theme.textColor} text-base font-medium`}>
                 {state.attacker === 'player' ? 'Выберите карту для атаки' : 'Ожидание...'}
               </div>
             ) : (
@@ -1306,11 +1309,11 @@ export const Game: React.FC<GameProps> = ({ difficulty, onBackToMenu }) => {
         </div>
       </div>
 
-      {/* First Turn Message Overlay */}
+      {/* First Turn Message - small notification in top-right */}
       {showFirstTurnMessage && (
-        <div className="absolute inset-0 z-50 bg-black/50 backdrop-blur-sm flex items-center justify-center animate-fade-in pointer-events-none">
-          <div className="bg-gradient-to-br from-green-700 to-green-900 rounded-2xl p-8 text-center shadow-2xl border-2 border-green-400 animate-scale-in max-w-md mx-4">
-            <div className="text-white text-2xl font-bold whitespace-pre-line leading-relaxed">
+        <div className="absolute top-20 right-4 z-50 animate-slide-in-right pointer-events-none">
+          <div className={`bg-gradient-to-br ${theme.background} rounded-xl p-4 shadow-2xl border-2 ${theme.tableBorder} max-w-xs`}>
+            <div className="text-white text-sm font-bold whitespace-pre-line leading-relaxed">
               {firstTurnMessageText}
             </div>
           </div>

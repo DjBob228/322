@@ -7,6 +7,7 @@ export interface ThemeColors {
   tableBg: string;
   tableBorder: string;
   patternColor: string;
+  textColor: string;
 }
 
 export const themes: Record<Theme, ThemeColors> = {
@@ -17,6 +18,7 @@ export const themes: Record<Theme, ThemeColors> = {
     tableBg: 'bg-green-600/20',
     tableBorder: 'border-green-500/20',
     patternColor: 'rgba(255,255,255,0.05)',
+    textColor: 'text-green-300/60',
   },
   blue: {
     name: 'Синий',
@@ -25,6 +27,7 @@ export const themes: Record<Theme, ThemeColors> = {
     tableBg: 'bg-blue-600/20',
     tableBorder: 'border-blue-500/20',
     patternColor: 'rgba(255,255,255,0.05)',
+    textColor: 'text-blue-300/60',
   },
   purple: {
     name: 'Фиолетовый',
@@ -33,22 +36,25 @@ export const themes: Record<Theme, ThemeColors> = {
     tableBg: 'bg-purple-600/20',
     tableBorder: 'border-purple-500/20',
     patternColor: 'rgba(255,255,255,0.05)',
+    textColor: 'text-purple-300/60',
   },
   red: {
-    name: 'Красный',
-    emoji: '🔴',
-    background: 'from-red-800 via-red-700 to-red-900',
-    tableBg: 'bg-red-600/20',
-    tableBorder: 'border-red-500/20',
+    name: 'Бордовый',
+    emoji: '🍷',
+    background: 'from-rose-900 via-rose-800 to-rose-950',
+    tableBg: 'bg-rose-700/20',
+    tableBorder: 'border-rose-500/20',
     patternColor: 'rgba(255,255,255,0.05)',
+    textColor: 'text-rose-300/60',
   },
   orange: {
-    name: 'Оранжевый',
-    emoji: '🟠',
-    background: 'from-orange-800 via-orange-700 to-orange-900',
-    tableBg: 'bg-orange-600/20',
-    tableBorder: 'border-orange-500/20',
+    name: 'Терракотовый',
+    emoji: '🟤',
+    background: 'from-amber-900 via-amber-800 to-amber-950',
+    tableBg: 'bg-amber-700/20',
+    tableBorder: 'border-amber-500/20',
     patternColor: 'rgba(255,255,255,0.05)',
+    textColor: 'text-amber-300/60',
   },
   teal: {
     name: 'Бирюзовый',
@@ -57,6 +63,7 @@ export const themes: Record<Theme, ThemeColors> = {
     tableBg: 'bg-teal-600/20',
     tableBorder: 'border-teal-500/20',
     patternColor: 'rgba(255,255,255,0.05)',
+    textColor: 'text-teal-300/60',
   },
 };
 
