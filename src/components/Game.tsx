@@ -109,15 +109,15 @@ function checkGameEnd(state: State): State | null {
   // Check for pogony (погоны) conditions
   const checkPogony = (loserHand: Card[], attacker: Attacker, defender: Attacker): boolean => {
     // Pogony conditions:
-    // 1. Attacker's last attack was with exactly 2 non-trump sixes
+    // 1. Attacker's last attack was with non-trump sixes (any number)
     // 2. Defender has cards left
     // Погоны нельзя отбивать - если выложены, они автоматически засчитываются
     
     if (loserHand.length === 0) return false;
     
-    // Check if last attack was exactly 2 non-trump sixes
+    // Check if last attack contained non-trump sixes
     const lastAttack = state.lastAttackCards;
-    if (lastAttack.length !== 2) return false; // Must be exactly 2 cards
+    if (lastAttack.length === 0) return false;
     
     const allNonTrumpSixes = lastAttack.every(card => 
       card.rank === '6' && card.suit !== state.trumpSuit
