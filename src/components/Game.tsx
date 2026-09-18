@@ -487,6 +487,8 @@ export const Game: React.FC<GameProps> = ({ difficulty, onBackToMenu }) => {
   const [sortMode, setSortMode] = useState<SortMode>('suit');
   const [soundEnabled, setSoundEnabled] = useState(() => localStorage.getItem('durak_sound') !== 'false');
   const [showExitConfirm, setShowExitConfirm] = useState(false);
+  const [showFirstTurnMessage, setShowFirstTurnMessage] = useState(false);
+  const [firstTurnMessageText, setFirstTurnMessageText] = useState('');
 
   const computerTimeoutRef = useRef<number | null>(null);
   const stateRef = useRef(state);
@@ -505,16 +507,19 @@ export const Game: React.FC<GameProps> = ({ difficulty, onBackToMenu }) => {
     const computerLowestTrump = findLowestTrump(cHand, trump.suit);
 
     let message = '';
+    let firstTurnText = '';
     let computerKnownTrump: Card | null = null;
     let playerKnownTrump: Card | null = null;
 
     if (firstAttacker === 'computer') {
       // Компьютер ходит первым - показываем его наименьший козырь
-      message = `Компьютер ходит первым (меньший козырь: ${computerLowestTrump?.rank || 'нет'})`;
+      message = 'Компьютер атакует...';
+      firstTurnText = `🤖 Компьютер ходит первым\nМеньший козырь: ${computerLowestTrump?.rank || 'нет'} ${computerLowestTrump ? SUIT_SYMBOLS[computerLowestTrump.suit] : ''}`;
       computerKnownTrump = computerLowestTrump;
     } else {
       // Игрок ходит первым - запоминаем его наименьший козырь
-      message = 'Вы ходите первым (меньший козырь)';
+      message = 'Ваш ход! Выберите карту для атаки.';
+      firstTurnText = `🎯 Вы ходите первым\nМеньший козырь: ${playerLowestTrump?.rank || 'нет'} ${playerLowestTrump ? SUIT_SYMBOLS[playerLowestTrump.suit] : ''}`;
       playerKnownTrump = playerLowestTrump;
     }
 
@@ -534,6 +539,15 @@ export const Game: React.FC<GameProps> = ({ difficulty, onBackToMenu }) => {
         dispatch({ type: 'SET_KNOWN_TRUMPS', computerTrump: computerKnownTrump, playerTrump: playerKnownTrump });
       }, 0);
     }
+
+    // Показываем модальное окно с информацией о первом ходе
+    setFirstTurnMessageText(firstTurnText);
+    setShowFirstTurnMessage(true);
+    
+    // Автоматически скрываем через 2.5 секунды
+    setTimeout(() => {
+      setShowFirstTurnMessage(false);
+    }, 2500);
 
     setScore(0);
   }, []);
@@ -1154,6 +1168,17 @@ export const Game: React.FC<GameProps> = ({ difficulty, onBackToMenu }) => {
           </div>
         </div>
       </div>
+
+      {/* First Turn Message Overlay */}
+      {showFirstTurnMessage && (
+        <div className="absolute inset-0 z-50 bg-black/50 backdrop-blur-sm flex items-center justify-center animate-fade-in pointer-events-none">
+          <div className="bg-gradient-to-br from-green-700 to-green-900 rounded-2xl p-8 text-center shadow-2xl border-2 border-green-400 animate-scale-in max-w-md mx-4">
+            <div className="text-white text-2xl font-bold whitespace-pre-line leading-relaxed">
+              {firstTurnMessageText}
+            </div>
+          </div>
+        </div>
+      )}
 
       {/* Game Over Overlay */}
       {state.status === 'gameOver' && (
