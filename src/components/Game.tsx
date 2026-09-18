@@ -949,7 +949,7 @@ export const Game: React.FC<GameProps> = ({ difficulty, onBackToMenu }) => {
       </div>
 
       {/* Game Board */}
-      <div className="relative z-10 flex-1 flex flex-col p-3 gap-2 max-w-5xl mx-auto w-full min-h-0">
+      <div className="relative z-10 flex-1 flex flex-col p-3 gap-2 w-full min-h-0">
         {/* Computer Hand */}
         <div className="flex flex-col items-center shrink-0">
           <div className="text-white/60 text-xs mb-1">
@@ -1107,30 +1107,30 @@ export const Game: React.FC<GameProps> = ({ difficulty, onBackToMenu }) => {
         </div>
 
         {/* Player Hand */}
-        <div className="flex flex-col items-center shrink-0 mt-2">
-          <div className="flex justify-center max-w-full px-2 overflow-hidden">
+        <div className="flex flex-col items-center shrink-0 mt-2 w-full">
+          <div className="flex justify-center w-full px-4">
             {sortCards(state.playerHand).map((card, i) => {
               // Calculate overlap based on number of cards
               const cardCount = state.playerHand.length;
               let marginLeft = '0';
               let cardSize = 'w-20'; // Default size
               
-              // Apply same size to ALL cards
+              // Apply same size to ALL cards with less aggressive shrinking
               if (cardCount <= 6) {
                 cardSize = 'w-20';
                 marginLeft = i > 0 ? '-1.5rem' : '0';
               } else if (cardCount <= 8) {
                 cardSize = 'w-18';
-                marginLeft = i > 0 ? '-2rem' : '0';
+                marginLeft = i > 0 ? '-1.8rem' : '0';
               } else if (cardCount <= 10) {
                 cardSize = 'w-16';
-                marginLeft = i > 0 ? '-2.5rem' : '0';
+                marginLeft = i > 0 ? '-2rem' : '0';
               } else if (cardCount <= 12) {
                 cardSize = 'w-14';
-                marginLeft = i > 0 ? '-3rem' : '0';
+                marginLeft = i > 0 ? '-2.2rem' : '0';
               } else {
                 cardSize = 'w-12';
-                marginLeft = i > 0 ? '-3.5rem' : '0';
+                marginLeft = i > 0 ? '-2.5rem' : '0';
               }
               
               return (
