@@ -28,21 +28,39 @@ export const Menu: React.FC<MenuProps> = ({ onStartGame }) => {
   const [currentTheme, setCurrentTheme] = useState<Theme>(() => 
     (localStorage.getItem('durak_theme') as Theme) || 'green'
   );
+  const [isChangingSort, setIsChangingSort] = useState(false);
+  const [isChangingSound, setIsChangingSound] = useState(false);
+  const [isChangingTheme, setIsChangingTheme] = useState(false);
 
   const theme = themes[currentTheme];
 
   const changeSortMode = () => {
+    if (isChangingSort) return;
+    setIsChangingSort(true);
     const modes: SortMode[] = ['suit', 'rank', 'rank-trump'];
     const currentIndex = modes.indexOf(sortMode);
     const newMode = modes[(currentIndex + 1) % modes.length];
     setSortMode(newMode);
     localStorage.setItem('durak_sort', newMode);
+    setTimeout(() => setIsChangingSort(false), 500);
+  };
+
+  const changeSound = () => {
+    if (isChangingSound) return;
+    setIsChangingSound(true);
+    const newValue = !soundEnabled;
+    setSoundEnabled(newValue);
+    localStorage.setItem('durak_sound', String(newValue));
+    setTimeout(() => setIsChangingSound(false), 500);
   };
 
   const changeTheme = () => {
+    if (isChangingTheme) return;
+    setIsChangingTheme(true);
     const nextTheme = getNextTheme(currentTheme);
     setCurrentTheme(nextTheme);
     localStorage.setItem('durak_theme', nextTheme);
+    setTimeout(() => setIsChangingTheme(false), 500);
   };
 
   useEffect(() => {
@@ -58,7 +76,7 @@ export const Menu: React.FC<MenuProps> = ({ onStartGame }) => {
   ];
 
   return (
-    <div className="min-h-screen bg-gradient-to-b from-green-900 via-green-800 to-green-950 flex flex-col items-center justify-center p-4 relative overflow-y-auto">
+    <div className={`min-h-screen bg-gradient-to-b ${theme.background} flex flex-col items-center justify-center p-4 relative overflow-y-auto`}>
       {/* Background decoration */}
       <div className="absolute inset-0 opacity-5">
         <div className="absolute top-10 left-10 text-8xl transform rotate-12">♠</div>
@@ -185,19 +203,23 @@ export const Menu: React.FC<MenuProps> = ({ onStartGame }) => {
         <div className="grid grid-cols-3 gap-3 mb-4">
           <button
             onClick={changeSortMode}
-            className="py-3 px-2 bg-purple-600 hover:bg-purple-500 text-white rounded-xl font-bold text-sm transition-colors"
+            disabled={isChangingSort}
+            className={`py-3 px-2 rounded-xl font-bold text-sm transition-colors ${
+              isChangingSort
+                ? 'bg-gray-500 cursor-not-allowed text-white/60'
+                : 'bg-purple-600 hover:bg-purple-500 text-white'
+            }`}
             title={sortMode === 'suit' ? 'По масти' : sortMode === 'rank' ? 'По рангу' : 'По рангу + козыри'}
           >
             {sortMode === 'suit' ? '🎨 По масти' : sortMode === 'rank' ? '🔢 По рангу' : '🃏 Козыри'}
           </button>
           <button
-            onClick={() => {
-              const newValue = !soundEnabled;
-              setSoundEnabled(newValue);
-              localStorage.setItem('durak_sound', String(newValue));
-            }}
+            onClick={changeSound}
+            disabled={isChangingSound}
             className={`py-3 px-2 rounded-xl font-bold text-sm transition-colors ${
-              soundEnabled
+              isChangingSound
+                ? 'bg-gray-500 cursor-not-allowed text-white/60'
+                : soundEnabled
                 ? 'bg-indigo-600 hover:bg-indigo-500 text-white'
                 : 'bg-gray-600 hover:bg-gray-500 text-white/80'
             }`}
@@ -207,7 +229,12 @@ export const Menu: React.FC<MenuProps> = ({ onStartGame }) => {
           </button>
           <button
             onClick={changeTheme}
-            className="py-3 px-2 bg-pink-600 hover:bg-pink-500 text-white rounded-xl font-bold text-sm transition-colors"
+            disabled={isChangingTheme}
+            className={`py-3 px-2 rounded-xl font-bold text-sm transition-colors ${
+              isChangingTheme
+                ? 'bg-gray-500 cursor-not-allowed text-white/60'
+                : 'bg-pink-600 hover:bg-pink-500 text-white'
+            }`}
             title={`Тема: ${theme.name}`}
           >
             {theme.emoji} {theme.name}
