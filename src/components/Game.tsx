@@ -21,7 +21,7 @@ import {
   sortHand,
   findLowestTrump,
 } from '../gameLogic';
-import { RANK_VALUES } from '../types';
+import { RANK_VALUES, type DeckSize } from '../types';
 import { type Theme, themes, getNextTheme } from '../themes';
 
 type GameStatus = 'playing' | 'paused' | 'gameOver' | 'waiting';
@@ -503,10 +503,11 @@ const GAMES_WON_KEY = 'durak_games_won';
 
 interface GameProps {
   difficulty: Difficulty;
+  deckSize: DeckSize;
   onBackToMenu: () => void;
 }
 
-export const Game: React.FC<GameProps> = ({ difficulty, onBackToMenu }) => {
+export const Game: React.FC<GameProps> = ({ difficulty, deckSize, onBackToMenu }) => {
   const [state, dispatch] = useReducer(reducer, initialState);
   const [score, setScore] = useState(0);
   const [highScore, setHighScore] = useState(() => parseInt(localStorage.getItem(HIGH_SCORE_KEY) || '0'));
@@ -569,7 +570,7 @@ export const Game: React.FC<GameProps> = ({ difficulty, onBackToMenu }) => {
   // Initialize game
   const initGame = useCallback(() => {
     setIsTaking(false);
-    const newDeck = shuffleDeck(createDeck());
+    const newDeck = shuffleDeck(createDeck(deckSize));
     const trump = newDeck[newDeck.length - 1];
     const pHand = newDeck.splice(0, 6);
     const cHand = newDeck.splice(0, 6);
@@ -642,7 +643,7 @@ export const Game: React.FC<GameProps> = ({ difficulty, onBackToMenu }) => {
     }, 4500);
 
     setScore(0);
-  }, []);
+  }, [deckSize]);
 
   useEffect(() => {
     initGame();

@@ -1,12 +1,14 @@
-import { Card, Suit, Rank, TablePair, RANK_VALUES, Difficulty } from './types';
+import { Card, Suit, Rank, TablePair, RANK_VALUES, Difficulty, DeckSize } from './types';
 
 const SUITS: Suit[] = ['hearts', 'diamonds', 'clubs', 'spades'];
-const RANKS: Rank[] = ['6', '7', '8', '9', '10', 'J', 'Q', 'K', 'A'];
+const RANKS_36: Rank[] = ['6', '7', '8', '9', '10', 'J', 'Q', 'K', 'A'];
+const RANKS_52: Rank[] = ['2', '3', '4', '5', '6', '7', '8', '9', '10', 'J', 'Q', 'K', 'A'];
 
-export function createDeck(): Card[] {
+export function createDeck(deckSize: DeckSize = 36): Card[] {
   const deck: Card[] = [];
+  const ranks = deckSize === 52 ? RANKS_52 : RANKS_36;
   for (const suit of SUITS) {
-    for (const rank of RANKS) {
+    for (const rank of ranks) {
       deck.push({ suit, rank, id: `${rank}_${suit}` });
     }
   }

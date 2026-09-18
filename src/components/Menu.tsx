@@ -1,9 +1,9 @@
 import type React from 'react';
 import { useState, useEffect } from 'react';
-import { type Difficulty } from '../types';
+import { type Difficulty, type DeckSize } from '../types';
 
 interface MenuProps {
-  onStartGame: (difficulty: Difficulty) => void;
+  onStartGame: (difficulty: Difficulty, deckSize: DeckSize) => void;
 }
 
 const HIGH_SCORE_KEY = 'durak_high_score';
@@ -12,6 +12,7 @@ const GAMES_WON_KEY = 'durak_games_won';
 
 export const Menu: React.FC<MenuProps> = ({ onStartGame }) => {
   const [selectedDifficulty, setSelectedDifficulty] = useState<Difficulty>('casual');
+  const [selectedDeckSize, setSelectedDeckSize] = useState<DeckSize>(36);
   const [highScore, setHighScore] = useState(0);
   const [gamesPlayed, setGamesPlayed] = useState(0);
   const [gamesWon, setGamesWon] = useState(0);
@@ -103,9 +104,42 @@ export const Menu: React.FC<MenuProps> = ({ onStartGame }) => {
           </div>
         </div>
 
+        {/* Deck Size Selection */}
+        <div className="mb-6">
+          <h3 className="text-white/80 text-sm font-medium mb-3 text-center">
+            Количество карт
+          </h3>
+          <div className="grid grid-cols-2 gap-3">
+            <button
+              onClick={() => setSelectedDeckSize(36)}
+              className={`p-4 rounded-xl transition-all duration-200 border-2
+                ${selectedDeckSize === 36
+                  ? 'bg-green-600/40 border-green-400 shadow-lg shadow-green-500/20'
+                  : 'bg-black/20 border-transparent hover:bg-black/30 hover:border-white/20'
+                }`}
+            >
+              <div className="text-white font-bold text-lg mb-1">36 карт</div>
+              <div className="text-white/50 text-xs">Классическая игра</div>
+              <div className="text-white/40 text-xs mt-1">от 6 до туза</div>
+            </button>
+            <button
+              onClick={() => setSelectedDeckSize(52)}
+              className={`p-4 rounded-xl transition-all duration-200 border-2
+                ${selectedDeckSize === 52
+                  ? 'bg-green-600/40 border-green-400 shadow-lg shadow-green-500/20'
+                  : 'bg-black/20 border-transparent hover:bg-black/30 hover:border-white/20'
+                }`}
+            >
+              <div className="text-white font-bold text-lg mb-1">52 карты</div>
+              <div className="text-white/50 text-xs">Расширенная игра</div>
+              <div className="text-white/40 text-xs mt-1">от 2 до туза</div>
+            </button>
+          </div>
+        </div>
+
         {/* Start Button */}
         <button
-          onClick={() => onStartGame(selectedDifficulty)}
+          onClick={() => onStartGame(selectedDifficulty, selectedDeckSize)}
           className="w-full py-4 bg-gradient-to-r from-yellow-500 to-orange-500 hover:from-yellow-400 hover:to-orange-400
             text-white font-bold text-lg rounded-xl shadow-lg shadow-orange-500/30
             transition-all duration-200 active:scale-95 hover:scale-[1.02]"
@@ -137,7 +171,7 @@ export const Menu: React.FC<MenuProps> = ({ onStartGame }) => {
                 <div>
                   <h3 className="font-bold text-green-300 mb-2">🃏 Правила</h3>
                   <ul className="space-y-1 text-white/80">
-                    <li>• Колода из 36 карт (от 6 до туза)</li>
+                    <li>• Колода из 36 карт (от 6 до туза) или 52 карт (от 2 до туза)</li>
                     <li>• Козырная масть определяется последней картой колоды</li>
                     <li>• Каждый получает 6 карт. Ходит тот, у кого младший козырь</li>
                     <li>• Атакующий кладёт карту, защищающийся должен побить</li>

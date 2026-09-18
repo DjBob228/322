@@ -1,5 +1,5 @@
 export type Suit = 'hearts' | 'diamonds' | 'clubs' | 'spades';
-export type Rank = '6' | '7' | '8' | '9' | '10' | 'J' | 'Q' | 'K' | 'A';
+export type Rank = '2' | '3' | '4' | '5' | '6' | '7' | '8' | '9' | '10' | 'J' | 'Q' | 'K' | 'A';
 
 export interface Card {
   suit: Suit;
@@ -16,6 +16,7 @@ export type Difficulty = 'casual' | 'easy' | 'medium' | 'hard';
 export type GamePhase = 'menu' | 'playing' | 'paused' | 'gameOver';
 export type TurnPhase = 'attacking' | 'defending' | 'taking' | 'adding';
 export type Attacker = 'player' | 'computer';
+export type DeckSize = 36 | 52;
 
 export interface GameState {
   deck: Card[];
@@ -49,6 +50,10 @@ export const SUIT_COLORS: Record<Suit, string> = {
 };
 
 export const RANK_VALUES: Record<Rank, number> = {
+  '2': 2,
+  '3': 3,
+  '4': 4,
+  '5': 5,
   '6': 6,
   '7': 7,
   '8': 8,
