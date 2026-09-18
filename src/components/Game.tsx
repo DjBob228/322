@@ -261,9 +261,9 @@ function reducer(state: State, action: Action): State {
         ...state,
         computerHand: newHand,
         table: newTable,
-        showTakeButton: true,
-        message: 'Компьютер подкидывает. Защищайтесь!',
-        computerThinking: false,
+        showTakeButton: state.playerJustTook ? false : true, // Если игрок взял карты, не показываем кнопку "Взять"
+        message: state.playerJustTook ? 'Компьютер подкидывает...' : 'Компьютер подкидывает. Защищайтесь!',
+        computerThinking: state.playerJustTook ? true : false, // Если игрок взял карты, держим computerThinking=true чтобы предотвратить немедленный повторный вызов
         lastAttackCards: newLastAttackCards,
       };
     }
@@ -590,8 +590,6 @@ export const Game: React.FC<GameProps> = ({ difficulty, onBackToMenu }) => {
     }, 800 + Math.random() * 500);
   }, [difficulty]);
 
-  const computerThrowRef = useRef<() => void>(() => {});
-  
   const computerThrow = useCallback(() => {
     const cs = stateRef.current;
     if (cs.status !== 'playing' || cs.computerThinking) return;
@@ -602,8 +600,8 @@ export const Game: React.FC<GameProps> = ({ difficulty, onBackToMenu }) => {
       // Проверяем, можно ли подкинуть (максимум 6 карт на столе)
       const throwableCards = cs.computerHand.filter(c => cs.lastTableRanks.has(c.rank));
       
-      if (throwableCards.length === 0 || cs.table.length >= 6) {
-        // Нечего подкидывать или стол полон, забираем все карты со стола
+      if (throwableCards.length === 0 || cs.table.length >= 6 || difficulty === 'easy') {
+        // Нечего подкидывать, стол полон или легкий режим - забираем все карты со стола
         dispatch({ type: 'PLAYER_COLLECT_ALL' });
         dispatch({ type: 'END_ROUND', playerTook: true, computerTook: false });
         return;
@@ -624,32 +622,23 @@ export const Game: React.FC<GameProps> = ({ difficulty, onBackToMenu }) => {
             return RANK_VALUES[a.rank] - RANK_VALUES[b.rank];
           });
         
-        if (throwable.length > 0 && difficulty !== 'easy' && cs2.table.length < 6) {
+        if (throwable.length > 0 && cs2.table.length < 6) {
           // Подкидываем ОДНУ карту на стол
           const card = throwable[0];
           dispatch({ type: 'COMPUTER_THROW', card });
-          
-          // Ждем 1 секунду, чтобы игрок увидел карту, затем проверяем можно ли еще подкинуть
+          // После COMPUTER_THROW computerThinking=true (если playerJustTook)
+          // Ждем 1.5 секунды чтобы игрок увидел карту, затем сбрасываем computerThinking
           setTimeout(() => {
-            const cs3 = stateRef.current;
-            if (cs3.status !== 'playing') return;
-            
-            const canThrowMore = cs3.computerHand.some(c => cs3.lastTableRanks.has(c.rank));
-            if (canThrowMore && cs3.table.length < 6) {
-              // Можно еще подкинуть - вызываем computerThrow через ref
-              computerThrowRef.current();
-            } else {
-              // Нечего подкидывать, забираем все карты со стола
-              dispatch({ type: 'PLAYER_COLLECT_ALL' });
-              dispatch({ type: 'END_ROUND', playerTook: true, computerTook: false });
-            }
-          }, 1000); // Пауза 1 секунда между подкидываниями
+            dispatch({ type: 'SET_THINKING', thinking: false });
+            // useEffect снова сработает и вызовет computerThrow
+            // Если можно еще подкинуть - подкинем, если нет - заберем карты
+          }, 1500);
         } else {
-          // Нечего подкидывать или легкий режим, забираем все карты со стола
+          // Нечего подкидывать, забираем все карты со стола
           dispatch({ type: 'PLAYER_COLLECT_ALL' });
           dispatch({ type: 'END_ROUND', playerTook: true, computerTook: false });
         }
-      }, 800 + Math.random() * 400);
+      }, 1200 + Math.random() * 400); // Пауза 1.2-1.6 секунды между подкидываниями
       return;
     }
     
@@ -672,11 +661,6 @@ export const Game: React.FC<GameProps> = ({ difficulty, onBackToMenu }) => {
       }
     }, 600 + Math.random() * 400);
   }, [difficulty]);
-  
-  // Обновляем ref при каждом изменении computerThrow
-  useEffect(() => {
-    computerThrowRef.current = computerThrow;
-  }, [computerThrow]);
 
   const computerDefend = useCallback(() => {
     const cs = stateRef.current;
