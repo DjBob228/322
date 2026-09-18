@@ -1150,7 +1150,7 @@ export const Game: React.FC<GameProps> = ({ difficulty, deckSize, onBackToMenu }
       <div className="relative z-10 flex-1 flex flex-col p-3 gap-2 w-full min-h-0">
         {/* Computer Hand */}
         <div className="flex flex-col items-center shrink-0">
-          <div className="text-white/60 text-xs mb-1">
+          <div className="text-white/90 text-lg font-bold mb-1">
             🤖 Компьютер ({state.computerHand.length})
           </div>
           <div className="flex justify-center max-w-full px-2 overflow-visible">
