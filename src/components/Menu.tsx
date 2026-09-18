@@ -54,7 +54,7 @@ export const Menu: React.FC<MenuProps> = ({ onStartGame }) => {
         {/* Stats */}
         {(highScore > 0 || gamesPlayed > 0) && (
           <div className="bg-black/20 backdrop-blur-sm rounded-xl p-4 mb-6 border border-white/10">
-            <h3 className="text-white/80 text-sm font-medium mb-2 text-center">📊 Статистика</h3>
+            <h3 className="text-white/80 text-sm font-medium mb-2 text-center">Статистика</h3>
             <div className="grid grid-cols-3 gap-3 text-center">
               <div>
                 <div className="text-yellow-400 text-xl font-bold">{highScore}</div>
