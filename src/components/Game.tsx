@@ -1172,7 +1172,7 @@ export const Game: React.FC<GameProps> = ({ difficulty, deckSize, onBackToMenu }
                     marginLeft: i > 0 ? '-1.2rem' : '0',
                   }}
                 >
-                  <CardComponent card={card} faceDown className="w-14" />
+                  <CardComponent card={card} faceDown className="w-20" />
                 </div>
               ))}
             </div>
@@ -1198,11 +1198,11 @@ export const Game: React.FC<GameProps> = ({ difficulty, deckSize, onBackToMenu }
                 <div 
                   style={{ transform: 'rotate(90deg)' }}
                 >
-                  <CardComponent card={state.trumpCard} className="w-12 opacity-80" />
+                  <CardComponent card={state.trumpCard} className="w-20" />
                 </div>
               )}
               <div className="relative">
-                <CardComponent card={state.deck[0]} faceDown className="w-14" />
+                <CardComponent card={state.deck[0]} faceDown className="w-20" />
                 <div className="absolute -top-1 -right-1 bg-white text-green-800 rounded-full w-5 h-5 flex items-center justify-center text-[10px] font-bold shadow">
                   {state.deck.length}
                 </div>
