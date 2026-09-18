@@ -335,12 +335,19 @@ function reducer(state: State, action: Action): State {
       const tableCards = state.table.flatMap(p => [p.attack, ...(p.defense ? [p.defense] : [])]);
       const newHand = [...state.playerHand, ...tableCards];
       
+      // Бот видит карты, которые игрок забирает
+      const newCardsShown = new Set(state.cardsShownToComputer);
+      tableCards.forEach(card => {
+        newCardsShown.add(card.id);
+      });
+      
       return {
         ...state,
         playerHand: newHand,
         table: [], // Очищаем стол
         playerJustTook: false,
         lastTableRanks: new Set<string>(),
+        cardsShownToComputer: newCardsShown,
       };
     }
 
@@ -985,9 +992,7 @@ export const Game: React.FC<GameProps> = ({ difficulty, onBackToMenu }) => {
     const known = new Set<string>();
     
     if (difficulty === 'casual' || difficulty === 'easy') {
-      // Легкая и Обычная: противник знает только козырные карты, которые остались у игрока в конце игры
-      // В начале игры не показывает ничего
-      // В конце игры (когда колода пуста) показывает оставшиеся козыри
+      // Легкая и Обычная: противник знает только козырные карты в конце игры
       if (state.deck.length === 0) {
         state.playerHand.forEach(card => {
           if (card.suit === state.trumpSuit) {
@@ -996,30 +1001,26 @@ export const Game: React.FC<GameProps> = ({ difficulty, onBackToMenu }) => {
         });
       }
     } else if (difficulty === 'medium') {
-      // Средняя: противник знает все козыри, которые кидал игрок
-      // Показываем козыри из cardsShownToComputer
+      // Средняя: противник знает козыри, которые игрок забирает
       state.playerHand.forEach(card => {
         if (card.suit === state.trumpSuit && state.cardsShownToComputer.has(card.id)) {
           known.add(card.id);
         }
       });
-      // В конце игры также показываем оставшиеся козыри
+      // В конце игры знает ВСЕ карты игрока
       if (state.deck.length === 0) {
         state.playerHand.forEach(card => {
-          if (card.suit === state.trumpSuit) {
-            known.add(card.id);
-          }
+          known.add(card.id);
         });
       }
     } else if (difficulty === 'hard') {
-      // Сложная: противник знает все карты, которые игрок кидал
-      // Показываем все карты из cardsShownToComputer
+      // Сложная: противник знает ВСЕ карты, которые игрок забирает
       state.playerHand.forEach(card => {
         if (state.cardsShownToComputer.has(card.id)) {
           known.add(card.id);
         }
       });
-      // В конце игры также показываем все оставшиеся карты
+      // В конце игры знает ВСЕ карты игрока
       if (state.deck.length === 0) {
         state.playerHand.forEach(card => {
           known.add(card.id);
@@ -1055,7 +1056,7 @@ export const Game: React.FC<GameProps> = ({ difficulty, onBackToMenu }) => {
             ← Меню
           </button>
           <span className="text-white/60 text-sm">
-            {difficulty === 'casual' ? '🎯 Легкая' : difficulty === 'easy' ? '😊 Обычная' : difficulty === 'medium' ? '🤔 Средняя (знает козыри)' : '😈 Сложная (знает всё)'}
+            {difficulty === 'casual' ? '🎯 Легкая' : difficulty === 'easy' ? '😊 Обычная' : difficulty === 'medium' ? '🤔 Средняя (запоминает козыри)' : '😈 Сложная (запоминает всё)'}
           </span>
         </div>
 

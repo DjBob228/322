@@ -26,8 +26,8 @@ export const Menu: React.FC<MenuProps> = ({ onStartGame }) => {
   const difficulties: { key: Difficulty; label: string; emoji: string; desc: string }[] = [
     { key: 'casual', label: 'Легкая', emoji: '🎯', desc: 'С подсказками по картам' },
     { key: 'easy', label: 'Обычная', emoji: '😊', desc: 'Компьютер иногда ошибается' },
-    { key: 'medium', label: 'Средняя', emoji: '🤔', desc: 'Знает все козыри' },
-    { key: 'hard', label: 'Сложная', emoji: '😈', desc: 'Знает все ваши карты' },
+    { key: 'medium', label: 'Средняя', emoji: '🤔', desc: 'Запоминает козыри' },
+    { key: 'hard', label: 'Сложная', emoji: '😈', desc: 'Запоминает все карты' },
   ];
 
   return (
@@ -161,8 +161,8 @@ export const Menu: React.FC<MenuProps> = ({ onStartGame }) => {
                   <h3 className="font-bold text-green-300 mb-2">👁️ Что знает противник</h3>
                   <ul className="space-y-1 text-white/80">
                     <li>• <strong>Легкая/Обычная:</strong> Только козыри в конце игры</li>
-                    <li>• <strong>Средняя:</strong> Все козыри, которые вы показывали</li>
-                    <li>• <strong>Сложная:</strong> Все карты, которые вы показывали</li>
+                    <li>• <strong>Средняя:</strong> Запоминает козыри, которые вы забираете + все карты в конце</li>
+                    <li>• <strong>Сложная:</strong> Запоминает все карты, которые вы забираете + все карты в конце</li>
                   </ul>
                 </div>
               </div>
