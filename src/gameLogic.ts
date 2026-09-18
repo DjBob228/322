@@ -66,7 +66,8 @@ export function determineFirstAttacker(
   const playerLowest = findLowestTrump(playerHand, trumpSuit);
   const computerLowest = findLowestTrump(computerHand, trumpSuit);
 
-  if (!playerLowest && !computerLowest) return Math.random() > 0.5 ? 'player' : 'computer';
+  // Если ни у кого нет козыря, ходит игрок
+  if (!playerLowest && !computerLowest) return 'player';
   if (!playerLowest) return 'computer';
   if (!computerLowest) return 'player';
 

@@ -75,7 +75,8 @@ type Action =
   | { type: 'GAME_OVER'; message: string }
   | { type: 'COMPUTER_PASS' }
   | { type: 'SET_ANIMATING'; animation: 'player-takes' | 'computer-takes' | null }
-  | { type: 'SET_KNOWN_TRUMPS'; computerTrump: Card | null; playerTrump: Card | null };
+  | { type: 'SET_KNOWN_TRUMPS'; computerTrump: Card | null; playerTrump: Card | null }
+  | { type: 'SET_CARDS_SHOWN_TO_COMPUTER'; cards: Set<string> };
 
 function drawFromDeck(state: State): State {
   let deck = [...state.deck];
@@ -444,6 +445,12 @@ function reducer(state: State, action: Action): State {
         playerKnownTrump: action.playerTrump
       };
 
+    case 'SET_CARDS_SHOWN_TO_COMPUTER':
+      return {
+        ...state,
+        cardsShownToComputer: action.cards
+      };
+
     case 'DRAW_CARDS':
       return drawFromDeck(state);
 
@@ -515,6 +522,7 @@ export const Game: React.FC<GameProps> = ({ difficulty, onBackToMenu }) => {
   const [isFadingOut, setIsFadingOut] = useState(false);
   const [firstTurnMessageText, setFirstTurnMessageText] = useState('');
   const [screenWidth, setScreenWidth] = useState(typeof window !== 'undefined' ? window.innerWidth : 1024);
+  const [isTaking, setIsTaking] = useState(false);
   
   const theme = themes[currentTheme];
   
@@ -560,6 +568,7 @@ export const Game: React.FC<GameProps> = ({ difficulty, onBackToMenu }) => {
 
   // Initialize game
   const initGame = useCallback(() => {
+    setIsTaking(false);
     const newDeck = shuffleDeck(createDeck());
     const trump = newDeck[newDeck.length - 1];
     const pHand = newDeck.splice(0, 6);
@@ -585,6 +594,18 @@ export const Game: React.FC<GameProps> = ({ difficulty, onBackToMenu }) => {
       message = 'Ваш ход! Выберите карту для атаки.';
       firstTurnText = `🎯 Вы ходите первым\nМеньший козырь: ${playerLowestTrump?.rank || 'нет'} ${playerLowestTrump ? SUIT_SYMBOLS[playerLowestTrump.suit] : ''}`;
       playerKnownTrump = playerLowestTrump;
+      
+      // Во всех сложностях бот запоминает козырь игрока, если игрок ходит первым
+      if (playerLowestTrump) {
+        const initialKnownCards = new Set<string>();
+        initialKnownCards.add(playerLowestTrump.id);
+        setTimeout(() => {
+          dispatch({ 
+            type: 'SET_CARDS_SHOWN_TO_COMPUTER', 
+            cards: initialKnownCards 
+          });
+        }, 0);
+      }
     }
 
     dispatch({
@@ -840,6 +861,9 @@ export const Game: React.FC<GameProps> = ({ difficulty, onBackToMenu }) => {
   // Player takes cards
   const handleTake = () => {
     if (state.status !== 'playing') return;
+    if (isTaking) return; // Защита от множественных нажатий
+    
+    setIsTaking(true);
     
     // Start animation
     dispatch({ type: 'SET_ANIMATING', animation: 'player-takes' });
@@ -852,6 +876,11 @@ export const Game: React.FC<GameProps> = ({ difficulty, onBackToMenu }) => {
       
       // НЕ вызываем END_ROUND сразу - даём компьютеру возможность подкинуть карты
       // computerThrow автоматически обработает playerJustTook и подкинет карты или закончит раунд
+      
+      // Сбрасываем флаг после завершения анимации и подкидывания
+      setTimeout(() => {
+        setIsTaking(false);
+      }, 2000);
     }, 800);
   };
 
@@ -867,6 +896,7 @@ export const Game: React.FC<GameProps> = ({ difficulty, onBackToMenu }) => {
   // Restart game
   const restartGame = () => {
     if (computerTimeoutRef.current) clearTimeout(computerTimeoutRef.current);
+    setIsTaking(false);
     initGame();
   };
 
@@ -1058,7 +1088,7 @@ export const Game: React.FC<GameProps> = ({ difficulty, onBackToMenu }) => {
             ← Меню
           </button>
           <span className="text-white/60 text-sm">
-            {difficulty === 'casual' ? '🎯 Легкая' : difficulty === 'easy' ? '😊 Обычная' : difficulty === 'medium' ? '🤔 Средняя (запоминает козыри)' : '😈 Сложная (запоминает все карты)'}
+            {difficulty === 'casual' ? '🎯 Легкая' : difficulty === 'easy' ? '😊 Обычная' : difficulty === 'medium' ? '🤔 Средняя' : '😈 Сложная'}
           </span>
         </div>
 
@@ -1227,7 +1257,12 @@ export const Game: React.FC<GameProps> = ({ difficulty, onBackToMenu }) => {
           {state.showTakeButton && (
             <button
               onClick={handleTake}
-              className="px-3 py-2 bg-orange-500 hover:bg-orange-400 text-white rounded-lg font-bold text-sm transition-colors shadow-lg"
+              disabled={isTaking}
+              className={`px-3 py-2 text-white rounded-lg font-bold text-sm transition-colors shadow-lg ${
+                isTaking 
+                  ? 'bg-gray-500 cursor-not-allowed' 
+                  : 'bg-orange-500 hover:bg-orange-400'
+              }`}
             >
               📥 Взять
             </button>
