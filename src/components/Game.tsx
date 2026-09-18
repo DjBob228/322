@@ -22,6 +22,7 @@ import {
   findLowestTrump,
 } from '../gameLogic';
 import { RANK_VALUES } from '../types';
+import { type Theme, themes, getNextTheme } from '../themes';
 
 type GameStatus = 'playing' | 'paused' | 'gameOver' | 'waiting';
 type SortMode = 'suit' | 'rank' | 'rank-trump';
@@ -499,10 +500,15 @@ export const Game: React.FC<GameProps> = ({ difficulty, onBackToMenu }) => {
   const [gamesWon, setGamesWon] = useState(() => parseInt(localStorage.getItem(GAMES_WON_KEY) || '0'));
   const [sortMode, setSortMode] = useState<SortMode>('suit');
   const [soundEnabled, setSoundEnabled] = useState(() => localStorage.getItem('durak_sound') !== 'false');
+  const [currentTheme, setCurrentTheme] = useState<Theme>(() => 
+    (localStorage.getItem('durak_theme') as Theme) || 'green'
+  );
   const [showExitConfirm, setShowExitConfirm] = useState(false);
   const [showFirstTurnMessage, setShowFirstTurnMessage] = useState(false);
   const [firstTurnMessageText, setFirstTurnMessageText] = useState('');
   const [screenWidth, setScreenWidth] = useState(typeof window !== 'undefined' ? window.innerWidth : 1024);
+  
+  const theme = themes[currentTheme];
   
   // Audio context for sounds
   const audioContextRef = useRef<AudioContext | null>(null);
@@ -532,6 +538,13 @@ export const Game: React.FC<GameProps> = ({ difficulty, onBackToMenu }) => {
     window.addEventListener('resize', handleResize);
     return () => window.removeEventListener('resize', handleResize);
   }, []);
+
+  // Change theme
+  const changeTheme = () => {
+    const nextTheme = getNextTheme(currentTheme);
+    setCurrentTheme(nextTheme);
+    localStorage.setItem('durak_theme', nextTheme);
+  };
 
   const computerTimeoutRef = useRef<number | null>(null);
   const stateRef = useRef(state);
@@ -1013,9 +1026,15 @@ export const Game: React.FC<GameProps> = ({ difficulty, onBackToMenu }) => {
   const computerKnownCards = getComputerKnownCards();
 
   return (
-    <div className="min-h-screen h-screen bg-gradient-to-b from-green-800 via-green-700 to-green-900 flex flex-col relative overflow-y-auto pb-4">
-      {/* Felt texture */}
-      <div className="absolute inset-0 opacity-10 bg-[radial-gradient(circle_at_50%_50%,rgba(255,255,255,0.1)_1px,transparent_1px)] bg-[length:20px_20px] pointer-events-none" />
+    <div className={`min-h-screen h-screen bg-gradient-to-b ${theme.background} flex flex-col relative overflow-y-auto pb-4`}>
+      {/* Felt texture with pattern */}
+      <div className="absolute inset-0 opacity-10 pointer-events-none" style={{
+        backgroundImage: `
+          radial-gradient(circle at 50% 50%, rgba(255,255,255,0.1) 1px, transparent 1px),
+          repeating-linear-gradient(45deg, transparent, transparent 10px, ${theme.patternColor} 10px, ${theme.patternColor} 11px)
+        `,
+        backgroundSize: '20px 20px, 20px 20px'
+      }} />
 
       {/* Header */}
       <div className="relative z-10 flex items-center justify-between p-3 bg-black/20 backdrop-blur-sm shrink-0">
@@ -1059,6 +1078,13 @@ export const Game: React.FC<GameProps> = ({ difficulty, onBackToMenu }) => {
             className="px-3 py-2 text-sm bg-indigo-600 hover:bg-indigo-500 text-white rounded-lg transition-colors"
           >
             {soundEnabled ? '🔊' : '🔇'}
+          </button>
+          <button
+            onClick={changeTheme}
+            className="px-3 py-2 text-sm bg-pink-600 hover:bg-pink-500 text-white rounded-lg transition-colors"
+            title={`Тема: ${theme.name}`}
+          >
+            {theme.emoji}
           </button>
         </div>
       </div>
@@ -1119,9 +1145,16 @@ export const Game: React.FC<GameProps> = ({ difficulty, onBackToMenu }) => {
         </div>
 
         {/* Table */}
-        <div className="flex-1 min-h-[130px] bg-green-600/20 rounded-xl border-2 border-green-500/20 flex items-center justify-center p-3 relative">
+        <div className={`flex-1 min-h-[130px] ${theme.tableBg} rounded-xl border-2 ${theme.tableBorder} flex items-center justify-center p-3 relative overflow-hidden`}>
+          {/* Table pattern */}
+          <div className="absolute inset-0 opacity-5 pointer-events-none" style={{
+            backgroundImage: `
+              repeating-linear-gradient(45deg, transparent, transparent 15px, rgba(255,255,255,0.1) 15px, rgba(255,255,255,0.1) 16px),
+              repeating-linear-gradient(-45deg, transparent, transparent 15px, rgba(255,255,255,0.1) 15px, rgba(255,255,255,0.1) 16px)
+            `
+          }} />
           <div 
-            className="flex flex-wrap gap-3 items-center justify-center"
+            className="flex flex-wrap gap-3 items-center justify-center relative z-10"
             style={{
               transform: state.table.length > 4 
                 ? `scale(${Math.max(0.6, 1 - (state.table.length - 4) * 0.08)})`
