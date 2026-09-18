@@ -681,8 +681,8 @@ export const Game: React.FC<GameProps> = ({ difficulty, onBackToMenu }) => {
       // Проверяем, можно ли подкинуть (максимум 6 карт на столе)
       const throwableCards = cs.computerHand.filter(c => cs.lastTableRanks.has(c.rank));
       
-      if (throwableCards.length === 0 || cs.table.length >= 6 || difficulty === 'easy') {
-        // Нечего подкидывать, стол полон или легкий режим - забираем все карты со стола
+      if (throwableCards.length === 0 || cs.table.length >= 6) {
+        // Нечего подкидывать или стол полон - забираем все карты со стола
         dispatch({ type: 'PLAYER_COLLECT_ALL' });
         dispatch({ type: 'END_ROUND', playerTook: true, computerTook: false });
         return;
@@ -703,7 +703,22 @@ export const Game: React.FC<GameProps> = ({ difficulty, onBackToMenu }) => {
             return RANK_VALUES[a.rank] - RANK_VALUES[b.rank];
           });
         
-        if (throwable.length > 0 && cs2.table.length < 6) {
+        // Обдумываем полезность подкидывания в зависимости от сложности
+        let shouldThrow = true;
+        
+        if (difficulty === 'easy') {
+          // Легкая: 50% шанс НЕ подкидывать
+          shouldThrow = Math.random() > 0.5;
+        } else if (difficulty === 'casual') {
+          // Казуальная: 40% шанс НЕ подкидывать
+          shouldThrow = Math.random() > 0.4;
+        } else if (difficulty === 'medium') {
+          // Средняя: 25% шанс НЕ подкидывать
+          shouldThrow = Math.random() > 0.25;
+        }
+        // Сложная: всегда подкидывает
+        
+        if (throwable.length > 0 && cs2.table.length < 6 && shouldThrow) {
           // Подкидываем ОДНУ карту на стол
           const card = throwable[0];
           dispatch({ type: 'COMPUTER_THROW', card });
@@ -715,7 +730,7 @@ export const Game: React.FC<GameProps> = ({ difficulty, onBackToMenu }) => {
             // Если можно еще подкинуть - подкинем, если нет - заберем карты
           }, 1500);
         } else {
-          // Нечего подкидывать, забираем все карты со стола
+          // Нечего подкидывать или решили не подкидывать, забираем все карты со стола
           dispatch({ type: 'PLAYER_COLLECT_ALL' });
           dispatch({ type: 'END_ROUND', playerTook: true, computerTook: false });
         }
@@ -1022,7 +1037,14 @@ export const Game: React.FC<GameProps> = ({ difficulty, onBackToMenu }) => {
     const known = new Set<string>();
     
     if (difficulty === 'casual' || difficulty === 'easy') {
-      // Легкая и Обычная: противник знает только козырные карты в конце игры
+      // Легкая и Обычная: противник знает козырь игрока в начале (если игрок ходит первым)
+      // и козырные карты в конце игры
+      state.playerHand.forEach(card => {
+        if (card.suit === state.trumpSuit && state.cardsShownToComputer.has(card.id)) {
+          known.add(card.id);
+        }
+      });
+      // В конце игры знает все козыри
       if (state.deck.length === 0) {
         state.playerHand.forEach(card => {
           if (card.suit === state.trumpSuit) {

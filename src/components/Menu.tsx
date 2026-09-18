@@ -24,10 +24,10 @@ export const Menu: React.FC<MenuProps> = ({ onStartGame }) => {
   }, []);
 
   const difficulties: { key: Difficulty; label: string; emoji: string; desc: string }[] = [
-    { key: 'casual', label: 'Легкая', emoji: '🎯', desc: 'С подсказками по картам' },
-    { key: 'easy', label: 'Обычная', emoji: '😊', desc: 'Компьютер иногда ошибается' },
-    { key: 'medium', label: 'Средняя', emoji: '🤔', desc: 'Запоминает козыри' },
-    { key: 'hard', label: 'Сложная', emoji: '😈', desc: 'Запоминает все карты' },
+    { key: 'casual', label: 'Легкая', emoji: '🎯', desc: 'С подсказками, редко подкидывает' },
+    { key: 'easy', label: 'Обычная', emoji: '😊', desc: 'Иногда ошибается, редко подкидывает' },
+    { key: 'medium', label: 'Средняя', emoji: '🤔', desc: 'Запоминает козыри, обдумывает ходы' },
+    { key: 'hard', label: 'Сложная', emoji: '😈', desc: 'Запоминает все, всегда подкидывает' },
   ];
 
   return (
@@ -163,6 +163,16 @@ export const Menu: React.FC<MenuProps> = ({ onStartGame }) => {
                     <li>• <strong>Легкая/Обычная:</strong> Ваш козырь в начале + козыри в конце игры</li>
                     <li>• <strong>Средняя:</strong> Ваш козырь в начале + козыри, которые вы забираете + все козыри в конце</li>
                     <li>• <strong>Сложная:</strong> Ваш козырь в начале + все карты, которые вы забираете + все карты в конце</li>
+                  </ul>
+                </div>
+
+                <div>
+                  <h3 className="font-bold text-green-300 mb-2">🎲 Подкидывание карт</h3>
+                  <ul className="space-y-1 text-white/80">
+                    <li>• <strong>Легкая:</strong> 60% шанс подкинуть</li>
+                    <li>• <strong>Обычная:</strong> 50% шанс подкинуть</li>
+                    <li>• <strong>Средняя:</strong> 75% шанс подкинуть</li>
+                    <li>• <strong>Сложная:</strong> Всегда подкидывает</li>
                   </ul>
                 </div>
               </div>

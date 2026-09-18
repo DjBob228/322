@@ -167,10 +167,6 @@ export function computerShouldThrow(
   difficulty: Difficulty,
   defenderHandSize: number
 ): Card | null {
-  if (difficulty === 'easy') {
-    if (Math.random() > 0.4) return null;
-  }
-
   const playable = hand.filter(c => canThrowCard(c, table));
   if (playable.length === 0) return null;
 
@@ -186,6 +182,21 @@ export function computerShouldThrow(
     return RANK_VALUES[a.rank] - RANK_VALUES[b.rank];
   });
 
+  // Легкая сложность: 40% шанс НЕ подкидывать
+  if (difficulty === 'easy') {
+    if (Math.random() > 0.6) return null;
+  }
+
+  // Казуальная сложность: 30% шанс НЕ подкидывать
+  if (difficulty === 'casual') {
+    if (Math.random() > 0.7) return null;
+  }
+
+  // Средняя сложность: 20% шанс НЕ подкидывать
+  if (difficulty === 'medium') {
+    if (Math.random() > 0.8) return null;
+  }
+
   if (difficulty === 'hard') {
     // Throw low non-trump cards
     const lowNonTrump = sorted.filter(c => c.suit !== trumpSuit && RANK_VALUES[c.rank] <= 9);
@@ -194,6 +205,7 @@ export function computerShouldThrow(
     return null;
   }
 
+  // Для casual, easy и medium - подкидываем не-козырные карты
   if (sorted[0] && sorted[0].suit !== trumpSuit) return sorted[0];
   return null;
 }
