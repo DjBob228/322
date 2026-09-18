@@ -12,7 +12,7 @@ export interface TablePair {
   defense: Card | null;
 }
 
-export type Difficulty = 'casual' | 'easy' | 'medium' | 'hard';
+export type Difficulty = 'easy' | 'medium' | 'hard';
 export type GamePhase = 'menu' | 'playing' | 'paused' | 'gameOver';
 export type TurnPhase = 'attacking' | 'defending' | 'taking' | 'adding';
 export type Attacker = 'player' | 'computer';

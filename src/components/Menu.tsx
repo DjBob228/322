@@ -11,12 +11,13 @@ const GAMES_PLAYED_KEY = 'durak_games_played';
 const GAMES_WON_KEY = 'durak_games_won';
 
 export const Menu: React.FC<MenuProps> = ({ onStartGame }) => {
-  const [selectedDifficulty, setSelectedDifficulty] = useState<Difficulty>('casual');
+  const [selectedDifficulty, setSelectedDifficulty] = useState<Difficulty>('easy');
   const [selectedDeckSize, setSelectedDeckSize] = useState<DeckSize>(36);
   const [highScore, setHighScore] = useState(0);
   const [gamesPlayed, setGamesPlayed] = useState(0);
   const [gamesWon, setGamesWon] = useState(0);
   const [showHowToPlay, setShowHowToPlay] = useState(false);
+  const [hintsEnabled, setHintsEnabled] = useState(() => localStorage.getItem('durak_hints') !== 'false');
 
   useEffect(() => {
     setHighScore(parseInt(localStorage.getItem(HIGH_SCORE_KEY) || '0'));
@@ -25,10 +26,9 @@ export const Menu: React.FC<MenuProps> = ({ onStartGame }) => {
   }, []);
 
   const difficulties: { key: Difficulty; label: string; emoji: string; desc: string }[] = [
-    { key: 'casual', label: 'Легкая', emoji: '🎯', desc: 'С подсказками, редко подкидывает' },
-    { key: 'easy', label: 'Обычная', emoji: '😊', desc: 'Иногда ошибается, редко подкидывает' },
-    { key: 'medium', label: 'Средняя', emoji: '🤔', desc: 'Запоминает козыри, обдумывает ходы' },
-    { key: 'hard', label: 'Сложная', emoji: '😈', desc: 'Запоминает все, всегда подкидывает' },
+    { key: 'easy', label: 'Легкая', emoji: '😊', desc: 'Компьютер иногда ошибается' },
+    { key: 'medium', label: 'Средняя', emoji: '🤔', desc: 'Запоминает козыри' },
+    { key: 'hard', label: 'Сложная', emoji: '😈', desc: 'Запоминает все карты' },
   ];
 
   return (
@@ -137,6 +137,24 @@ export const Menu: React.FC<MenuProps> = ({ onStartGame }) => {
           </div>
         </div>
 
+        {/* Hints Toggle */}
+        <div className="mb-4">
+          <button
+            onClick={() => {
+              const newValue = !hintsEnabled;
+              setHintsEnabled(newValue);
+              localStorage.setItem('durak_hints', String(newValue));
+            }}
+            className={`w-full py-3 rounded-xl font-bold text-base transition-all duration-200 ${
+              hintsEnabled
+                ? 'bg-purple-600 hover:bg-purple-500 text-white shadow-lg shadow-purple-500/30'
+                : 'bg-gray-600 hover:bg-gray-500 text-white/80'
+            }`}
+          >
+            {hintsEnabled ? '💡 Подсказки: ВКЛ' : '💡 Подсказки: ВЫКЛ'}
+          </button>
+        </div>
+
         {/* Start Button */}
         <button
           onClick={() => onStartGame(selectedDifficulty, selectedDeckSize)}
@@ -193,7 +211,7 @@ export const Menu: React.FC<MenuProps> = ({ onStartGame }) => {
                 <div>
                   <h3 className="font-bold text-green-300 mb-2">👁️ Что знает противник</h3>
                   <ul className="space-y-1 text-white/80">
-                    <li>• <strong>Легкая/Обычная:</strong> Ваш козырь в начале + козыри в конце игры</li>
+                    <li>• <strong>Легкая:</strong> Ваш козырь в начале + козыри в конце игры</li>
                     <li>• <strong>Средняя:</strong> Ваш козырь в начале + козыри, которые вы забираете + все козыри в конце</li>
                     <li>• <strong>Сложная:</strong> Ваш козырь в начале + все карты, которые вы забираете + все карты в конце</li>
                   </ul>

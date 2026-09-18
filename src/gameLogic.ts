@@ -99,7 +99,7 @@ export function computerChooseAttack(
     return RANK_VALUES[a.rank] - RANK_VALUES[b.rank];
   });
 
-  if (difficulty === 'casual' || difficulty === 'medium') {
+  if (difficulty === 'medium') {
     // Sometimes play higher cards
     if (Math.random() > 0.6) {
       return sorted[Math.floor(Math.random() * Math.min(3, sorted.length))];
@@ -135,7 +135,7 @@ export function computerChooseDefense(
     return RANK_VALUES[a.rank] - RANK_VALUES[b.rank];
   });
 
-  if (difficulty === 'casual' || difficulty === 'medium') {
+  if (difficulty === 'medium') {
     return sorted[0];
   }
 
@@ -189,11 +189,6 @@ export function computerShouldThrow(
     if (Math.random() > 0.6) return null;
   }
 
-  // Казуальная сложность: 30% шанс НЕ подкидывать
-  if (difficulty === 'casual') {
-    if (Math.random() > 0.7) return null;
-  }
-
   // Средняя сложность: 20% шанс НЕ подкидывать
   if (difficulty === 'medium') {
     if (Math.random() > 0.8) return null;
@@ -207,7 +202,7 @@ export function computerShouldThrow(
     return null;
   }
 
-  // Для casual, easy и medium - подкидываем не-козырные карты
+  // Для easy и medium - подкидываем не-козырные карты
   if (sorted[0] && sorted[0].suit !== trumpSuit) return sorted[0];
   return null;
 }

@@ -528,6 +528,7 @@ export const Game: React.FC<GameProps> = ({ difficulty, deckSize, onBackToMenu }
   const [currentTheme, setCurrentTheme] = useState<Theme>(() => 
     (localStorage.getItem('durak_theme') as Theme) || 'green'
   );
+  const [hintsEnabled, setHintsEnabled] = useState(() => localStorage.getItem('durak_hints') !== 'false');
   const [showExitConfirm, setShowExitConfirm] = useState(false);
   const [showFirstTurnMessage, setShowFirstTurnMessage] = useState(false);
   const [isFadingOut, setIsFadingOut] = useState(false);
@@ -720,9 +721,6 @@ export const Game: React.FC<GameProps> = ({ difficulty, deckSize, onBackToMenu }
         if (difficulty === 'easy') {
           // Легкая: 50% шанс НЕ подкидывать
           shouldThrow = Math.random() > 0.5;
-        } else if (difficulty === 'casual') {
-          // Казуальная: 40% шанс НЕ подкидывать
-          shouldThrow = Math.random() > 0.4;
         } else if (difficulty === 'medium') {
           // Средняя: 25% шанс НЕ подкидывать
           shouldThrow = Math.random() > 0.25;
@@ -934,13 +932,8 @@ export const Game: React.FC<GameProps> = ({ difficulty, deckSize, onBackToMenu }
       localStorage.setItem(GAMES_PLAYED_KEY, String(newGP));
 
       if (state.gameOverMessage.includes('победили')) {
-        const newScore = score + 100;
-        setScore(newScore);
-        const newHS = Math.max(highScore, newScore);
-        setHighScore(newHS);
         const newGW = gamesWon + 1;
         setGamesWon(newGW);
-        localStorage.setItem(HIGH_SCORE_KEY, String(newHS));
         localStorage.setItem(GAMES_WON_KEY, String(newGW));
         playSound('win');
       } else if (state.gameOverMessage.includes('проиграли')) {
@@ -1020,8 +1013,8 @@ export const Game: React.FC<GameProps> = ({ difficulty, deckSize, onBackToMenu }
   // Get playable cards
   const getPlayableCards = (): Set<string> => {
     const playable = new Set<string>();
-    // Подсветка только в казуальном режиме
-    if (difficulty !== 'casual') return playable;
+    // Подсветка только если включены подсказки
+    if (!hintsEnabled) return playable;
     if (state.computerThinking) return playable;
 
     if (state.attacker === 'player') {
@@ -1047,8 +1040,8 @@ export const Game: React.FC<GameProps> = ({ difficulty, deckSize, onBackToMenu }
   const getComputerKnownCards = (): Set<string> => {
     const known = new Set<string>();
     
-    if (difficulty === 'casual' || difficulty === 'easy') {
-      // Легкая и Обычная: противник знает козырь игрока в начале (если игрок ходит первым)
+    if (difficulty === 'easy') {
+      // Легкая: противник знает козырь игрока в начале (если игрок ходит первым)
       // и козырные карты в конце игры
       state.playerHand.forEach(card => {
         if (card.suit === state.trumpSuit && state.cardsShownToComputer.has(card.id)) {
@@ -1121,7 +1114,7 @@ export const Game: React.FC<GameProps> = ({ difficulty, deckSize, onBackToMenu }
             ← Меню
           </button>
           <span className="text-white/60 text-sm">
-            {difficulty === 'casual' ? '🎯 Легкая' : difficulty === 'easy' ? '😊 Обычная' : difficulty === 'medium' ? '🤔 Средняя' : '😈 Сложная'}
+            {difficulty === 'easy' ? '😊 Легкая' : difficulty === 'medium' ? '🤔 Средняя' : '😈 Сложная'}
           </span>
         </div>
 
@@ -1160,6 +1153,21 @@ export const Game: React.FC<GameProps> = ({ difficulty, deckSize, onBackToMenu }
             title={`Тема: ${theme.name}`}
           >
             {theme.emoji}
+          </button>
+          <button
+            onClick={() => {
+              const newValue = !hintsEnabled;
+              setHintsEnabled(newValue);
+              localStorage.setItem('durak_hints', String(newValue));
+            }}
+            className={`px-3 py-2 text-sm rounded-lg transition-colors ${
+              hintsEnabled
+                ? 'bg-purple-600 hover:bg-purple-500 text-white'
+                : 'bg-gray-600 hover:bg-gray-500 text-white/80'
+            }`}
+            title={hintsEnabled ? 'Подсказки включены' : 'Подсказки выключены'}
+          >
+            💡
           </button>
         </div>
       </div>
