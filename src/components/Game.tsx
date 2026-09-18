@@ -921,10 +921,38 @@ export const Game: React.FC<GameProps> = ({ difficulty, onBackToMenu }) => {
     return playable;
   };
 
-  // Получаем карты, которые знает противник
+  // Получаем карты, которые знает противник в зависимости от сложности
   const getComputerKnownCards = (): Set<string> => {
-    // Противник знает все карты, которые игрок показал во время игры
-    return state.cardsShownToComputer;
+    const known = new Set<string>();
+    
+    if (difficulty === 'casual' || difficulty === 'easy') {
+      // Легкая и Обычная: противник знает только козырные карты, которые остались у игрока в конце игры
+      // В начале игры не показывает ничего
+      // В конце игры (когда колода пуста) показывает оставшиеся козыри
+      if (state.deck.length === 0) {
+        state.playerHand.forEach(card => {
+          if (card.suit === state.trumpSuit) {
+            known.add(card.id);
+          }
+        });
+      }
+    } else if (difficulty === 'medium') {
+      // Средняя: противник знает все козыри, которые кидал игрок и бот
+      state.playerHand.forEach(card => {
+        if (card.suit === state.trumpSuit && state.cardsShownToComputer.has(card.id)) {
+          known.add(card.id);
+        }
+      });
+    } else if (difficulty === 'hard') {
+      // Сложная: противник знает все карты, которые игрок кидал
+      state.playerHand.forEach(card => {
+        if (state.cardsShownToComputer.has(card.id)) {
+          known.add(card.id);
+        }
+      });
+    }
+    
+    return known;
   };
 
   const playableCards = getPlayableCards();
@@ -945,7 +973,7 @@ export const Game: React.FC<GameProps> = ({ difficulty, onBackToMenu }) => {
             ← Меню
           </button>
           <span className="text-white/60 text-sm">
-            {difficulty === 'casual' ? '🎯 Легкая' : difficulty === 'easy' ? '😊 Обычная' : difficulty === 'medium' ? '🤔 Средняя' : '😈 Сложная'}
+            {difficulty === 'casual' ? '🎯 Легкая' : difficulty === 'easy' ? '😊 Обычная' : difficulty === 'medium' ? '🤔 Средняя (знает козыри)' : '😈 Сложная (знает всё)'}
           </span>
         </div>
 

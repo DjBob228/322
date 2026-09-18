@@ -53,8 +53,7 @@ export const CardComponent: React.FC<CardProps> = ({
         ${isSelected ? 'border-yellow-400 -translate-y-3 shadow-yellow-200 shadow-lg scale-105 z-50' : 'hover:z-40'}
         ${isPlayable && !isSelected && isTrump ? 'border-purple-400 hover:-translate-y-2 hover:shadow-lg shadow-purple-200' : ''}
         ${isPlayable && !isSelected && !isTrump ? 'border-green-400 hover:-translate-y-2 hover:shadow-lg' : ''}
-        ${isKnownByComputer && !isSelected && !isPlayable ? 'border-orange-400 shadow-orange-200 shadow-md' : ''}
-        ${!isSelected && !isPlayable && !isKnownByComputer ? 'border-gray-200 hover:border-gray-300' : ''}
+        ${!isSelected && !isPlayable ? 'border-gray-200 hover:border-gray-300' : ''}
         ${onClick ? 'active:scale-95' : ''}
         animate-card-appear ${className}`}
       style={{
@@ -62,6 +61,11 @@ export const CardComponent: React.FC<CardProps> = ({
         aspectRatio: '2.5/3.5',
       }}
     >
+      {isKnownByComputer && !isSelected && (
+        <div className="absolute -top-2 -right-2 text-sm bg-red-500 rounded-full w-5 h-5 flex items-center justify-center shadow-lg z-10">
+          👁️
+        </div>
+      )}
       <div className="self-start text-left" style={{ color: suitColor }}>
         <div className="text-xs font-bold leading-tight">{card.rank}</div>
         <div className="text-xs leading-tight">{suitSymbol}</div>

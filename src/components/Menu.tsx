@@ -26,8 +26,8 @@ export const Menu: React.FC<MenuProps> = ({ onStartGame }) => {
   const difficulties: { key: Difficulty; label: string; emoji: string; desc: string }[] = [
     { key: 'casual', label: 'Легкая', emoji: '🎯', desc: 'С подсказками по картам' },
     { key: 'easy', label: 'Обычная', emoji: '😊', desc: 'Компьютер иногда ошибается' },
-    { key: 'medium', label: 'Средняя', emoji: '🤔', desc: 'Сбалансированная игра' },
-    { key: 'hard', label: 'Сложная', emoji: '😈', desc: 'Оптимальная стратегия' },
+    { key: 'medium', label: 'Средняя', emoji: '🤔', desc: 'Знает все козыри' },
+    { key: 'hard', label: 'Сложная', emoji: '😈', desc: 'Знает все ваши карты' },
   ];
 
   return (
@@ -153,7 +153,16 @@ export const Menu: React.FC<MenuProps> = ({ onStartGame }) => {
                   <ul className="space-y-1 text-white/80">
                     <li>• Подсветка доступных карт в казуальном режиме</li>
                     <li>• Система "погонов" — если проигравший остался с 5+ картами</li>
-                    <li>• Отслеживание карт, которые видел противник</li>
+                    <li>• Глазик над картой показывает, что противник знает эту карту</li>
+                  </ul>
+                </div>
+
+                <div>
+                  <h3 className="font-bold text-green-300 mb-2">👁️ Что знает противник</h3>
+                  <ul className="space-y-1 text-white/80">
+                    <li>• <strong>Легкая/Обычная:</strong> Только козыри в конце игры</li>
+                    <li>• <strong>Средняя:</strong> Все козыри, которые вы показывали</li>
+                    <li>• <strong>Сложная:</strong> Все карты, которые вы показывали</li>
                   </ul>
                 </div>
               </div>
