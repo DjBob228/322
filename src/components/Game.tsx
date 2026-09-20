@@ -783,7 +783,7 @@ export const Game: React.FC<GameProps> = ({ difficulty, deckSize, onBackToMenu }
       const cs2 = stateRef.current;
       if (cs2.status !== 'playing' || cs2.attacker !== 'computer') return;
       
-      const card = computerShouldThrow(cs2.computerHand, cs2.table, cs2.trumpSuit, difficulty, cs2.playerHand.length);
+      const card = computerShouldThrow(cs2.computerHand, cs2.table, cs2.trumpSuit, difficulty, cs2.playerHand);
       if (card && cs2.table.length < 6) {
         dispatch({ type: 'COMPUTER_THROW', card });
       } else {
