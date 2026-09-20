@@ -230,6 +230,11 @@ function reducer(state: State, action: Action): State {
     }
 
     case 'PLAYER_THROW_AFTER_COMPUTER_TAKES': {
+      // Проверка: нельзя подкинуть больше 6 карт на стол
+      if (state.table.length >= 6) {
+        return state; // Возвращаем состояние без изменений
+      }
+      
       // Игрок подкидывает карту после того, как компьютер взял карты
       const newHand = state.playerHand.filter(c => c.id !== action.card.id);
       // Карта идёт на стол, а не сразу в руку компьютера
@@ -1083,12 +1088,19 @@ export const Game: React.FC<GameProps> = ({ difficulty, deckSize, onBackToMenu }
     setIsTaking(true);
     playSound('collect'); // Сразу воспроизводим звук
     
-    // Даём боту время подкинуть карты (1 секунда)
+    // Карта остается на столе, бот думает подкидывать или нет
+    // Анимация НЕ запускается сразу
+    
+    // Даём боту время подкинуть карты (1.5 секунды)
     setTimeout(() => {
-      // Теперь запускаем анимацию для всех карт на столе (включая подкинутые)
+      // Проверяем, подкинул ли бот карты
+      const currentState = stateRef.current;
+      
+      // Если бот подкинул карты, они уже на столе
+      // Теперь запускаем анимацию для ВСЕХ карт на столе
       dispatch({ type: 'SET_ANIMATING', animation: 'player-takes' });
       
-      // Ждём завершения анимации (0.4 секунды)
+      // Ждём завершения анимации (0.6 секунды)
       setTimeout(() => {
         dispatch({ type: 'PLAYER_TAKES' });
         dispatch({ type: 'SET_ANIMATING', animation: null });
@@ -1098,8 +1110,8 @@ export const Game: React.FC<GameProps> = ({ difficulty, deckSize, onBackToMenu }
         setTimeout(() => {
           setIsTaking(false);
         }, 300);
-      }, 400);
-    }, 1000); // Даём боту 1 секунду на подкидывание карт
+      }, 600);
+    }, 1500); // Даём боту 1.5 секунды на подкидывание карт
   };
 
   // Player passes (bito)
@@ -1523,8 +1535,9 @@ export const Game: React.FC<GameProps> = ({ difficulty, deckSize, onBackToMenu }
                 {/* 3D stack effect - dynamic layers based on deck size */}
                 {(() => {
                   // Показываем слои пропорционально количеству карт
-                  // 1-6 карт: 1 слой, 7-12: 2 слоя, 13-18: 3 слоя, 19+: 4 слоя
-                  const layerCount = Math.min(4, Math.max(1, Math.ceil(state.deck.length / 6)));
+                  // 1 карта: 0 слоев (нет 3D эффекта)
+                  // 2-6 карт: 1 слой, 7-12: 2 слоя, 13-18: 3 слоя, 19+: 4 слоя
+                  const layerCount = state.deck.length === 1 ? 0 : Math.min(4, Math.max(1, Math.ceil(state.deck.length / 6)));
                   return Array.from({ length: layerCount }, (_, i) => (
                     <div 
                       key={i}
