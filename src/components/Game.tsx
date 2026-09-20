@@ -1366,8 +1366,14 @@ export const Game: React.FC<GameProps> = ({ difficulty, deckSize, onBackToMenu }
                 </div>
               )}
               <div className="relative">
-                <CardComponent card={state.deck[0]} faceDown className="w-20" />
-                <div className="absolute -top-1 -right-1 bg-white text-green-800 rounded-full w-5 h-5 flex items-center justify-center text-[10px] font-bold shadow">
+                {/* 3D stack effect - bottom layers */}
+                <div className="absolute inset-0 bg-gradient-to-br from-blue-700 to-blue-900 rounded-lg border-2 border-blue-500 shadow-md" style={{ transform: 'translate(2px, 2px)' }}></div>
+                <div className="absolute inset-0 bg-gradient-to-br from-blue-700 to-blue-900 rounded-lg border-2 border-blue-500 shadow-md" style={{ transform: 'translate(4px, 4px)' }}></div>
+                <div className="absolute inset-0 bg-gradient-to-br from-blue-700 to-blue-900 rounded-lg border-2 border-blue-500 shadow-md" style={{ transform: 'translate(6px, 6px)' }}></div>
+                
+                {/* Top card */}
+                <CardComponent card={state.deck[0]} faceDown className="w-20 relative z-10" />
+                <div className="absolute -top-1 -right-1 bg-white text-green-800 rounded-full w-5 h-5 flex items-center justify-center text-[10px] font-bold shadow z-20">
                   {state.deck.length}
                 </div>
               </div>
@@ -1408,10 +1414,8 @@ export const Game: React.FC<GameProps> = ({ difficulty, deckSize, onBackToMenu }
                       <CardComponent card={pair.attack} className="w-20" />
                     </div>
                     {pair.defense && (
-                      <div className="absolute top-8 left-8 animate-card-appear" style={{ transform: 'rotate(15deg)' }}>
-                        <div className={animationClass}>
-                          <CardComponent card={pair.defense} className="w-20" />
-                        </div>
+                      <div className="absolute top-8 left-10" style={{ transform: 'rotate(8deg)' }}>
+                        <CardComponent card={pair.defense} className="w-20" />
                       </div>
                     )}
                   </div>
