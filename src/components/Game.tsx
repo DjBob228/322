@@ -692,12 +692,14 @@ export const Game: React.FC<GameProps> = ({ difficulty, deckSize, onBackToMenu }
   const computerAttack = useCallback(() => {
     const cs = stateRef.current;
     if (cs.status !== 'playing' || cs.computerThinking) return;
-    if (cs.attacker !== 'computer' || cs.table.length !== 0) return;
+    // Убираем проверку attacker и table.length, потому что useEffect уже проверяет эти условия
+    // if (cs.attacker !== 'computer' || cs.table.length !== 0) return;
 
     dispatch({ type: 'SET_THINKING', thinking: true });
     computerTimeoutRef.current = window.setTimeout(() => {
       const cs2 = stateRef.current;
       if (cs2.status !== 'playing') return;
+      if (cs2.attacker !== 'computer') return; // Проверяем еще раз внутри setTimeout
       
       const card = computerChooseAttack(cs2.computerHand, cs2.table, cs2.trumpSuit, difficulty);
       if (card) {
@@ -842,16 +844,33 @@ export const Game: React.FC<GameProps> = ({ difficulty, deckSize, onBackToMenu }
 
   // Trigger computer actions based on state
   useEffect(() => {
+    console.log('useEffect triggered:', {
+      status: state.status,
+      attacker: state.attacker,
+      tableLength: state.table.length,
+      computerThinking: state.computerThinking,
+      playerJustTook: state.playerJustTook,
+      roundEnded: state.roundEnded
+    });
+    
     if (state.status !== 'playing' || state.computerThinking) return;
 
-    if (state.attacker === 'computer' && state.table.length === 0 && !state.playerJustTook) {
-      computerAttack();
-    } else if (state.attacker === 'computer' && (state.table.length > 0 || state.playerJustTook)) {
-      computerThrow();
-    } else if (state.attacker === 'player' && state.table.length > 0) {
-      computerDefend();
-    }
-  }, [state.attacker, state.table, state.status, state.computerThinking, state.playerJustTook, computerAttack, computerThrow, computerDefend]);
+    // Добавляем небольшую задержку, чтобы state полностью обновился
+    const timeoutId = setTimeout(() => {
+      if (state.attacker === 'computer' && state.table.length === 0 && !state.playerJustTook) {
+        console.log('Calling computerAttack');
+        computerAttack();
+      } else if (state.attacker === 'computer' && (state.table.length > 0 || state.playerJustTook)) {
+        console.log('Calling computerThrow');
+        computerThrow();
+      } else if (state.attacker === 'player' && state.table.length > 0) {
+        console.log('Calling computerDefend');
+        computerDefend();
+      }
+    }, 100);
+    
+    return () => clearTimeout(timeoutId);
+  }, [state.attacker, state.table, state.status, state.computerThinking, state.playerJustTook, state.roundEnded, computerAttack, computerThrow, computerDefend]);
 
   // Cleanup timeout
   useEffect(() => {
