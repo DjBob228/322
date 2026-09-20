@@ -258,7 +258,7 @@ function reducer(state: State, action: Action): State {
         computerHand: newHand,
         table: newTable,
         showTakeButton: true,
-        message: t('computerThrows'),
+        message: t('computerAttacks'),
         computerThinking: false,
         lastAttackCards: newLastAttackCards,
       };
@@ -1256,17 +1256,6 @@ export const Game: React.FC<GameProps> = ({ difficulty, deckSize, onBackToMenu }
           </div>
           <button
             onClick={() => {
-              const modes: SortMode[] = ['suit', 'rank', 'rank-trump'];
-              const currentIndex = modes.indexOf(sortMode);
-              setSortMode(modes[(currentIndex + 1) % modes.length]);
-            }}
-            className="px-3 py-2 text-sm bg-purple-600 hover:bg-purple-500 text-white rounded-lg transition-colors"
-            title={sortMode === 'suit' ? 'По масти' : sortMode === 'rank' ? 'По рангу' : 'По рангу + козыри'}
-          >
-            {sortMode === 'suit' ? '🎨' : sortMode === 'rank' ? '🔢' : '🃏'}
-          </button>
-          <button
-            onClick={() => {
               const newValue = !soundEnabled;
               setSoundEnabled(newValue);
               localStorage.setItem('durak_sound', String(newValue));
@@ -1274,13 +1263,6 @@ export const Game: React.FC<GameProps> = ({ difficulty, deckSize, onBackToMenu }
             className="px-3 py-2 text-sm bg-indigo-600 hover:bg-indigo-500 text-white rounded-lg transition-colors"
           >
             {soundEnabled ? '🔊' : '🔇'}
-          </button>
-          <button
-            onClick={changeTheme}
-            className="px-3 py-2 text-sm bg-pink-600 hover:bg-pink-500 text-white rounded-lg transition-colors"
-            title={`Тема: ${theme.name}`}
-          >
-            {theme.emoji}
           </button>
         </div>
       </div>

@@ -20,7 +20,7 @@ export const Menu: React.FC<MenuProps> = ({ onStartGame }) => {
   const [highScore, setHighScore] = useState(0);
   const [gamesPlayed, setGamesPlayed] = useState(0);
   const [gamesWon, setGamesWon] = useState(0);
-  const [showHowToPlay, setShowHowToPlay] = useState(false);
+  const [showSettings, setShowSettings] = useState(false);
   const [hintsEnabled, setHintsEnabled] = useState(() => localStorage.getItem('durak_hints') !== 'false');
   const [sortMode, setSortMode] = useState<SortMode>(() => 
     (localStorage.getItem('durak_sort') as SortMode) || 'suit'
@@ -184,128 +184,135 @@ export const Menu: React.FC<MenuProps> = ({ onStartGame }) => {
           </div>
         </div>
 
-        {/* Start Button */}
-        <button
-          onClick={() => onStartGame(selectedDifficulty, selectedDeckSize)}
-          className="w-full py-4 bg-gradient-to-r from-yellow-500 to-orange-500 hover:from-yellow-400 hover:to-orange-400
-            text-white font-bold text-lg rounded-xl shadow-lg shadow-orange-500/30
-            transition-all duration-200 active:scale-95 hover:scale-[1.02] mb-4"
-        >
-          {t('startGame')}
-        </button>
-
-        {/* Settings Buttons */}
-        <div className="grid grid-cols-4 gap-2 mb-4 w-full">
+        {/* Start Button and Settings */}
+        <div className="flex gap-2 mb-4">
           <button
-            onClick={changeSortMode}
-            className="py-2 px-1 bg-purple-600 hover:bg-purple-500 text-white rounded-xl font-bold text-xs transition-colors truncate"
-            title={sortMode === 'suit' ? t('sortBySuit') : sortMode === 'rank' ? t('sortByRank') : t('sortByRankTrump')}
+            onClick={() => onStartGame(selectedDifficulty, selectedDeckSize)}
+            className="flex-1 py-4 bg-gradient-to-r from-yellow-500 to-orange-500 hover:from-yellow-400 hover:to-orange-400
+              text-white font-bold text-lg rounded-xl shadow-lg shadow-orange-500/30
+              transition-all duration-200 active:scale-95 hover:scale-[1.02]"
           >
-            {sortMode === 'suit' ? '🎨' : sortMode === 'rank' ? '🔢' : '🃏'}
+            {t('startGame')}
           </button>
           <button
-            onClick={changeSound}
-            className={`py-2 px-1 rounded-xl font-bold text-xs transition-colors ${
-              soundEnabled
-                ? 'bg-indigo-600 hover:bg-indigo-500 text-white'
-                : 'bg-gray-600 hover:bg-gray-500 text-white/80'
-            }`}
-            title={soundEnabled ? t('soundOn') : t('soundOff')}
+            onClick={() => setShowSettings(true)}
+            className="px-4 py-4 bg-gray-700 hover:bg-gray-600 text-white rounded-xl transition-colors"
+            title="Настройки"
           >
-            {soundEnabled ? '🔊' : '🔇'}
-          </button>
-          <button
-            onClick={() => {
-              const newValue = !hintsEnabled;
-              setHintsEnabled(newValue);
-              localStorage.setItem('durak_hints', String(newValue));
-            }}
-            className={`py-2 px-1 rounded-xl font-bold text-xs transition-colors ${
-              hintsEnabled
-                ? 'bg-purple-600 hover:bg-purple-500 text-white'
-                : 'bg-gray-600 hover:bg-gray-500 text-white/80'
-            }`}
-            title={hintsEnabled ? t('hintsOn') : t('hintsOff')}
-          >
-            {hintsEnabled ? '💡' : '🚫'}
-          </button>
-          <button
-            onClick={changeTheme}
-            className="py-2 px-1 bg-pink-600 hover:bg-pink-500 text-white rounded-xl font-bold text-xs transition-colors flex items-center justify-center"
-            title={`${t('theme')}: ${theme.name}`}
-          >
-            {theme.emoji}
+            ⚙️
           </button>
         </div>
-
-        {/* How to Play Button */}
-        <button
-          onClick={() => setShowHowToPlay(true)}
-          className="w-full mt-3 py-2 bg-white/10 hover:bg-white/20 text-white/80 text-sm rounded-lg
-            transition-all duration-200 border border-white/20"
-        >
-          {t('howToPlay')}
-        </button>
 
         {/* Version Info */}
         <div className="mt-4 text-center text-white/40 text-xs">
-          v0.5
+          v0.6
         </div>
 
-        {/* How to Play Modal */}
-        {showHowToPlay && (
+        {/* Settings Modal */}
+        {showSettings && (
           <div className="fixed inset-0 z-50 bg-black/70 backdrop-blur-sm flex items-center justify-center p-4">
             <div className="bg-gradient-to-b from-green-800 to-green-900 rounded-2xl p-6 max-w-md w-full max-h-[80vh] overflow-y-auto border-2 border-green-600/50 shadow-2xl">
-              <h2 className="text-2xl font-bold text-white mb-4 text-center">{t('howToPlay')}</h2>
+              <h2 className="text-2xl font-bold text-white mb-4 text-center">⚙️ Настройки</h2>
               
-              <div className="space-y-4 text-white/90 text-sm">
-                <div>
-                  <h3 className="font-bold text-green-300 mb-2">{t('goal')}</h3>
-                  <p>{t('goalText')}</p>
+              <div className="space-y-4">
+                {/* Settings Buttons */}
+                <div className="grid grid-cols-4 gap-2">
+                  <button
+                    onClick={changeSortMode}
+                    className="py-2 px-1 bg-purple-600 hover:bg-purple-500 text-white rounded-xl font-bold text-xs transition-colors truncate"
+                    title={sortMode === 'suit' ? t('sortBySuit') : sortMode === 'rank' ? t('sortByRank') : t('sortByRankTrump')}
+                  >
+                    {sortMode === 'suit' ? '🎨' : sortMode === 'rank' ? '🔢' : '🃏'}
+                  </button>
+                  <button
+                    onClick={changeSound}
+                    className={`py-2 px-1 rounded-xl font-bold text-xs transition-colors ${
+                      soundEnabled
+                        ? 'bg-indigo-600 hover:bg-indigo-500 text-white'
+                        : 'bg-gray-600 hover:bg-gray-500 text-white/80'
+                    }`}
+                    title={soundEnabled ? t('soundOn') : t('soundOff')}
+                  >
+                    {soundEnabled ? '🔊' : '🔇'}
+                  </button>
+                  <button
+                    onClick={() => {
+                      const newValue = !hintsEnabled;
+                      setHintsEnabled(newValue);
+                      localStorage.setItem('durak_hints', String(newValue));
+                    }}
+                    className={`py-2 px-1 rounded-xl font-bold text-xs transition-colors ${
+                      hintsEnabled
+                        ? 'bg-purple-600 hover:bg-purple-500 text-white'
+                        : 'bg-gray-600 hover:bg-gray-500 text-white/80'
+                    }`}
+                    title={hintsEnabled ? t('hintsOn') : t('hintsOff')}
+                  >
+                    {hintsEnabled ? '💡' : '🚫'}
+                  </button>
+                  <button
+                    onClick={changeTheme}
+                    className="py-2 px-1 bg-pink-600 hover:bg-pink-500 text-white rounded-xl font-bold text-xs transition-colors flex items-center justify-center"
+                    title={`${t('theme')}: ${theme.name}`}
+                  >
+                    {theme.emoji}
+                  </button>
                 </div>
 
-                <div>
-                  <h3 className="font-bold text-green-300 mb-2">{t('rules')}</h3>
-                  <ul className="space-y-1 text-white/80">
-                    <li>{t('rule1')}</li>
-                    <li>{t('rule2')}</li>
-                    <li>{t('rule3')}</li>
-                    <li>{t('rule4')}</li>
-                    <li>{t('rule5')}</li>
-                    <li>{t('rule6')}</li>
-                    <li>{t('rule7')}</li>
-                    <li>{t('rule8')}</li>
-                  </ul>
-                </div>
+                {/* How to Play */}
+                <div className="bg-black/20 rounded-xl p-4 border border-white/10">
+                  <h3 className="text-lg font-bold text-green-300 mb-3">{t('howToPlay')}</h3>
+                  
+                  <div className="space-y-3 text-white/90 text-sm">
+                    <div>
+                      <h4 className="font-bold text-green-300 mb-1">{t('goal')}</h4>
+                      <p>{t('goalText')}</p>
+                    </div>
 
-                <div>
-                  <h3 className="font-bold text-green-300 mb-2">{t('features')}</h3>
-                  <ul className="space-y-1 text-white/80">
-                    <li>{t('feature1')}</li>
-                    <li>{t('feature2')}</li>
-                  </ul>
-                </div>
+                    <div>
+                      <h4 className="font-bold text-green-300 mb-1">{t('rules')}</h4>
+                      <ul className="space-y-1 text-white/80">
+                        <li>{t('rule1')}</li>
+                        <li>{t('rule2')}</li>
+                        <li>{t('rule3')}</li>
+                        <li>{t('rule4')}</li>
+                        <li>{t('rule5')}</li>
+                        <li>{t('rule6')}</li>
+                        <li>{t('rule7')}</li>
+                        <li>{t('rule8')}</li>
+                      </ul>
+                    </div>
 
-                <div>
-                  <h3 className="font-bold text-green-300 mb-2">{t('whatBotKnows')}</h3>
-                  <ul className="space-y-1 text-white/80">
-                    <li>{t('whatBotKnows1')}</li>
-                    <li>{t('whatBotKnows2')}</li>
-                    <li>{t('whatBotKnows3')}</li>
-                  </ul>
-                </div>
+                    <div>
+                      <h4 className="font-bold text-green-300 mb-1">{t('features')}</h4>
+                      <ul className="space-y-1 text-white/80">
+                        <li>{t('feature1')}</li>
+                        <li>{t('feature2')}</li>
+                      </ul>
+                    </div>
 
-                <div>
-                  <h3 className="font-bold text-green-300 mb-2">{t('pogonySystem')}</h3>
-                  <div className="text-white/80 text-sm space-y-2">
-                    <p>{t('pogonyText')}</p>
-                    <p className="text-white/60 text-xs">{t('pogonyCondition')}</p>
+                    <div>
+                      <h4 className="font-bold text-green-300 mb-1">{t('whatBotKnows')}</h4>
+                      <ul className="space-y-1 text-white/80">
+                        <li>{t('whatBotKnows1')}</li>
+                        <li>{t('whatBotKnows2')}</li>
+                        <li>{t('whatBotKnows3')}</li>
+                      </ul>
+                    </div>
+
+                    <div>
+                      <h4 className="font-bold text-green-300 mb-1">{t('pogonySystem')}</h4>
+                      <div className="text-white/80 text-sm space-y-2">
+                        <p>{t('pogonyText')}</p>
+                        <p className="text-white/60 text-xs">{t('pogonyCondition')}</p>
+                      </div>
+                    </div>
                   </div>
                 </div>
               </div>
 
               <button
-                onClick={() => setShowHowToPlay(false)}
+                onClick={() => setShowSettings(false)}
                 className="w-full mt-6 py-3 bg-gradient-to-r from-green-500 to-green-600 hover:from-green-400 hover:to-green-500
                   text-white font-bold rounded-lg transition-all duration-200 active:scale-95"
               >
