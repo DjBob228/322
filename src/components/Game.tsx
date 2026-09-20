@@ -66,6 +66,7 @@ type Action =
   | { type: 'COMPUTER_THROW'; card: Card }
   | { type: 'COMPUTER_THROW_AFTER_TAKE'; card: Card }
   | { type: 'COMPUTER_TAKES' }
+  | { type: 'COLLECT_CARDS_FOR_COMPUTER' }
   | { type: 'PLAYER_TAKES' }
   | { type: 'PLAYER_COLLECT_ALL' }
   | { type: 'END_ROUND'; playerTook: boolean; computerTook: boolean }
@@ -224,8 +225,8 @@ function reducer(state: State, action: Action): State {
     case 'PLAYER_THROW_AFTER_COMPUTER_TAKES': {
       // Игрок подкидывает карту после того, как компьютер взял карты
       const newHand = state.playerHand.filter(c => c.id !== action.card.id);
-      // Карта идёт прямо боту в руку, а не на стол
-      const newComputerHand = [...state.computerHand, action.card];
+      // Карта идёт на стол, а не сразу в руку компьютера
+      const newTable = [...state.table, { attack: action.card, defense: null }];
       
       // Обновляем lastTableRanks
       const newRanks = new Set(state.lastTableRanks);
@@ -238,7 +239,7 @@ function reducer(state: State, action: Action): State {
       return {
         ...state,
         playerHand: newHand,
-        computerHand: newComputerHand,
+        table: newTable,
         selectedCard: null,
         showPassButton: true, // Оставляем кнопку "Бито"
         message: t('playerThrowsAfterComputerTakes'),
@@ -315,9 +316,6 @@ function reducer(state: State, action: Action): State {
     }
 
     case 'COMPUTER_TAKES': {
-      const tableCards = state.table.flatMap(p => [p.attack, ...(p.defense ? [p.defense] : [])]);
-      const newHand = [...state.computerHand, ...tableCards];
-      
       // Сохраняем ранги карт со стола для возможности подкидывания игроком
       const ranks = new Set<string>();
       state.table.forEach(p => {
@@ -325,11 +323,10 @@ function reducer(state: State, action: Action): State {
         if (p.defense) ranks.add(p.defense.rank);
       });
       
-      // Очищаем стол - карты ушли в руку компьютера
+      // НЕ очищаем стол и НЕ добавляем карты в руку компьютера сразу
+      // Карты остаются на столе до нажатия "Бито"
       return {
         ...state,
-        computerHand: newHand,
-        table: [], // Очищаем стол
         showTakeButton: false,
         showPassButton: true, // Показываем кнопку "Бито" для игрока
         message: t('computerTakes'),
@@ -338,6 +335,20 @@ function reducer(state: State, action: Action): State {
         computerJustTook: true, // Компьютер только что взял карты
         lastTableRanks: ranks, // Сохраняем ранги для подкидывания
         // Не завершаем раунд сразу - даём игроку время подкинуть карты
+      };
+    }
+
+    case 'COLLECT_CARDS_FOR_COMPUTER': {
+      // Собираем карты со стола в руку компьютера и очищаем стол
+      const tableCards = state.table.flatMap(p => [p.attack, ...(p.defense ? [p.defense] : [])]);
+      const newHand = [...state.computerHand, ...tableCards];
+      
+      return {
+        ...state,
+        computerHand: newHand,
+        table: [], // Очищаем стол
+        computerJustTook: false,
+        lastTableRanks: new Set<string>(),
       };
     }
 
@@ -980,6 +991,9 @@ export const Game: React.FC<GameProps> = ({ difficulty, deckSize, onBackToMenu }
     
     // Если компьютер только что взял карты и игрок нажимает "Бито" - ход остается у игрока
     if (state.computerJustTook) {
+      // Сначала собираем карты со стола в руку компьютера
+      dispatch({ type: 'COLLECT_CARDS_FOR_COMPUTER' });
+      // Затем завершаем раунд
       dispatch({ type: 'END_ROUND', playerTook: false, computerTook: true });
       setScore(prev => prev + 5);
       return;
@@ -1389,7 +1403,7 @@ export const Game: React.FC<GameProps> = ({ difficulty, deckSize, onBackToMenu }
               onClick={confirmPlay}
               className="px-3 py-2 bg-green-500 hover:bg-green-400 text-white rounded-lg font-bold text-sm transition-all animate-bounce-subtle shadow-lg"
             >
-              ✓ Подтвердить
+              {state.computerJustTook ? '🃏 Подкинуть' : '✓ Подтвердить'}
             </button>
           )}
           {state.showTakeButton && (
