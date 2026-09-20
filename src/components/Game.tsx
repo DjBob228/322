@@ -755,6 +755,13 @@ export const Game: React.FC<GameProps> = ({ difficulty, deckSize, onBackToMenu }
         const cs2 = stateRef.current;
         if (cs2.status !== 'playing' || cs2.attacker !== 'computer') return;
         
+        // Дополнительная проверка: если на столе уже 6 карт, завершаем раунд
+        if (cs2.table.length >= 6) {
+          dispatch({ type: 'PLAYER_COLLECT_ALL' });
+          dispatch({ type: 'END_ROUND', playerTook: true, computerTook: false });
+          return;
+        }
+        
         // Выбираем ОДНУ карту для подкидывания (не козырь, самая младшая)
         const throwable = cs2.computerHand
           .filter(c => cs2.lastTableRanks.has(c.rank))
@@ -1388,19 +1395,22 @@ export const Game: React.FC<GameProps> = ({ difficulty, deckSize, onBackToMenu }
                 </div>
               )}
               <div className="relative" style={{ width: '5rem', height: '7rem' }}>
-                {/* 3D stack effect - 4 layers with visible borders, tilted up-right */}
-                {Array.from({ length: 4 }, (_, i) => (
-                  <div 
-                    key={i}
-                    className="absolute inset-0 rounded-lg"
-                    style={{ 
-                      transform: `translate(${(i + 1) * 2}px, -${(i + 1) * 2}px)`,
-                      background: `linear-gradient(135deg, hsl(220, 70%, ${45 - i * 5}%) 0%, hsl(220, 70%, ${35 - i * 5}%) 100%)`,
-                      border: '2px solid hsl(220, 60%, 60%)',
-                      boxShadow: '2px -2px 4px rgba(0,0,0,0.5)'
-                    }}
-                  ></div>
-                ))}
+                {/* 3D stack effect - dynamic layers based on deck size */}
+                {(() => {
+                  const layerCount = Math.min(4, Math.max(1, Math.floor(state.deck.length / 8)));
+                  return Array.from({ length: layerCount }, (_, i) => (
+                    <div 
+                      key={i}
+                      className="absolute inset-0 rounded-lg"
+                      style={{ 
+                        transform: `translate(${(i + 1) * 2}px, -${(i + 1) * 2}px)`,
+                        background: 'linear-gradient(135deg, #1d4ed8 0%, #1e3a8a 100%)',
+                        border: '2px solid #3b82f6',
+                        boxShadow: '2px -2px 4px rgba(0,0,0,0.5)'
+                      }}
+                    ></div>
+                  ));
+                })()}
                 
                 {/* Top card */}
                 <CardComponent card={state.deck[0]} faceDown className="w-20 relative z-10" />
