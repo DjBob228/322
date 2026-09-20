@@ -801,20 +801,29 @@ export const Game: React.FC<GameProps> = ({ difficulty, deckSize, onBackToMenu }
     if (cs.table.length === 0) return;
     
     const allDefended = cs.table.every(p => p.defense !== null);
-    if (!allDefended || cs.playerHand.length === 0 || cs.table.length >= 6) return;
-
-    dispatch({ type: 'SET_THINKING', thinking: true });
-    computerTimeoutRef.current = window.setTimeout(() => {
-      const cs2 = stateRef.current;
-      if (cs2.status !== 'playing' || cs2.attacker !== 'computer') return;
-      
-      const card = computerShouldThrow(cs2.computerHand, cs2.table, cs2.trumpSuit, difficulty, cs2.playerHand);
-      if (card && cs2.table.length < 6) {
-        dispatch({ type: 'COMPUTER_THROW', card });
-      } else {
+    
+    // Если все карты отбиты, проверяем можно ли подкинуть или завершаем раунд
+    if (allDefended) {
+      // Если на столе 6 карт или у игрока нет карт, завершаем раунд
+      if (cs.table.length >= 6 || cs.playerHand.length === 0) {
         dispatch({ type: 'END_ROUND', playerTook: false, computerTook: false });
+        return;
       }
-    }, 600 + Math.random() * 400);
+      
+      // Пытаемся подкинуть карту
+      dispatch({ type: 'SET_THINKING', thinking: true });
+      computerTimeoutRef.current = window.setTimeout(() => {
+        const cs2 = stateRef.current;
+        if (cs2.status !== 'playing' || cs2.attacker !== 'computer') return;
+        
+        const card = computerShouldThrow(cs2.computerHand, cs2.table, cs2.trumpSuit, difficulty, cs2.playerHand);
+        if (card && cs2.table.length < 6) {
+          dispatch({ type: 'COMPUTER_THROW', card });
+        } else {
+          dispatch({ type: 'END_ROUND', playerTook: false, computerTook: false });
+        }
+      }, 600 + Math.random() * 400);
+    }
   }, [difficulty]);
 
   const computerDefend = useCallback(() => {
@@ -986,22 +995,24 @@ export const Game: React.FC<GameProps> = ({ difficulty, deckSize, onBackToMenu }
     if (isTaking) return; // Защита от множественных нажатий
     
     setIsTaking(true);
+    playSound('collect'); // Сразу воспроизводим звук
     
-    // НЕ запускаем анимацию сразу - даём боту время подкинуть карты
+    // Даём боту время подкинуть карты (2 секунды)
+    // В это время карты остаются на столе
     setTimeout(() => {
       // Теперь запускаем анимацию для всех карт на столе (включая подкинутые)
       dispatch({ type: 'SET_ANIMATING', animation: 'player-takes' });
       
+      // Ждём завершения анимации
       setTimeout(() => {
         dispatch({ type: 'PLAYER_TAKES' });
         dispatch({ type: 'SET_ANIMATING', animation: null });
         setScore(prev => Math.max(0, prev - 10));
-        playSound('collect'); // Резкий звук подбора карт
         
-        // Сбрасываем флаг после завершения анимации и подкидывания
+        // Сбрасываем флаг после завершения
         setTimeout(() => {
           setIsTaking(false);
-        }, 1000);
+        }, 500);
       }, 800);
     }, 2000); // Даём боту 2 секунды на подкидывание карт
   };
@@ -1424,9 +1435,9 @@ export const Game: React.FC<GameProps> = ({ difficulty, deckSize, onBackToMenu }
                   attackAnimationClass = 'animate-card-fly-to-player';
                   defenseAnimationClass = 'animate-card-fly-to-player';
                 } else if (state.animatingCards === 'computer-takes') {
-                  // Только attack карты анимируются, defense остаются на месте
+                  // Обе карты анимируются одинаково
                   attackAnimationClass = 'animate-card-fly-to-computer';
-                  defenseAnimationClass = 'animate-card-fade-out';
+                  defenseAnimationClass = 'animate-card-fly-to-computer';
                 }
                 
                 return (
