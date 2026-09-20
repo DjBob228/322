@@ -1001,6 +1001,30 @@ export const Game: React.FC<GameProps> = ({ difficulty, deckSize, onBackToMenu }
     }
   }, [state.status]);
 
+  // Handle Esc key to open exit confirmation
+  useEffect(() => {
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if (e.key === 'Escape' && state.status === 'playing') {
+        setShowExitConfirm(true);
+      }
+    };
+
+    window.addEventListener('keydown', handleKeyDown);
+    return () => window.removeEventListener('keydown', handleKeyDown);
+  }, [state.status]);
+
+  // Handle Esc key to open exit confirmation
+  useEffect(() => {
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if (e.key === 'Escape' && state.status === 'playing') {
+        setShowExitConfirm(true);
+      }
+    };
+
+    window.addEventListener('keydown', handleKeyDown);
+    return () => window.removeEventListener('keydown', handleKeyDown);
+  }, [state.status]);
+
   // Sort cards by mode
   const sortCards = (hand: Card[]): Card[] => {
     if (sortMode === 'suit') {

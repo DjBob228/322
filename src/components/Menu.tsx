@@ -184,26 +184,18 @@ export const Menu: React.FC<MenuProps> = ({ onStartGame }) => {
           </div>
         </div>
 
-        {/* Hints Toggle */}
-        <div className="mb-4">
-          <button
-            onClick={() => {
-              const newValue = !hintsEnabled;
-              setHintsEnabled(newValue);
-              localStorage.setItem('durak_hints', String(newValue));
-            }}
-            className={`w-full py-3 rounded-xl font-bold text-base transition-all duration-200 ${
-              hintsEnabled
-                ? 'bg-purple-600 hover:bg-purple-500 text-white shadow-lg shadow-purple-500/30'
-                : 'bg-gray-600 hover:bg-gray-500 text-white/80'
-            }`}
-          >
-            {hintsEnabled ? t('hintsOn') : t('hintsOff')}
-          </button>
-        </div>
+        {/* Start Button */}
+        <button
+          onClick={() => onStartGame(selectedDifficulty, selectedDeckSize)}
+          className="w-full py-4 bg-gradient-to-r from-yellow-500 to-orange-500 hover:from-yellow-400 hover:to-orange-400
+            text-white font-bold text-lg rounded-xl shadow-lg shadow-orange-500/30
+            transition-all duration-200 active:scale-95 hover:scale-[1.02] mb-4"
+        >
+          {t('startGame')}
+        </button>
 
         {/* Settings Buttons */}
-        <div className="grid grid-cols-3 gap-3 mb-4">
+        <div className="grid grid-cols-4 gap-3 mb-4">
           <button
             onClick={changeSortMode}
             className="py-3 px-2 bg-purple-600 hover:bg-purple-500 text-white rounded-xl font-bold text-sm transition-colors"
@@ -223,6 +215,21 @@ export const Menu: React.FC<MenuProps> = ({ onStartGame }) => {
             {soundEnabled ? t('soundOn') : t('soundOff')}
           </button>
           <button
+            onClick={() => {
+              const newValue = !hintsEnabled;
+              setHintsEnabled(newValue);
+              localStorage.setItem('durak_hints', String(newValue));
+            }}
+            className={`py-3 px-2 rounded-xl font-bold text-sm transition-colors ${
+              hintsEnabled
+                ? 'bg-purple-600 hover:bg-purple-500 text-white'
+                : 'bg-gray-600 hover:bg-gray-500 text-white/80'
+            }`}
+            title={hintsEnabled ? t('hintsOn') : t('hintsOff')}
+          >
+            {hintsEnabled ? t('hintsOn') : t('hintsOff')}
+          </button>
+          <button
             onClick={changeTheme}
             className="py-3 px-2 bg-pink-600 hover:bg-pink-500 text-white rounded-xl font-bold text-sm transition-colors flex flex-col items-center justify-center gap-1"
             title={`${t('theme')}: ${theme.name}`}
@@ -231,16 +238,6 @@ export const Menu: React.FC<MenuProps> = ({ onStartGame }) => {
             <span className="text-xs leading-none">{theme.name}</span>
           </button>
         </div>
-
-        {/* Start Button */}
-        <button
-          onClick={() => onStartGame(selectedDifficulty, selectedDeckSize)}
-          className="w-full py-4 bg-gradient-to-r from-yellow-500 to-orange-500 hover:from-yellow-400 hover:to-orange-400
-            text-white font-bold text-lg rounded-xl shadow-lg shadow-orange-500/30
-            transition-all duration-200 active:scale-95 hover:scale-[1.02]"
-        >
-          {t('startGame')}
-        </button>
 
         {/* How to Play Button */}
         <button
