@@ -852,6 +852,7 @@ export const Game: React.FC<GameProps> = ({ difficulty, deckSize, onBackToMenu }
         // Wait before marking as taken (no animation yet)
         setTimeout(() => {
           dispatch({ type: 'COMPUTER_TAKES' });
+          playSound('collect'); // Звук подбора карт как у игрока
           // Не вызываем END_ROUND здесь - даём игроку время подкинуть карты или нажать "Бито"
         }, 500);
       }
@@ -986,23 +987,23 @@ export const Game: React.FC<GameProps> = ({ difficulty, deckSize, onBackToMenu }
     
     setIsTaking(true);
     
-    // Start animation
-    dispatch({ type: 'SET_ANIMATING', animation: 'player-takes' });
-    
+    // НЕ запускаем анимацию сразу - даём боту время подкинуть карты
     setTimeout(() => {
-      dispatch({ type: 'PLAYER_TAKES' });
-      dispatch({ type: 'SET_ANIMATING', animation: null });
-      setScore(prev => Math.max(0, prev - 10));
-      playSound('collect'); // Резкий звук подбора карт
+      // Теперь запускаем анимацию для всех карт на столе (включая подкинутые)
+      dispatch({ type: 'SET_ANIMATING', animation: 'player-takes' });
       
-      // НЕ вызываем END_ROUND сразу - даём компьютеру возможность подкинуть карты
-      // computerThrow автоматически обработает playerJustTook и подкинет карты или закончит раунд
-      
-      // Сбрасываем флаг после завершения анимации и подкидывания
       setTimeout(() => {
-        setIsTaking(false);
-      }, 2000);
-    }, 800);
+        dispatch({ type: 'PLAYER_TAKES' });
+        dispatch({ type: 'SET_ANIMATING', animation: null });
+        setScore(prev => Math.max(0, prev - 10));
+        playSound('collect'); // Резкий звук подбора карт
+        
+        // Сбрасываем флаг после завершения анимации и подкидывания
+        setTimeout(() => {
+          setIsTaking(false);
+        }, 1000);
+      }, 800);
+    }, 2000); // Даём боту 2 секунды на подкидывание карт
   };
 
   // Player passes (bito)
@@ -1376,16 +1377,16 @@ export const Game: React.FC<GameProps> = ({ difficulty, deckSize, onBackToMenu }
                 </div>
               )}
               <div className="relative" style={{ width: '5rem', height: '7rem' }}>
-                {/* 3D stack effect - 15 layers with visible borders */}
-                {Array.from({ length: 15 }, (_, i) => (
+                {/* 3D stack effect - 4 layers with visible borders, tilted up-right */}
+                {Array.from({ length: 4 }, (_, i) => (
                   <div 
                     key={i}
                     className="absolute inset-0 rounded-lg"
                     style={{ 
-                      transform: `translate(${(i + 1) * 0.8}px, ${(i + 1) * 0.8}px)`,
-                      background: `linear-gradient(135deg, hsl(220, 70%, ${35 - i * 1.5}%) 0%, hsl(220, 70%, ${25 - i * 1.5}%) 100%)`,
-                      border: '2px solid hsl(220, 60%, 50%)',
-                      boxShadow: '1px 1px 3px rgba(0,0,0,0.4)'
+                      transform: `translate(${(i + 1) * 2}px, -${(i + 1) * 2}px)`,
+                      background: `linear-gradient(135deg, hsl(220, 70%, ${45 - i * 5}%) 0%, hsl(220, 70%, ${35 - i * 5}%) 100%)`,
+                      border: '2px solid hsl(220, 60%, 60%)',
+                      boxShadow: '2px -2px 4px rgba(0,0,0,0.5)'
                     }}
                   ></div>
                 ))}
@@ -1400,7 +1401,7 @@ export const Game: React.FC<GameProps> = ({ difficulty, deckSize, onBackToMenu }
           )}
           
           <div 
-            className="flex flex-wrap gap-2 items-center justify-center relative z-10"
+            className="flex flex-wrap gap-1 items-center justify-center relative z-10"
             style={{
               transform: state.table.length > 4 
                 ? `scale(${Math.max(0.6, 1 - (state.table.length - 4) * 0.08)})`
@@ -1416,11 +1417,16 @@ export const Game: React.FC<GameProps> = ({ difficulty, deckSize, onBackToMenu }
             ) : (
               state.table.map((pair, i) => {
                 // Анимация взятия карт
-                let animationClass = '';
+                let attackAnimationClass = '';
+                let defenseAnimationClass = '';
+                
                 if (state.animatingCards === 'player-takes') {
-                  animationClass = 'animate-card-fly-to-player';
+                  attackAnimationClass = 'animate-card-fly-to-player';
+                  defenseAnimationClass = 'animate-card-fly-to-player';
                 } else if (state.animatingCards === 'computer-takes') {
-                  animationClass = 'animate-card-fly-to-computer';
+                  // Только attack карты анимируются, defense остаются на месте
+                  attackAnimationClass = 'animate-card-fly-to-computer';
+                  defenseAnimationClass = 'animate-card-fade-out';
                 }
                 
                 return (
@@ -1430,12 +1436,12 @@ export const Game: React.FC<GameProps> = ({ difficulty, deckSize, onBackToMenu }
                     style={{ width: '7rem', height: '8rem' }}
                   >
                     {/* Attack card (underneath) with drop shadow */}
-                    <div className={`${animationClass} absolute top-4 left-4`} style={{ filter: pair.defense ? 'drop-shadow(4px 4px 6px rgba(0,0,0,0.5))' : 'none' }}>
+                    <div className={`${attackAnimationClass} absolute top-4 left-4`} style={{ filter: pair.defense ? 'drop-shadow(4px 4px 6px rgba(0,0,0,0.5))' : 'none' }}>
                       <CardComponent card={pair.attack} className="w-20" />
                     </div>
                     {/* Defense card (on top) - positioned right and down */}
                     {pair.defense && (
-                      <div className="absolute top-10 left-10" style={{ transform: 'rotate(8deg)', filter: 'drop-shadow(2px 2px 4px rgba(0,0,0,0.3))' }}>
+                      <div className={`${defenseAnimationClass} absolute top-10 left-10`} style={{ transform: 'rotate(8deg)', filter: 'drop-shadow(2px 2px 4px rgba(0,0,0,0.3))' }}>
                         <CardComponent card={pair.defense} className="w-20" />
                       </div>
                     )}

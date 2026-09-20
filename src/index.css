@@ -84,6 +84,21 @@ html, body, #root {
   box-shadow: none !important;
 }
 
+.animate-card-fade-out {
+  animation: card-fade-out 0.4s ease-out 0.3s forwards;
+  pointer-events: none;
+}
+
+@keyframes card-fade-out {
+  0% {
+    opacity: 1;
+  }
+  100% {
+    opacity: 0;
+    transform: scale(0.8);
+  }
+}
+
 @keyframes bounce-subtle {
   0%, 100% {
     transform: translateY(0);
