@@ -2,7 +2,6 @@ import type React from 'react';
 import { useState, useEffect } from 'react';
 import { type Difficulty, type DeckSize } from '../types';
 import { type Theme, themes, getNextTheme } from '../themes';
-import { backgroundMusic } from '../backgroundMusic';
 import { t } from '../i18n';
 
 type SortMode = 'suit' | 'rank' | 'rank-trump';
@@ -27,20 +26,10 @@ export const Menu: React.FC<MenuProps> = ({ onStartGame }) => {
     (localStorage.getItem('durak_sort') as SortMode) || 'suit'
   );
   const [soundEnabled, setSoundEnabled] = useState(() => localStorage.getItem('durak_sound') !== 'false');
-  const [musicEnabled, setMusicEnabled] = useState(() => localStorage.getItem('durak_music') === 'true');
   const [currentTheme, setCurrentTheme] = useState<Theme>(() => 
     (localStorage.getItem('durak_theme') as Theme) || 'green'
   );
   const theme = themes[currentTheme];
-
-  // Start/stop background music based on setting
-  useEffect(() => {
-    if (musicEnabled) {
-      backgroundMusic.start();
-    } else {
-      backgroundMusic.stop();
-    }
-  }, [musicEnabled]);
 
   const changeSortMode = () => {
     const modes: SortMode[] = ['suit', 'rank', 'rank-trump'];
@@ -54,12 +43,6 @@ export const Menu: React.FC<MenuProps> = ({ onStartGame }) => {
     const newValue = !soundEnabled;
     setSoundEnabled(newValue);
     localStorage.setItem('durak_sound', String(newValue));
-  };
-
-  const changeMusic = () => {
-    const newValue = !musicEnabled;
-    setMusicEnabled(newValue);
-    localStorage.setItem('durak_music', String(newValue));
   };
 
   const changeTheme = () => {
@@ -220,7 +203,7 @@ export const Menu: React.FC<MenuProps> = ({ onStartGame }) => {
         </div>
 
         {/* Settings Buttons */}
-        <div className="grid grid-cols-4 gap-3 mb-4">
+        <div className="grid grid-cols-3 gap-3 mb-4">
           <button
             onClick={changeSortMode}
             className="py-3 px-2 bg-purple-600 hover:bg-purple-500 text-white rounded-xl font-bold text-sm transition-colors"
@@ -238,17 +221,6 @@ export const Menu: React.FC<MenuProps> = ({ onStartGame }) => {
             title={soundEnabled ? t('soundOn') : t('soundOff')}
           >
             {soundEnabled ? t('soundOn') : t('soundOff')}
-          </button>
-          <button
-            onClick={changeMusic}
-            className={`py-3 px-2 rounded-xl font-bold text-sm transition-colors ${
-              musicEnabled
-                ? 'bg-cyan-600 hover:bg-cyan-500 text-white'
-                : 'bg-gray-600 hover:bg-gray-500 text-white/80'
-            }`}
-            title={musicEnabled ? t('musicOn') : t('musicOff')}
-          >
-            {musicEnabled ? t('musicOn') : t('musicOff')}
           </button>
           <button
             onClick={changeTheme}
