@@ -64,7 +64,7 @@ export const Menu: React.FC<MenuProps> = ({ onStartGame }) => {
   ];
 
   return (
-    <div className={`min-h-screen bg-gradient-to-b ${theme.background} flex flex-col items-center justify-center p-4 relative overflow-y-auto`}>
+    <div className={`min-h-screen bg-gradient-to-b ${theme.background} flex flex-col items-center justify-center p-4 relative overflow-y-auto overflow-x-hidden`}>
       {/* Background decoration with pattern */}
       <div className="absolute inset-0 opacity-15 pointer-events-none">
         {/* Main suit symbols - larger and more prominent */}
@@ -195,24 +195,24 @@ export const Menu: React.FC<MenuProps> = ({ onStartGame }) => {
         </button>
 
         {/* Settings Buttons */}
-        <div className="grid grid-cols-4 gap-3 mb-4">
+        <div className="grid grid-cols-4 gap-2 mb-4 w-full">
           <button
             onClick={changeSortMode}
-            className="py-3 px-2 bg-purple-600 hover:bg-purple-500 text-white rounded-xl font-bold text-sm transition-colors"
+            className="py-2 px-1 bg-purple-600 hover:bg-purple-500 text-white rounded-xl font-bold text-xs transition-colors truncate"
             title={sortMode === 'suit' ? t('sortBySuit') : sortMode === 'rank' ? t('sortByRank') : t('sortByRankTrump')}
           >
-            {sortMode === 'suit' ? t('sortBySuit') : sortMode === 'rank' ? t('sortByRank') : t('sortByRankTrump')}
+            {sortMode === 'suit' ? '🎨' : sortMode === 'rank' ? '🔢' : '🃏'}
           </button>
           <button
             onClick={changeSound}
-            className={`py-3 px-2 rounded-xl font-bold text-sm transition-colors ${
+            className={`py-2 px-1 rounded-xl font-bold text-xs transition-colors ${
               soundEnabled
                 ? 'bg-indigo-600 hover:bg-indigo-500 text-white'
                 : 'bg-gray-600 hover:bg-gray-500 text-white/80'
             }`}
             title={soundEnabled ? t('soundOn') : t('soundOff')}
           >
-            {soundEnabled ? t('soundOn') : t('soundOff')}
+            {soundEnabled ? '🔊' : '🔇'}
           </button>
           <button
             onClick={() => {
@@ -220,22 +220,21 @@ export const Menu: React.FC<MenuProps> = ({ onStartGame }) => {
               setHintsEnabled(newValue);
               localStorage.setItem('durak_hints', String(newValue));
             }}
-            className={`py-3 px-2 rounded-xl font-bold text-sm transition-colors ${
+            className={`py-2 px-1 rounded-xl font-bold text-xs transition-colors ${
               hintsEnabled
                 ? 'bg-purple-600 hover:bg-purple-500 text-white'
                 : 'bg-gray-600 hover:bg-gray-500 text-white/80'
             }`}
             title={hintsEnabled ? t('hintsOn') : t('hintsOff')}
           >
-            {hintsEnabled ? t('hintsOn') : t('hintsOff')}
+            {hintsEnabled ? '💡' : '🚫'}
           </button>
           <button
             onClick={changeTheme}
-            className="py-3 px-2 bg-pink-600 hover:bg-pink-500 text-white rounded-xl font-bold text-sm transition-colors flex flex-col items-center justify-center gap-1"
+            className="py-2 px-1 bg-pink-600 hover:bg-pink-500 text-white rounded-xl font-bold text-xs transition-colors flex items-center justify-center"
             title={`${t('theme')}: ${theme.name}`}
           >
-            <span className="text-lg leading-none">{theme.emoji}</span>
-            <span className="text-xs leading-none">{theme.name}</span>
+            {theme.emoji}
           </button>
         </div>
 
