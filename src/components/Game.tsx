@@ -918,6 +918,17 @@ export const Game: React.FC<GameProps> = ({ difficulty, deckSize, onBackToMenu }
     } else if (state.attacker === 'computer') {
       const undefended = state.table.find(p => !p.defense);
       if (undefended && canBeat(undefended.attack, card, state.trumpSuit)) {
+        // Проверка на погоны: если это последний ход и атакующая карта - некозырная шестерка, отбивать нельзя
+        const isPogony = state.deck.length === 0 && 
+                         undefended.attack.rank === '6' && 
+                         undefended.attack.suit !== state.trumpSuit;
+        
+        if (isPogony) {
+          // Погоны нельзя отбивать - показываем сообщение
+          dispatch({ type: 'SET_MESSAGE', message: 'Погоны нельзя отбить!' });
+          return;
+        }
+        
         if (state.selectedCard?.id === card.id) {
           // Double-click confirms
           dispatch({ type: 'PLAYER_DEFEND', card, attackId: undefended.attack.id });
@@ -949,6 +960,17 @@ export const Game: React.FC<GameProps> = ({ difficulty, deckSize, onBackToMenu }
     } else if (state.attacker === 'computer') {
       const undefended = state.table.find(p => !p.defense);
       if (undefended) {
+        // Проверка на погоны: если это последний ход и атакующая карта - некозырная шестерка, отбивать нельзя
+        const isPogony = state.deck.length === 0 && 
+                         undefended.attack.rank === '6' && 
+                         undefended.attack.suit !== state.trumpSuit;
+        
+        if (isPogony) {
+          // Погоны нельзя отбивать - показываем сообщение
+          dispatch({ type: 'SET_MESSAGE', message: 'Погоны нельзя отбить!' });
+          return;
+        }
+        
         dispatch({ type: 'PLAYER_DEFEND', card: state.selectedCard, attackId: undefended.attack.id });
         dispatch({ type: 'SET_MESSAGE', message: t('waiting') });
       }

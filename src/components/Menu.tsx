@@ -205,13 +205,13 @@ export const Menu: React.FC<MenuProps> = ({ onStartGame }) => {
 
         {/* Version Info */}
         <div className="mt-4 text-center text-white/40 text-xs">
-          v0.8
+          v0.9
         </div>
 
         {/* Settings Modal */}
         {showSettings && (
           <div className="fixed inset-0 z-50 bg-black/70 backdrop-blur-sm flex items-center justify-center p-4">
-            <div className="bg-gradient-to-b from-green-800 to-green-900 rounded-2xl p-6 max-w-md w-full max-h-[80vh] overflow-y-auto border-2 border-green-600/50 shadow-2xl">
+            <div className={`bg-gradient-to-b ${theme.background} rounded-2xl p-6 max-w-md w-full max-h-[80vh] overflow-y-auto border-2 ${theme.tableBorder} shadow-2xl`}>
               <h2 className="text-2xl font-bold text-white mb-4 text-center">⚙️ Настройки</h2>
               
               <div className="space-y-3">
@@ -221,7 +221,7 @@ export const Menu: React.FC<MenuProps> = ({ onStartGame }) => {
                     onClick={changeSortMode}
                     className="w-full py-3 px-4 bg-purple-600 hover:bg-purple-500 text-white rounded-xl font-medium text-sm transition-colors flex items-center gap-3"
                   >
-                    <span className="text-2xl">{sortMode === 'suit' ? '🎨' : sortMode === 'rank' ? '🔢' : '🃏'}</span>
+                    <span className="text-2xl">🃏</span>
                     <div className="text-left">
                       <div className="font-bold">Сортировка карт</div>
                       <div className="text-xs text-white/70">{sortMode === 'suit' ? 'По масти' : sortMode === 'rank' ? 'По рангу' : 'По рангу + козыри'}</div>
@@ -249,7 +249,7 @@ export const Menu: React.FC<MenuProps> = ({ onStartGame }) => {
                     }}
                     className={`w-full py-3 px-4 rounded-xl font-medium text-sm transition-colors flex items-center gap-3 ${
                       hintsEnabled
-                        ? 'bg-purple-600 hover:bg-purple-500 text-white'
+                        ? 'bg-amber-600 hover:bg-amber-500 text-white'
                         : 'bg-gray-600 hover:bg-gray-500 text-white/80'
                     }`}
                   >
