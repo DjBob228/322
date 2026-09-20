@@ -24,6 +24,7 @@ import {
 import { RANK_VALUES, type DeckSize } from '../types';
 import { type Theme, themes, getNextTheme } from '../themes';
 import { backgroundMusic } from '../backgroundMusic';
+import { t } from '../i18n';
 
 type GameStatus = 'playing' | 'paused' | 'gameOver' | 'waiting';
 type SortMode = 'suit' | 'rank' | 'rank-trump';
@@ -103,7 +104,7 @@ function drawFromDeck(state: State): State {
 function checkGameEnd(state: State): State | null {
   // Проверяем ничью даже если колода пуста
   if (state.playerHand.length === 0 && state.computerHand.length === 0) {
-    return { ...state, status: 'gameOver', gameOverMessage: 'Ничья! Оба игрока избавились от карт.' };
+    return { ...state, status: 'gameOver', gameOverMessage: t('draw') };
   }
   
   if (state.deck.length > 0) return null;
@@ -132,16 +133,16 @@ function checkGameEnd(state: State): State | null {
     // Player won, check if computer got pogony
     const hasPogony = checkPogony(state.computerHand, 'player', 'computer');
     const message = hasPogony
-      ? '🎉 Вы победили! Компьютер — дурак с погонами!' 
-      : '🎉 Вы победили! Компьютер — дурак!';
+      ? `${t('youWin')} ${t('withPogony')}` 
+      : t('youWin');
     return { ...state, status: 'gameOver', gameOverMessage: message };
   }
   if (state.computerHand.length === 0) {
     // Computer won, check if player got pogony
     const hasPogony = checkPogony(state.playerHand, 'computer', 'player');
     const message = hasPogony
-      ? '😞 Вы проиграли! Вы — дурак с погонами!' 
-      : '😞 Вы проиграли! Вы — дурак!';
+      ? `${t('youLose')} ${t('withPogony')}` 
+      : t('youLose');
     return { ...state, status: 'gameOver', gameOverMessage: message };
   }
   return null;
@@ -193,7 +194,7 @@ function reducer(state: State, action: Action): State {
         table: newTable,
         selectedCard: null,
         showPassButton: false,
-        message: 'Ожидание...',
+        message: t('waiting'),
         lastAttackCards: newLastAttackCards,
         cardsShownToComputer: newCardsShown,
       };
@@ -238,7 +239,7 @@ function reducer(state: State, action: Action): State {
         table: newTable,
         selectedCard: null,
         showPassButton: true, // Оставляем кнопку "Бито"
-        message: 'Подкиньте еще или нажмите "Бито".',
+        message: t('computerThrows'),
         lastTableRanks: newRanks,
         cardsShownToComputer: newCardsShown,
       };
@@ -254,7 +255,7 @@ function reducer(state: State, action: Action): State {
         computerHand: newHand,
         table: newTable,
         showTakeButton: true,
-        message: 'Компьютер атаковал. Защищайтесь!',
+        message: t('computerThrows'),
         computerThinking: false,
         lastAttackCards: newLastAttackCards,
       };
@@ -270,7 +271,7 @@ function reducer(state: State, action: Action): State {
         computerHand: newHand,
         table: newTable,
         showTakeButton: false,
-        message: 'Компьютер отбился.',
+        message: t('waiting'),
         computerThinking: false,
       };
     }
@@ -305,7 +306,7 @@ function reducer(state: State, action: Action): State {
         ...state,
         computerHand: newCompHand,
         playerHand: newPlayerHand,
-        message: 'Компьютер подкидывает...',
+        message: t('computerThrows'),
         computerThinking: false,
         lastTableRanks: newRanks,
       };
@@ -329,7 +330,7 @@ function reducer(state: State, action: Action): State {
         table: state.table, // Оставляем стол для подкидывания
         showTakeButton: false,
         showPassButton: true, // Показываем кнопку "Бито" для игрока
-        message: 'Компьютер взял карты. Подкиньте или нажмите "Бито".',
+        message: t('computerTakes'),
         computerThinking: false,
         playerJustTook: false,
         lastTableRanks: ranks, // Сохраняем ранги для подкидывания
@@ -350,7 +351,7 @@ function reducer(state: State, action: Action): State {
         selectedCard: null,
         showTakeButton: false,
         showPassButton: false,
-        message: 'Вы взяли карты. Компьютер подкидывает...',
+        message: t('playerTakes'),
         computerThinking: false,
         playerJustTook: true, // Помечаем, что игрок взял карты
         lastTableRanks: ranks, // Сохраняем ранги для подкидывания
@@ -428,7 +429,7 @@ function reducer(state: State, action: Action): State {
 
       return {
         ...withCards,
-        message: newAttacker === 'computer' ? 'Компьютер атакует...' : 'Ваш ход! Выберите карту для атаки.',
+        message: newAttacker === 'computer' ? t('computerAttacks') : t('yourTurn'),
         roundEnded: false,
         computerThinking: false,
         playerJustTook: false,
@@ -633,12 +634,12 @@ export const Game: React.FC<GameProps> = ({ difficulty, deckSize, onBackToMenu }
 
     if (firstAttacker === 'computer') {
       // Компьютер ходит первым - показываем его наименьший козырь
-      message = 'Компьютер атакует...';
+      message = t('computerAttacks');
       firstTurnText = `🤖 Компьютер ходит первым\nМеньший козырь: ${computerLowestTrump?.rank || 'нет'} ${computerLowestTrump ? SUIT_SYMBOLS[computerLowestTrump.suit] : ''}`;
       computerKnownTrump = computerLowestTrump;
     } else {
       // Игрок ходит первым - запоминаем его наименьший козырь
-      message = 'Ваш ход! Выберите карту для атаки.';
+      message = t('yourTurn');
       firstTurnText = `🎯 Вы ходите первым\nМеньший козырь: ${playerLowestTrump?.rank || 'нет'} ${playerLowestTrump ? SUIT_SYMBOLS[playerLowestTrump.suit] : ''}`;
       playerKnownTrump = playerLowestTrump;
       
@@ -826,11 +827,11 @@ export const Game: React.FC<GameProps> = ({ difficulty, deckSize, onBackToMenu }
           const cs3 = stateRef.current;
           if (cs3.status !== 'playing') return;
           dispatch({ type: 'SHOW_BUTTONS', take: false, pass: true });
-          dispatch({ type: 'SET_MESSAGE', message: 'Подкиньте карту или нажмите "Бито".' });
+          dispatch({ type: 'SET_MESSAGE', message: t('computerThrows') });
         }, 400);
       } else {
         // Computer takes cards - show message first
-        dispatch({ type: 'SET_MESSAGE', message: 'Компьютер берёт карты' });
+        dispatch({ type: 'SET_MESSAGE', message: t('computerTakes') });
         setScore(prev => prev + 15);
 
         // Start animation
@@ -895,7 +896,7 @@ export const Game: React.FC<GameProps> = ({ difficulty, deckSize, onBackToMenu }
         if (state.selectedCard?.id === card.id) {
           // Double-click confirms
           dispatch({ type: 'PLAYER_ATTACK', card });
-          dispatch({ type: 'SET_MESSAGE', message: 'Ожидание...' });
+          dispatch({ type: 'SET_MESSAGE', message: t('waiting') });
           playSound('card');
         } else {
           dispatch({ type: 'SELECT_CARD', card });
@@ -907,7 +908,7 @@ export const Game: React.FC<GameProps> = ({ difficulty, deckSize, onBackToMenu }
         if (state.selectedCard?.id === card.id) {
           // Double-click confirms
           dispatch({ type: 'PLAYER_DEFEND', card, attackId: undefended.attack.id });
-          dispatch({ type: 'SET_MESSAGE', message: 'Ожидание...' });
+          dispatch({ type: 'SET_MESSAGE', message: t('waiting') });
           playSound('card');
         } else {
           dispatch({ type: 'SELECT_CARD', card });
@@ -936,7 +937,7 @@ export const Game: React.FC<GameProps> = ({ difficulty, deckSize, onBackToMenu }
       const undefended = state.table.find(p => !p.defense);
       if (undefended) {
         dispatch({ type: 'PLAYER_DEFEND', card: state.selectedCard, attackId: undefended.attack.id });
-        dispatch({ type: 'SET_MESSAGE', message: 'Ожидание...' });
+        dispatch({ type: 'SET_MESSAGE', message: t('waiting') });
       }
     }
   };
@@ -1191,7 +1192,7 @@ export const Game: React.FC<GameProps> = ({ difficulty, deckSize, onBackToMenu }
             onClick={() => setShowExitConfirm(true)}
             className="px-3 py-2 text-sm bg-gray-700 hover:bg-gray-600 text-white rounded-lg transition-colors"
           >
-            ← Меню
+            {t('menu')}
           </button>
           <span className="text-white/60 text-sm">
             {difficulty === 'easy' ? '😊 Легкая' : difficulty === 'medium' ? '🤔 Средняя' : '😈 Сложная'}
@@ -1201,7 +1202,7 @@ export const Game: React.FC<GameProps> = ({ difficulty, deckSize, onBackToMenu }
         <div className="flex items-center gap-3">
           <div className="text-white text-sm">
             <span className="text-yellow-300 font-bold">{score}</span>
-            <span className="text-white/50"> очков</span>
+            <span className="text-white/50"> {t('points')}</span>
           </div>
           <div className="text-white/50 text-sm">
             🏆 {highScore}
@@ -1333,7 +1334,7 @@ export const Game: React.FC<GameProps> = ({ difficulty, deckSize, onBackToMenu }
           >
             {state.table.length === 0 ? (
               <div className={`${theme.textColor} text-base font-medium`}>
-                {state.attacker === 'player' ? 'Выберите карту для атаки' : 'Ожидание...'}
+                {state.attacker === 'player' ? t('chooseCard') : t('waiting')}
               </div>
             ) : (
               state.table.map((pair, i) => {
@@ -1388,7 +1389,7 @@ export const Game: React.FC<GameProps> = ({ difficulty, deckSize, onBackToMenu }
                   : 'bg-orange-500 hover:bg-orange-400'
               }`}
             >
-              📥 Взять
+              {t('take')}
             </button>
           )}
           {state.showPassButton && (
@@ -1396,7 +1397,7 @@ export const Game: React.FC<GameProps> = ({ difficulty, deckSize, onBackToMenu }
               onClick={handlePass}
               className="px-3 py-2 bg-blue-500 hover:bg-blue-400 text-white rounded-lg font-bold text-sm transition-colors shadow-lg"
             >
-              ✓ Бито
+              {t('pass')}
             </button>
           )}
           {/* Показываем кнопку "Бито" когда игрок атакует и есть карты на столе */}
@@ -1496,7 +1497,7 @@ export const Game: React.FC<GameProps> = ({ difficulty, deckSize, onBackToMenu }
       {state.status === 'gameOver' && (
         <div className="absolute inset-0 z-50 bg-black/70 backdrop-blur-sm flex items-center justify-center animate-fade-in">
           <div className="bg-gray-800 rounded-2xl p-8 text-center shadow-2xl border border-gray-600 max-w-sm mx-4 animate-scale-in">
-            <h2 className="text-3xl font-bold text-white mb-2">Игра окончена</h2>
+            <h2 className="text-3xl font-bold text-white mb-2">{t('gameOver')}</h2>
             <p className="text-lg text-yellow-300 mb-4">{state.gameOverMessage}</p>
             <div className="grid grid-cols-2 gap-2 mb-4 text-sm">
               <div className="bg-gray-700 rounded-lg p-3">
@@ -1521,13 +1522,13 @@ export const Game: React.FC<GameProps> = ({ difficulty, deckSize, onBackToMenu }
                 onClick={restartGame}
                 className="block w-full px-6 py-3 bg-green-500 hover:bg-green-400 text-white rounded-lg font-bold transition-colors"
               >
-                🔄 Играть снова
+                {t('playAgain')}
               </button>
               <button
                 onClick={onBackToMenu}
                 className="block w-full px-6 py-3 bg-gray-600 hover:bg-gray-500 text-white rounded-lg font-bold transition-colors"
               >
-                ← В меню
+                {t('backToMenu')}
               </button>
             </div>
           </div>
@@ -1538,20 +1539,20 @@ export const Game: React.FC<GameProps> = ({ difficulty, deckSize, onBackToMenu }
       {showExitConfirm && (
         <div className="absolute inset-0 z-50 bg-black/70 backdrop-blur-sm flex items-center justify-center animate-fade-in">
           <div className="bg-gray-800 rounded-2xl p-6 text-center shadow-2xl border border-gray-600 animate-scale-in max-w-sm mx-4">
-            <h2 className="text-xl font-bold text-white mb-4">Выйти в меню?</h2>
-            <p className="text-gray-300 text-sm mb-6">Текущая игра будет потеряна</p>
+            <h2 className="text-xl font-bold text-white mb-4">{t('exitConfirm')}</h2>
+            <p className="text-gray-300 text-sm mb-6">{t('exitText')}</p>
             <div className="space-y-2">
               <button
                 onClick={onBackToMenu}
                 className="block w-full px-6 py-3 bg-red-500 hover:bg-red-400 text-white rounded-lg font-bold transition-colors"
               >
-                ✓ Да, выйти
+                {t('yes')}
               </button>
               <button
                 onClick={() => setShowExitConfirm(false)}
                 className="block w-full px-6 py-3 bg-gray-600 hover:bg-gray-500 text-white rounded-lg font-bold transition-colors"
               >
-                ✕ Отмена
+                {t('no')}
               </button>
             </div>
           </div>

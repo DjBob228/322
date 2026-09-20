@@ -3,6 +3,7 @@ import { useState, useEffect } from 'react';
 import { type Difficulty, type DeckSize } from '../types';
 import { type Theme, themes, getNextTheme } from '../themes';
 import { backgroundMusic } from '../backgroundMusic';
+import { t } from '../i18n';
 
 type SortMode = 'suit' | 'rank' | 'rank-trump';
 
@@ -73,10 +74,10 @@ export const Menu: React.FC<MenuProps> = ({ onStartGame }) => {
     setGamesWon(parseInt(localStorage.getItem(GAMES_WON_KEY) || '0'));
   }, []);
 
-  const difficulties: { key: Difficulty; label: string; emoji: string; desc: string }[] = [
-    { key: 'easy', label: 'Легкая', emoji: '😊', desc: 'Ваш козырь в начале + козыри в конце игры' },
-    { key: 'medium', label: 'Средняя', emoji: '🤔', desc: 'Запоминает козыри' },
-    { key: 'hard', label: 'Сложная', emoji: '😈', desc: 'Запоминает все карты' },
+  const difficulties = [
+    { key: 'easy' as Difficulty, label: t('easy'), emoji: '😊', desc: t('easyDesc') },
+    { key: 'medium' as Difficulty, label: t('medium'), emoji: '🤔', desc: t('mediumDesc') },
+    { key: 'hard' as Difficulty, label: t('hard'), emoji: '😈', desc: t('hardDesc') },
   ];
 
   return (
@@ -108,29 +109,29 @@ export const Menu: React.FC<MenuProps> = ({ onStartGame }) => {
         {/* Title */}
         <div className="text-center mb-8">
           <h1 className="text-5xl font-bold text-white mb-2 drop-shadow-lg">
-            🃏 Дурак
+            {t('gameTitle')}
           </h1>
           <p className="text-green-200/70 text-base">
-            Классическая карточная игра
+            {t('subtitle')}
           </p>
         </div>
 
         {/* Stats */}
         {(highScore > 0 || gamesPlayed > 0) && (
           <div className="bg-black/20 backdrop-blur-sm rounded-xl p-4 mb-6 border border-white/10">
-            <h3 className="text-white/80 text-sm font-medium mb-2 text-center">Статистика</h3>
+            <h3 className="text-white/80 text-sm font-medium mb-2 text-center">{t('statistics')}</h3>
             <div className="grid grid-cols-3 gap-3 text-center">
               <div>
                 <div className="text-yellow-400 text-xl font-bold">{highScore}</div>
-                <div className="text-white/50 text-xs">Рекорд</div>
+                <div className="text-white/50 text-xs">{t('record')}</div>
               </div>
               <div>
                 <div className="text-green-400 text-xl font-bold">{gamesWon}</div>
-                <div className="text-white/50 text-xs">Побед</div>
+                <div className="text-white/50 text-xs">{t('wins')}</div>
               </div>
               <div>
                 <div className="text-blue-400 text-xl font-bold">{gamesPlayed}</div>
-                <div className="text-white/50 text-xs">Игр</div>
+                <div className="text-white/50 text-xs">{t('games')}</div>
               </div>
             </div>
           </div>
@@ -139,7 +140,7 @@ export const Menu: React.FC<MenuProps> = ({ onStartGame }) => {
         {/* Difficulty Selection */}
         <div className="mb-6">
           <h3 className="text-white/80 text-sm font-medium mb-3 text-center">
-            Выберите сложность
+            {t('difficulty')}
           </h3>
           <div className="space-y-2">
             {difficulties.map(d => (
@@ -170,7 +171,7 @@ export const Menu: React.FC<MenuProps> = ({ onStartGame }) => {
         {/* Deck Size Selection */}
         <div className="mb-6">
           <h3 className="text-white/80 text-sm font-medium mb-3 text-center">
-            Количество карт
+            {t('cardCount')}
           </h3>
           <div className="grid grid-cols-2 gap-3">
             <button
@@ -181,9 +182,9 @@ export const Menu: React.FC<MenuProps> = ({ onStartGame }) => {
                   : 'bg-black/20 border-transparent hover:bg-black/30 hover:border-white/20'
                 }`}
             >
-              <div className="text-white font-bold text-lg mb-1">36 карт</div>
-              <div className="text-white/50 text-xs">Классическая игра</div>
-              <div className="text-white/40 text-xs mt-1">от 6 до туза</div>
+              <div className="text-white font-bold text-lg mb-1">{t('cards36')}</div>
+              <div className="text-white/50 text-xs">{t('classicGame')}</div>
+              <div className="text-white/40 text-xs mt-1">{t('from6ToAce')}</div>
             </button>
             <button
               onClick={() => setSelectedDeckSize(52)}
@@ -193,9 +194,9 @@ export const Menu: React.FC<MenuProps> = ({ onStartGame }) => {
                   : 'bg-black/20 border-transparent hover:bg-black/30 hover:border-white/20'
                 }`}
             >
-              <div className="text-white font-bold text-lg mb-1">52 карты</div>
-              <div className="text-white/50 text-xs">Расширенная игра</div>
-              <div className="text-white/40 text-xs mt-1">от 2 до туза</div>
+              <div className="text-white font-bold text-lg mb-1">{t('cards52')}</div>
+              <div className="text-white/50 text-xs">{t('expandedGame')}</div>
+              <div className="text-white/40 text-xs mt-1">{t('from2ToAce')}</div>
             </button>
           </div>
         </div>
@@ -214,7 +215,7 @@ export const Menu: React.FC<MenuProps> = ({ onStartGame }) => {
                 : 'bg-gray-600 hover:bg-gray-500 text-white/80'
             }`}
           >
-            {hintsEnabled ? '💡 Подсказки: ВКЛ' : '💡 Подсказки: ВЫКЛ'}
+            {hintsEnabled ? t('hintsOn') : t('hintsOff')}
           </button>
         </div>
 
@@ -223,9 +224,9 @@ export const Menu: React.FC<MenuProps> = ({ onStartGame }) => {
           <button
             onClick={changeSortMode}
             className="py-3 px-2 bg-purple-600 hover:bg-purple-500 text-white rounded-xl font-bold text-sm transition-colors"
-            title={sortMode === 'suit' ? 'По масти' : sortMode === 'rank' ? 'По рангу' : 'По рангу + козыри'}
+            title={sortMode === 'suit' ? t('sortBySuit') : sortMode === 'rank' ? t('sortByRank') : t('sortByRankTrump')}
           >
-            {sortMode === 'suit' ? '🎨 По масти' : sortMode === 'rank' ? '🔢 По рангу' : '🃏 Козыри'}
+            {sortMode === 'suit' ? t('sortBySuit') : sortMode === 'rank' ? t('sortByRank') : t('sortByRankTrump')}
           </button>
           <button
             onClick={changeSound}
@@ -234,9 +235,9 @@ export const Menu: React.FC<MenuProps> = ({ onStartGame }) => {
                 ? 'bg-indigo-600 hover:bg-indigo-500 text-white'
                 : 'bg-gray-600 hover:bg-gray-500 text-white/80'
             }`}
-            title={soundEnabled ? 'Звук включен' : 'Звук выключен'}
+            title={soundEnabled ? t('soundOn') : t('soundOff')}
           >
-            {soundEnabled ? '🔊 Звук' : '🔇 Звук'}
+            {soundEnabled ? t('soundOn') : t('soundOff')}
           </button>
           <button
             onClick={changeMusic}
@@ -245,16 +246,17 @@ export const Menu: React.FC<MenuProps> = ({ onStartGame }) => {
                 ? 'bg-cyan-600 hover:bg-cyan-500 text-white'
                 : 'bg-gray-600 hover:bg-gray-500 text-white/80'
             }`}
-            title={musicEnabled ? 'Музыка включена' : 'Музыка выключена'}
+            title={musicEnabled ? t('musicOn') : t('musicOff')}
           >
-            {musicEnabled ? '🎵 Музыка' : '🔇 Музыка'}
+            {musicEnabled ? t('musicOn') : t('musicOff')}
           </button>
           <button
             onClick={changeTheme}
-            className="py-3 px-2 bg-pink-600 hover:bg-pink-500 text-white rounded-xl font-bold text-sm transition-colors"
-            title={`Тема: ${theme.name}`}
+            className="py-3 px-2 bg-pink-600 hover:bg-pink-500 text-white rounded-xl font-bold text-sm transition-colors flex flex-col items-center justify-center gap-1"
+            title={`${t('theme')}: ${theme.name}`}
           >
-            {theme.emoji} {theme.name}
+            <span className="text-lg leading-none">{theme.emoji}</span>
+            <span className="text-xs leading-none">{theme.name}</span>
           </button>
         </div>
 
@@ -265,7 +267,7 @@ export const Menu: React.FC<MenuProps> = ({ onStartGame }) => {
             text-white font-bold text-lg rounded-xl shadow-lg shadow-orange-500/30
             transition-all duration-200 active:scale-95 hover:scale-[1.02]"
         >
-          🎮 Начать игру
+          {t('startGame')}
         </button>
 
         {/* How to Play Button */}
@@ -274,57 +276,57 @@ export const Menu: React.FC<MenuProps> = ({ onStartGame }) => {
           className="w-full mt-3 py-2 bg-white/10 hover:bg-white/20 text-white/80 text-sm rounded-lg
             transition-all duration-200 border border-white/20"
         >
-          📖 Как играть
+          {t('howToPlay')}
         </button>
 
         {/* How to Play Modal */}
         {showHowToPlay && (
           <div className="fixed inset-0 z-50 bg-black/70 backdrop-blur-sm flex items-center justify-center p-4">
             <div className="bg-gradient-to-b from-green-800 to-green-900 rounded-2xl p-6 max-w-md w-full max-h-[80vh] overflow-y-auto border-2 border-green-600/50 shadow-2xl">
-              <h2 className="text-2xl font-bold text-white mb-4 text-center">📖 Как играть</h2>
+              <h2 className="text-2xl font-bold text-white mb-4 text-center">{t('howToPlay')}</h2>
               
               <div className="space-y-4 text-white/90 text-sm">
                 <div>
-                  <h3 className="font-bold text-green-300 mb-2">🎯 Цель игры</h3>
-                  <p>Избавиться от всех карт раньше противника. Проигрывает тот, у кого остались карты (дурак!)</p>
+                  <h3 className="font-bold text-green-300 mb-2">{t('goal')}</h3>
+                  <p>{t('goalText')}</p>
                 </div>
 
                 <div>
-                  <h3 className="font-bold text-green-300 mb-2">🃏 Правила</h3>
+                  <h3 className="font-bold text-green-300 mb-2">{t('rules')}</h3>
                   <ul className="space-y-1 text-white/80">
-                    <li>• Колода из 36 карт (от 6 до туза) или 52 карт (от 2 до туза)</li>
-                    <li>• Козырная масть определяется последней картой колоды</li>
-                    <li>• Каждый получает 6 карт. Ходит тот, у кого младший козырь</li>
-                    <li>• Атакующий кладёт карту, защищающийся должен побить</li>
-                    <li>• Бить можно картой той же масти старше или любым козырем</li>
-                    <li>• Можно подкидывать карты того же номинала, что на столе</li>
-                    <li>• Если не можете отбиться — берёте все карты со стола</li>
-                    <li>• После раунда игроки добирают карты до 6 из колоды</li>
+                    <li>{t('rule1')}</li>
+                    <li>{t('rule2')}</li>
+                    <li>{t('rule3')}</li>
+                    <li>{t('rule4')}</li>
+                    <li>{t('rule5')}</li>
+                    <li>{t('rule6')}</li>
+                    <li>{t('rule7')}</li>
+                    <li>{t('rule8')}</li>
                   </ul>
                 </div>
 
                 <div>
-                  <h3 className="font-bold text-green-300 mb-2">⭐ Особенности</h3>
+                  <h3 className="font-bold text-green-300 mb-2">{t('features')}</h3>
                   <ul className="space-y-1 text-white/80">
-                    <li>• Подсветка доступных карт в казуальном режиме</li>
-                    <li>• Глазик над картой показывает, что противник знает эту карту</li>
+                    <li>{t('feature1')}</li>
+                    <li>{t('feature2')}</li>
                   </ul>
                 </div>
 
                 <div>
-                  <h3 className="font-bold text-green-300 mb-2">👁️ Что знает противник</h3>
+                  <h3 className="font-bold text-green-300 mb-2">{t('whatBotKnows')}</h3>
                   <ul className="space-y-1 text-white/80">
-                    <li>• <strong>Легкая:</strong> Ваш козырь в начале + козыри в конце игры</li>
-                    <li>• <strong>Средняя:</strong> Ваш козырь в начале + козыри, которые вы забираете + все козыри в конце</li>
-                    <li>• <strong>Сложная:</strong> Ваш козырь в начале + все карты, которые вы забираете + все карты в конце</li>
+                    <li>{t('whatBotKnows1')}</li>
+                    <li>{t('whatBotKnows2')}</li>
+                    <li>{t('whatBotKnows3')}</li>
                   </ul>
                 </div>
 
                 <div>
-                  <h3 className="font-bold text-green-300 mb-2">🎖️ Система погонов</h3>
+                  <h3 className="font-bold text-green-300 mb-2">{t('pogonySystem')}</h3>
                   <div className="text-white/80 text-sm space-y-2">
-                    <p>Погоны — это <strong>некозырные шестёрки</strong> в последнем ходе. Если атакующий выкладывает эти карты, они автоматически засчитываются — <strong>отбить их нельзя</strong>. Проигравший объявляется "дураком с погонами".</p>
-                    <p className="text-white/60 text-xs">Количество не важно: может быть одна, две или больше некозырных шестёрок.</p>
+                    <p>{t('pogonyText')}</p>
+                    <p className="text-white/60 text-xs">{t('pogonyCondition')}</p>
                   </div>
                 </div>
               </div>
@@ -334,7 +336,7 @@ export const Menu: React.FC<MenuProps> = ({ onStartGame }) => {
                 className="w-full mt-6 py-3 bg-gradient-to-r from-green-500 to-green-600 hover:from-green-400 hover:to-green-500
                   text-white font-bold rounded-lg transition-all duration-200 active:scale-95"
               >
-                Понятно!
+                {t('understand')}
               </button>
             </div>
           </div>
