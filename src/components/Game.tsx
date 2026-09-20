@@ -898,7 +898,7 @@ export const Game: React.FC<GameProps> = ({ difficulty, deckSize, onBackToMenu }
         if (state.selectedCard?.id === card.id) {
           // Двойной клик - подкидываем карту
           dispatch({ type: 'PLAYER_THROW_AFTER_COMPUTER_TAKES', card });
-          playSound('card');
+          playSound('place');
         } else {
           dispatch({ type: 'SELECT_CARD', card });
         }
@@ -951,7 +951,7 @@ export const Game: React.FC<GameProps> = ({ difficulty, deckSize, onBackToMenu }
     if (state.attacker === 'player' && state.computerJustTook) {
       if (state.lastTableRanks.has(state.selectedCard.rank)) {
         dispatch({ type: 'PLAYER_THROW_AFTER_COMPUTER_TAKES', card: state.selectedCard });
-        playSound('card');
+        playSound('place');
         return;
       }
     }
@@ -993,7 +993,7 @@ export const Game: React.FC<GameProps> = ({ difficulty, deckSize, onBackToMenu }
       dispatch({ type: 'PLAYER_TAKES' });
       dispatch({ type: 'SET_ANIMATING', animation: null });
       setScore(prev => Math.max(0, prev - 10));
-      playSound('take');
+      playSound('collect'); // Резкий звук подбора карт
       
       // НЕ вызываем END_ROUND сразу - даём компьютеру возможность подкинуть карты
       // computerThrow автоматически обработает playerJustTook и подкинет карты или закончит раунд
@@ -1008,6 +1008,8 @@ export const Game: React.FC<GameProps> = ({ difficulty, deckSize, onBackToMenu }
   // Player passes (bito)
   const handlePass = () => {
     if (state.status !== 'playing') return;
+    
+    playSound('pass'); // Спокойный звук бито
     
     // Если компьютер только что взял карты и игрок нажимает "Бито" - ход остается у игрока
     if (state.computerJustTook) {
@@ -1103,7 +1105,7 @@ export const Game: React.FC<GameProps> = ({ difficulty, deckSize, onBackToMenu }
   };
 
   // Play sound
-  const playSound = async (type: 'card' | 'win' | 'lose' | 'take' | 'place' | 'beat') => {
+  const playSound = async (type: 'card' | 'win' | 'lose' | 'take' | 'place' | 'beat' | 'collect' | 'pass') => {
     if (!soundEnabled) return;
     
     try {
@@ -1167,6 +1169,20 @@ export const Game: React.FC<GameProps> = ({ difficulty, deckSize, onBackToMenu }
         gainNode.gain.exponentialRampToValueAtTime(0.01, audioContext.currentTime + 0.2);
         oscillator.start(audioContext.currentTime);
         oscillator.stop(audioContext.currentTime + 0.2);
+      } else if (type === 'collect') {
+        // Резкий звук подбора карт
+        oscillator.frequency.value = 600;
+        gainNode.gain.setValueAtTime(0.2, audioContext.currentTime);
+        gainNode.gain.exponentialRampToValueAtTime(0.01, audioContext.currentTime + 0.08);
+        oscillator.start(audioContext.currentTime);
+        oscillator.stop(audioContext.currentTime + 0.08);
+      } else if (type === 'pass') {
+        // Спокойный звук бито
+        oscillator.frequency.value = 380;
+        gainNode.gain.setValueAtTime(0.08, audioContext.currentTime);
+        gainNode.gain.exponentialRampToValueAtTime(0.01, audioContext.currentTime + 0.12);
+        oscillator.start(audioContext.currentTime);
+        oscillator.stop(audioContext.currentTime + 0.12);
       }
     } catch (e) {
       console.error('Sound error:', e);
@@ -1365,18 +1381,18 @@ export const Game: React.FC<GameProps> = ({ difficulty, deckSize, onBackToMenu }
                   <CardComponent card={state.trumpCard} className="w-20" />
                 </div>
               )}
-              <div className="relative">
-                {/* 3D stack effect - 10 layers with varying offsets */}
-                <div className="absolute inset-0 bg-gradient-to-br from-blue-700 to-blue-900 rounded-lg border-2 border-blue-500 shadow-md" style={{ transform: 'translate(1px, 1px)' }}></div>
-                <div className="absolute inset-0 bg-gradient-to-br from-blue-700 to-blue-900 rounded-lg border-2 border-blue-500 shadow-md" style={{ transform: 'translate(2px, 2px)' }}></div>
-                <div className="absolute inset-0 bg-gradient-to-br from-blue-700 to-blue-900 rounded-lg border-2 border-blue-500 shadow-md" style={{ transform: 'translate(3px, 3px)' }}></div>
-                <div className="absolute inset-0 bg-gradient-to-br from-blue-700 to-blue-900 rounded-lg border-2 border-blue-500 shadow-md" style={{ transform: 'translate(4px, 4px)' }}></div>
-                <div className="absolute inset-0 bg-gradient-to-br from-blue-700 to-blue-900 rounded-lg border-2 border-blue-500 shadow-md" style={{ transform: 'translate(5px, 5px)' }}></div>
-                <div className="absolute inset-0 bg-gradient-to-br from-blue-700 to-blue-900 rounded-lg border-2 border-blue-500 shadow-md" style={{ transform: 'translate(6px, 6px)' }}></div>
-                <div className="absolute inset-0 bg-gradient-to-br from-blue-700 to-blue-900 rounded-lg border-2 border-blue-500 shadow-md" style={{ transform: 'translate(7px, 7px)' }}></div>
-                <div className="absolute inset-0 bg-gradient-to-br from-blue-700 to-blue-900 rounded-lg border-2 border-blue-500 shadow-md" style={{ transform: 'translate(8px, 8px)' }}></div>
-                <div className="absolute inset-0 bg-gradient-to-br from-blue-700 to-blue-900 rounded-lg border-2 border-blue-500 shadow-md" style={{ transform: 'translate(9px, 9px)' }}></div>
-                <div className="absolute inset-0 bg-gradient-to-br from-blue-700 to-blue-900 rounded-lg border-2 border-blue-500 shadow-md" style={{ transform: 'translate(10px, 10px)' }}></div>
+              <div className="relative" style={{ width: '5rem', height: '7rem' }}>
+                {/* 3D stack effect - 15 layers with increasing offsets */}
+                {Array.from({ length: 15 }, (_, i) => (
+                  <div 
+                    key={i}
+                    className="absolute inset-0 bg-gradient-to-br from-blue-800 to-blue-950 rounded-lg border border-blue-600"
+                    style={{ 
+                      transform: `translate(${(i + 1) * 0.8}px, ${(i + 1) * 0.8}px)`,
+                      boxShadow: '1px 1px 2px rgba(0,0,0,0.3)'
+                    }}
+                  ></div>
+                ))}
                 
                 {/* Top card */}
                 <CardComponent card={state.deck[0]} faceDown className="w-20 relative z-10" />
@@ -1417,13 +1433,13 @@ export const Game: React.FC<GameProps> = ({ difficulty, deckSize, onBackToMenu }
                     className="relative animate-card-appear"
                     style={{ width: '7rem', height: '8rem' }}
                   >
-                    {/* Attack card (underneath) with shadow/fade */}
-                    <div className={`${animationClass} absolute top-10 left-10`} style={{ opacity: pair.defense ? 0.7 : 1 }}>
+                    {/* Attack card (underneath) with drop shadow */}
+                    <div className={`${animationClass} absolute top-4 left-4`} style={{ filter: pair.defense ? 'drop-shadow(4px 4px 6px rgba(0,0,0,0.5))' : 'none' }}>
                       <CardComponent card={pair.attack} className="w-20" />
                     </div>
-                    {/* Defense card (on top) - positioned left and up */}
+                    {/* Defense card (on top) - positioned right and down */}
                     {pair.defense && (
-                      <div className="absolute top-4 left-4" style={{ transform: 'rotate(8deg)' }}>
+                      <div className="absolute top-10 left-10" style={{ transform: 'rotate(8deg)', filter: 'drop-shadow(2px 2px 4px rgba(0,0,0,0.3))' }}>
                         <CardComponent card={pair.defense} className="w-20" />
                       </div>
                     )}
