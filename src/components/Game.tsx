@@ -322,11 +322,11 @@ function reducer(state: State, action: Action): State {
         if (p.defense) ranks.add(p.defense.rank);
       });
       
-      // НЕ очищаем стол сразу - игрок может подкинуть карты
+      // Очищаем стол - карты ушли в руку компьютера
       return {
         ...state,
         computerHand: newHand,
-        table: state.table, // Оставляем стол для подкидывания
+        table: [], // Очищаем стол
         showTakeButton: false,
         showPassButton: true, // Показываем кнопку "Бито" для игрока
         message: t('computerTakes'),
@@ -962,15 +962,14 @@ export const Game: React.FC<GameProps> = ({ difficulty, deckSize, onBackToMenu }
     if (state.status !== 'playing') return;
     
     // Если компьютер взял карты и игрок нажимает "Бито"
-    if (state.attacker === 'player' && state.showPassButton && state.table.length > 0) {
-      // Очищаем стол и завершаем раунд
-      dispatch({ type: 'CLEAR_TABLE_AND_DRAW' });
+    if (state.attacker === 'player' && state.showPassButton) {
+      // Завершаем раунд - компьютер взял карты, ход остается у игрока
       dispatch({ type: 'END_ROUND', playerTook: false, computerTook: true });
       setScore(prev => prev + 5);
       return;
     }
     
-    // Обычный случай - бито
+    // Обычный случай - бито, ход переходит к другому игроку
     dispatch({ type: 'END_ROUND', playerTook: false, computerTook: false });
     setScore(prev => prev + 5);
   };
