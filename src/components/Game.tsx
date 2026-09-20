@@ -726,6 +726,7 @@ export const Game: React.FC<GameProps> = ({ difficulty, deckSize, onBackToMenu }
       const card = computerChooseAttack(cs2.computerHand, cs2.table, cs2.trumpSuit, difficulty);
       if (card) {
         dispatch({ type: 'COMPUTER_ATTACK', card });
+        playSound('place');
       } else {
         dispatch({ type: 'END_ROUND', playerTook: false, computerTook: false });
       }
@@ -835,6 +836,7 @@ export const Game: React.FC<GameProps> = ({ difficulty, deckSize, onBackToMenu }
       const defenseCard = computerChooseDefense(cs2.computerHand, currentUndefended.attack, cs2.trumpSuit, difficulty);
       if (defenseCard) {
         dispatch({ type: 'COMPUTER_DEFEND', card: defenseCard, attackId: currentUndefended.attack.id });
+        playSound('beat');
         // Wait for state update, then show "Бито" button
         setTimeout(() => {
           const cs3 = stateRef.current;
@@ -910,7 +912,7 @@ export const Game: React.FC<GameProps> = ({ difficulty, deckSize, onBackToMenu }
           // Double-click confirms
           dispatch({ type: 'PLAYER_ATTACK', card });
           dispatch({ type: 'SET_MESSAGE', message: t('waiting') });
-          playSound('card');
+          playSound('place');
         } else {
           dispatch({ type: 'SELECT_CARD', card });
         }
@@ -933,7 +935,7 @@ export const Game: React.FC<GameProps> = ({ difficulty, deckSize, onBackToMenu }
           // Double-click confirms
           dispatch({ type: 'PLAYER_DEFEND', card, attackId: undefended.attack.id });
           dispatch({ type: 'SET_MESSAGE', message: t('waiting') });
-          playSound('card');
+          playSound('beat');
         } else {
           dispatch({ type: 'SELECT_CARD', card });
         }
@@ -1101,7 +1103,7 @@ export const Game: React.FC<GameProps> = ({ difficulty, deckSize, onBackToMenu }
   };
 
   // Play sound
-  const playSound = async (type: 'card' | 'win' | 'lose' | 'take') => {
+  const playSound = async (type: 'card' | 'win' | 'lose' | 'take' | 'place' | 'beat') => {
     if (!soundEnabled) return;
     
     try {
@@ -1133,6 +1135,20 @@ export const Game: React.FC<GameProps> = ({ difficulty, deckSize, onBackToMenu }
         gainNode.gain.exponentialRampToValueAtTime(0.01, audioContext.currentTime + 0.1);
         oscillator.start(audioContext.currentTime);
         oscillator.stop(audioContext.currentTime + 0.1);
+      } else if (type === 'place') {
+        // Звук кладки карты на стол
+        oscillator.frequency.value = 400;
+        gainNode.gain.setValueAtTime(0.15, audioContext.currentTime);
+        gainNode.gain.exponentialRampToValueAtTime(0.01, audioContext.currentTime + 0.15);
+        oscillator.start(audioContext.currentTime);
+        oscillator.stop(audioContext.currentTime + 0.15);
+      } else if (type === 'beat') {
+        // Звук удара карты
+        oscillator.frequency.value = 600;
+        gainNode.gain.setValueAtTime(0.2, audioContext.currentTime);
+        gainNode.gain.exponentialRampToValueAtTime(0.01, audioContext.currentTime + 0.12);
+        oscillator.start(audioContext.currentTime);
+        oscillator.stop(audioContext.currentTime + 0.12);
       } else if (type === 'win') {
         oscillator.frequency.value = 523;
         gainNode.gain.setValueAtTime(0.2, audioContext.currentTime);
@@ -1295,8 +1311,11 @@ export const Game: React.FC<GameProps> = ({ difficulty, deckSize, onBackToMenu }
       <div className="relative z-10 flex-1 flex flex-col p-3 gap-2 w-full min-h-0">
         {/* Computer Hand */}
         <div className="flex flex-col items-center shrink-0">
-          <div className="text-white/90 text-lg font-bold mb-1">
-            🤖 Компьютер ({state.computerHand.length})
+          <div className="text-white/90 text-lg font-bold mb-1 flex items-center gap-2">
+            <span>🤖 Компьютер ({state.computerHand.length})</span>
+            <span className="text-sm font-normal text-white/70">
+              {state.attacker === 'computer' ? '⚔️ Атакует' : '🛡️ Защищается'}
+            </span>
           </div>
           <div className="flex justify-center max-w-full px-2 overflow-visible">
             <div 
@@ -1389,7 +1408,7 @@ export const Game: React.FC<GameProps> = ({ difficulty, deckSize, onBackToMenu }
                       <CardComponent card={pair.attack} className="w-20" />
                     </div>
                     {pair.defense && (
-                      <div className="absolute top-8 left-8 animate-card-appear">
+                      <div className="absolute top-8 left-8 animate-card-appear" style={{ transform: 'rotate(15deg)' }}>
                         <div className={animationClass}>
                           <CardComponent card={pair.defense} className="w-20" />
                         </div>
@@ -1450,15 +1469,6 @@ export const Game: React.FC<GameProps> = ({ difficulty, deckSize, onBackToMenu }
               ✕
             </button>
           )}
-        </div>
-
-        {/* Message */}
-        <div className="text-center shrink-0">
-          <div className="inline-block px-3 py-1 bg-black/30 backdrop-blur-sm rounded-full">
-            <span className="text-white text-sm">
-              {state.message}
-            </span>
-          </div>
         </div>
 
         {/* Player Hand */}

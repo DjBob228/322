@@ -92,7 +92,7 @@ export const Menu: React.FC<MenuProps> = ({ onStartGame }) => {
         {/* Title */}
         <div className="text-center mb-8">
           <h1 className="text-5xl font-bold text-white mb-2 drop-shadow-lg flex items-center justify-center gap-2">
-            <span className="text-red-500">♠</span>
+            <span className="text-black">♠</span>
             <span className="text-red-500">♦</span>
             <span>{t('gameTitle').replace('🃏 ', '')}</span>
             <span className="text-black">♣</span>
@@ -209,7 +209,7 @@ export const Menu: React.FC<MenuProps> = ({ onStartGame }) => {
 
         {/* Version Info */}
         <div className="mt-4 text-center text-white/40 text-xs">
-          v1.1
+          v1.2
         </div>
 
         {/* Settings Modal */}
