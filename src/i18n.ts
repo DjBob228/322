@@ -52,7 +52,6 @@ export interface Translations {
   whatBotKnows3: string;
   pogonySystem: string;
   pogonyText: string;
-  pogonyCondition: string;
   menu: string;
   points: string;
   take: string;
@@ -131,7 +130,7 @@ const translations: Record<Language, Translations> = {
     howToPlay: '📖 Как играть',
     understand: 'Понятно!',
     goal: '🎯 Цель игры',
-    goalText: 'Дурак — карточная игра колодой в 36 или 52 листа. Задача — раньше соперника освободиться от всех карт. Участники по очереди нападают, а оппонент защищается. Когда карты в колоде заканчиваются, выигрывает тот, кто первым остался без карт. Последний игрок с картами на руках становится «дураком». При одновременном освобождении обоих игроков фиксируется ничья.',
+    goalText: 'Дурак — популярная карточная игра. Задача — первым освободиться от всех карт на руках. Игроки по очереди атакуют соперника, а тот отбивается. Когда колода добора закончится, побеждает тот, у кого раньше всех опустеют руки. Тот, кто останется с картами последним, и есть «дурак». В партии на двоих возможна и ничья — если оба остаются без карт одновременно.',
     rules: '🃏 Правила',
     rule1: '• Колода из 36 карт (от 6 до туза) или 52 карт (от 2 до туза)',
     rule2: '• Козырная масть определяется последней картой колоды',
@@ -149,8 +148,7 @@ const translations: Record<Language, Translations> = {
     whatBotKnows2: '• Средняя: Ваш козырь в начале + козыри, которые вы забираете + все козыри в конце',
     whatBotKnows3: '• Сложная: Ваш козырь в начале + все карты, которые вы забираете + все карты в конце',
     pogonySystem: '🎖️ Система погонов',
-    pogonyText: 'Погоны — это финальный ход, выполненный <strong>некозырными шестёрками</strong>. Эти карты невозможно побить, они автоматически засчитываются. Игрок, оставшийся с картами, получает статус "дурака с погонами".',
-    pogonyCondition: 'Количество шестёрок не имеет значения: одна, две или больше.',
+    pogonyText: 'Погоны — это финальный ход, выполненный некозырными шестёрками. Эти карты невозможно побить, они автоматически засчитываются. Игрок, оставшийся с картами, получает статус "дурака с погонами".',
     menu: '← Меню',
     points: 'очков',
     take: '🖐 Беру',
@@ -243,7 +241,6 @@ const translations: Record<Language, Translations> = {
     whatBotKnows3: '• Hard: Your trump at start + all cards you take + all cards at end',
     pogonySystem: '🎖️ Pogony system',
     pogonyText: 'Pogony are non-trump sixes in the last turn. If the attacker plays these cards, they are automatically counted - they cannot be beaten. The loser is declared "the fool with epaulettes".',
-    pogonyCondition: 'Quantity doesn\'t matter: it can be one, two or more non-trump sixes.',
     menu: '← Menu',
     points: 'points',
     take: '📥 Take',
@@ -336,7 +333,6 @@ const translations: Record<Language, Translations> = {
     whatBotKnows3: '• Zor: Başlangıçtaki kozunuz + aldığınız tüm kartlar + oyun sonundaki tüm kartlar',
     pogonySystem: '🎖️ Pogony sistemi',
     pogonyText: 'Pogony, son turda koz olmayan altılılardır. Saldırgan bu kartları oynarsa, otomatik sayılır - yenilemezler. Kaybeden "epoletli aptal" ilan edilir.',
-    pogonyCondition: 'Miktar önemli değil: bir, iki veya daha fazla koz olmayan altılı olabilir.',
     menu: '← Menü',
     points: 'puan',
     take: '📥 Al',
@@ -429,7 +425,6 @@ const translations: Record<Language, Translations> = {
     whatBotKnows3: '• Складаная: Ваш козыр у пачатку + усе карты, якія вы бераце + усе карты ў канцы',
     pogonySystem: '🎖️ Сістэма пагонаў',
     pogonyText: 'Пагоны — гэта неказырныя шасцёркі ў апошнім ходзе. Калі атакуючы выкладае гэтыя карты, яны аўтаматычна залічваюцца — адбіць іх нельга. Прайграўшы аб\'яўляецца "дурнем з пагонамі".',
-    pogonyCondition: 'Колькасць не важная: можа быць адна, дзве або больш неказырных шасцёрак.',
     menu: '← Меню',
     points: 'ачкоў',
     take: '📥 Узяць',
@@ -522,7 +517,6 @@ const translations: Record<Language, Translations> = {
     whatBotKnows3: '• Складна: Ваш козир на початку + всі карти, які ви берете + всі карти в кінці',
     pogonySystem: '🎖️ Система погонів',
     pogonyText: 'Погони — це не козирні шістки в останньому ході. Якщо атакуючий викладає ці карти, вони автоматично зараховуються — відбити їх не можна. Програвший оголошується "дурнем з погонами".',
-    pogonyCondition: 'Кількість не важлива: може бути одна, дві або більше не козирних шісток.',
     menu: '← Меню',
     points: 'очок',
     take: '📥 Взяти',
@@ -615,7 +609,6 @@ const translations: Record<Language, Translations> = {
     whatBotKnows3: '• Қиын: Бастапқы козыріңіз + алған барлық карталарыңыз + соңындағы барлық карталар',
     pogonySystem: '🎖️ Погон жүйесі',
     pogonyText: 'Погондар — соңғы жүрістегі козырь емес алтылықтар. Егер шабуылдаушы бұл карталарды қойса, олар автоматты түрде есептеледі — оларды жеңуге болмайды. Жеңілген адам "погонды ақымақ" деп жарияланады.',
-    pogonyCondition: 'Саны маңызды емес: бір, екі немесе одан да көп козырь емес алтылық болуы мүмкін.',
     menu: '← Мәзір',
     points: 'ұпай',
     take: '📥 Алу',

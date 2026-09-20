@@ -205,7 +205,7 @@ export const Menu: React.FC<MenuProps> = ({ onStartGame }) => {
 
         {/* Version Info */}
         <div className="mt-4 text-center text-white/40 text-xs">
-          v0.7
+          v0.8
         </div>
 
         {/* Settings Modal */}
@@ -282,42 +282,8 @@ export const Menu: React.FC<MenuProps> = ({ onStartGame }) => {
                     </div>
 
                     <div>
-                      <h4 className="font-bold text-green-300 mb-1">{t('rules')}</h4>
-                      <ul className="space-y-1 text-white/80">
-                        <li>{t('rule1')}</li>
-                        <li>{t('rule2')}</li>
-                        <li>{t('rule3')}</li>
-                        <li>{t('rule4')}</li>
-                        <li>{t('rule5')}</li>
-                        <li>{t('rule6')}</li>
-                        <li>{t('rule7')}</li>
-                        <li>{t('rule8')}</li>
-                      </ul>
-                    </div>
-
-                    <div>
-                      <h4 className="font-bold text-green-300 mb-1">{t('features')}</h4>
-                      <ul className="space-y-1 text-white/80">
-                        <li>{t('feature1')}</li>
-                        <li>{t('feature2')}</li>
-                      </ul>
-                    </div>
-
-                    <div>
-                      <h4 className="font-bold text-green-300 mb-1">{t('whatBotKnows')}</h4>
-                      <ul className="space-y-1 text-white/80">
-                        <li>{t('whatBotKnows1')}</li>
-                        <li>{t('whatBotKnows2')}</li>
-                        <li>{t('whatBotKnows3')}</li>
-                      </ul>
-                    </div>
-
-                    <div>
                       <h4 className="font-bold text-green-300 mb-1">{t('pogonySystem')}</h4>
-                      <div className="text-white/80 text-sm space-y-2">
-                        <p>{t('pogonyText')}</p>
-                        <p className="text-white/60 text-xs">{t('pogonyCondition')}</p>
-                      </div>
+                      <p className="text-white/80 text-sm">{t('pogonyText')}</p>
                     </div>
                   </div>
                 </div>
