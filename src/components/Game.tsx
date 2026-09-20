@@ -224,7 +224,8 @@ function reducer(state: State, action: Action): State {
     case 'PLAYER_THROW_AFTER_COMPUTER_TAKES': {
       // Игрок подкидывает карту после того, как компьютер взял карты
       const newHand = state.playerHand.filter(c => c.id !== action.card.id);
-      const newTable = [...state.table, { attack: action.card, defense: null }];
+      // Карта идёт прямо боту в руку, а не на стол
+      const newComputerHand = [...state.computerHand, action.card];
       
       // Обновляем lastTableRanks
       const newRanks = new Set(state.lastTableRanks);
@@ -237,7 +238,7 @@ function reducer(state: State, action: Action): State {
       return {
         ...state,
         playerHand: newHand,
-        table: newTable,
+        computerHand: newComputerHand,
         selectedCard: null,
         showPassButton: true, // Оставляем кнопку "Бито"
         message: t('computerThrows'),
@@ -854,6 +855,9 @@ export const Game: React.FC<GameProps> = ({ difficulty, deckSize, onBackToMenu }
 
     // Добавляем небольшую задержку, чтобы state полностью обновился
     const timeoutId = setTimeout(() => {
+      // Не вызываем действия бота, если компьютер только что взял карты (ждём игрока)
+      if (state.computerJustTook) return;
+      
       if (state.attacker === 'computer' && state.table.length === 0 && !state.playerJustTook) {
         computerAttack();
       } else if (state.attacker === 'computer' && (state.table.length > 0 || state.playerJustTook)) {
@@ -864,7 +868,7 @@ export const Game: React.FC<GameProps> = ({ difficulty, deckSize, onBackToMenu }
     }, 100);
     
     return () => clearTimeout(timeoutId);
-  }, [state.attacker, state.table, state.status, state.computerThinking, state.playerJustTook, state.roundEnded, computerAttack, computerThrow, computerDefend]);
+  }, [state.attacker, state.table, state.status, state.computerThinking, state.playerJustTook, state.computerJustTook, state.roundEnded, computerAttack, computerThrow, computerDefend]);
 
   // Cleanup timeout
   useEffect(() => {
