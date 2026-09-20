@@ -789,18 +789,18 @@ export const Game: React.FC<GameProps> = ({ difficulty, deckSize, onBackToMenu }
           const card = throwable[0];
           dispatch({ type: 'COMPUTER_THROW', card });
           // После COMPUTER_THROW computerThinking=true (если playerJustTook)
-          // Ждем 1.5 секунды чтобы игрок увидел карту, затем сбрасываем computerThinking
+          // Ждем 0.8 секунды чтобы игрок увидел карту, затем сбрасываем computerThinking
           setTimeout(() => {
             dispatch({ type: 'SET_THINKING', thinking: false });
             // useEffect снова сработает и вызовет computerThrow
             // Если можно еще подкинуть - подкинем, если нет - заберем карты
-          }, 1500);
+          }, 800);
         } else {
           // Нечего подкидывать или решили не подкидывать, забираем все карты со стола
           dispatch({ type: 'PLAYER_COLLECT_ALL' });
           dispatch({ type: 'END_ROUND', playerTook: true, computerTook: false });
         }
-      }, 1200 + Math.random() * 400); // Пауза 1.2-1.6 секунды между подкидываниями
+      }, 600 + Math.random() * 200); // Ускорено: пауза 0.6-0.8 секунды между подкидываниями
       return;
     }
     
@@ -1004,13 +1004,12 @@ export const Game: React.FC<GameProps> = ({ difficulty, deckSize, onBackToMenu }
     setIsTaking(true);
     playSound('collect'); // Сразу воспроизводим звук
     
-    // Даём боту время подкинуть карты (2 секунды)
-    // В это время карты остаются на столе
+    // Даём боту время подкинуть карты (1 секунда)
     setTimeout(() => {
       // Теперь запускаем анимацию для всех карт на столе (включая подкинутые)
       dispatch({ type: 'SET_ANIMATING', animation: 'player-takes' });
       
-      // Ждём завершения анимации
+      // Ждём завершения анимации (0.4 секунды)
       setTimeout(() => {
         dispatch({ type: 'PLAYER_TAKES' });
         dispatch({ type: 'SET_ANIMATING', animation: null });
@@ -1019,9 +1018,9 @@ export const Game: React.FC<GameProps> = ({ difficulty, deckSize, onBackToMenu }
         // Сбрасываем флаг после завершения
         setTimeout(() => {
           setIsTaking(false);
-        }, 500);
-      }, 800);
-    }, 2000); // Даём боту 2 секунды на подкидывание карт
+        }, 300);
+      }, 400);
+    }, 1000); // Даём боту 1 секунду на подкидывание карт
   };
 
   // Player passes (bito)
@@ -1397,7 +1396,9 @@ export const Game: React.FC<GameProps> = ({ difficulty, deckSize, onBackToMenu }
               <div className="relative" style={{ width: '5rem', height: '7rem' }}>
                 {/* 3D stack effect - dynamic layers based on deck size */}
                 {(() => {
-                  const layerCount = Math.min(4, Math.max(1, Math.floor(state.deck.length / 8)));
+                  // Показываем слои пропорционально количеству карт
+                  // 1-6 карт: 1 слой, 7-12: 2 слоя, 13-18: 3 слоя, 19+: 4 слоя
+                  const layerCount = Math.min(4, Math.max(1, Math.ceil(state.deck.length / 6)));
                   return Array.from({ length: layerCount }, (_, i) => (
                     <div 
                       key={i}
