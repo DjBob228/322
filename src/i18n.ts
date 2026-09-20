@@ -64,6 +64,7 @@ export interface Translations {
   computerAttacks: string;
   yourTurn: string;
   computerThrows: string;
+  playerThrowsAfterComputerTakes: string;
   gameOver: string;
   youWin: string;
   youLose: string;
@@ -161,6 +162,7 @@ const translations: Record<Language, Translations> = {
     computerAttacks: 'Компьютер атакует...',
     yourTurn: 'Ваш ход! Выберите карту для атаки.',
     computerThrows: 'Компьютер подкидывает. Защищайтесь!',
+    playerThrowsAfterComputerTakes: 'Подкиньте ещё или нажмите "Бито"',
     gameOver: 'Игра окончена',
     youWin: '🎉 Вы победили!',
     youLose: '😞 Вы проиграли!',
@@ -253,6 +255,7 @@ const translations: Record<Language, Translations> = {
     computerAttacks: 'Computer attacks...',
     yourTurn: 'Your turn! Choose a card to attack.',
     computerThrows: 'Computer is adding. Defend!',
+    playerThrowsAfterComputerTakes: 'Add more or press "Done"',
     gameOver: 'Game over',
     youWin: '🎉 You won!',
     youLose: '😞 You lost!',
@@ -345,6 +348,7 @@ const translations: Record<Language, Translations> = {
     computerAttacks: 'Bilgisayar saldırıyor...',
     yourTurn: 'Sıra sizde! Saldırmak için kart seçin.',
     computerThrows: 'Bilgisayar ekliyor. Savunun!',
+    playerThrowsAfterComputerTakes: 'Başka ekle veya "Bitti" bas',
     gameOver: 'Oyun bitti',
     youWin: '🎉 Kazandınız!',
     youLose: '😞 Kaybettiniz!',
@@ -437,6 +441,7 @@ const translations: Record<Language, Translations> = {
     computerAttacks: 'Камп\'ютар атакуе...',
     yourTurn: 'Ваш ход! Абярыце карту для атакі.',
     computerThrows: 'Камп\'ютар падкідвае. Абараняйцеся!',
+    playerThrowsAfterComputerTakes: 'Падкіньце яшчэ або націсніце "Біта"',
     gameOver: 'Гульня скончана',
     youWin: '🎉 Вы перамаглі!',
     youLose: '😞 Вы прайгралі!',
@@ -529,6 +534,7 @@ const translations: Record<Language, Translations> = {
     computerAttacks: 'Комп\'ютер атакує...',
     yourTurn: 'Ваш хід! Оберіть карту для атаки.',
     computerThrows: 'Комп\'ютер підкидає. Захищайтеся!',
+    playerThrowsAfterComputerTakes: 'Підкиньте ще або натисніть "Біта"',
     gameOver: 'Гра закінчена',
     youWin: '🎉 Ви перемогли!',
     youLose: '😞 Ви програли!',
@@ -621,6 +627,7 @@ const translations: Record<Language, Translations> = {
     computerAttacks: 'Компьютер шабуыл жасауда...',
     yourTurn: 'Сіздің жүрісіңіз! Шабуыл үшін карта таңдаңыз.',
     computerThrows: 'Компьютер қосуда. Қорғаныңыз!',
+    playerThrowsAfterComputerTakes: 'Тағы қосыңыз немесе "Бітті" басыңыз',
     gameOver: 'Ойын аяқталды',
     youWin: '🎉 Сіз жеңдіңіз!',
     youLose: '😞 Сіз жеңілдіңіз!',

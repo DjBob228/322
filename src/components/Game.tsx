@@ -241,7 +241,7 @@ function reducer(state: State, action: Action): State {
         computerHand: newComputerHand,
         selectedCard: null,
         showPassButton: true, // Оставляем кнопку "Бито"
-        message: t('computerThrows'),
+        message: t('playerThrowsAfterComputerTakes'),
         lastTableRanks: newRanks,
         cardsShownToComputer: newCardsShown,
       };
