@@ -847,15 +847,11 @@ export const Game: React.FC<GameProps> = ({ difficulty, deckSize, onBackToMenu }
         dispatch({ type: 'SET_MESSAGE', message: t('computerTakes') });
         setScore(prev => prev + 15);
 
-        // Start animation
-        dispatch({ type: 'SET_ANIMATING', animation: 'computer-takes' });
-
-        // Wait before adding cards to hand
+        // Wait before marking as taken (no animation yet)
         setTimeout(() => {
           dispatch({ type: 'COMPUTER_TAKES' });
-          dispatch({ type: 'SET_ANIMATING', animation: null });
           // Не вызываем END_ROUND здесь - даём игроку время подкинуть карты или нажать "Бито"
-        }, 1000);
+        }, 500);
       }
     }, 800 + Math.random() * 600);
   }, [difficulty]);
@@ -991,11 +987,17 @@ export const Game: React.FC<GameProps> = ({ difficulty, deckSize, onBackToMenu }
     
     // Если компьютер только что взял карты и игрок нажимает "Бито" - ход остается у игрока
     if (state.computerJustTook) {
-      // Сначала собираем карты со стола в руку компьютера
-      dispatch({ type: 'COLLECT_CARDS_FOR_COMPUTER' });
-      // Затем завершаем раунд
-      dispatch({ type: 'END_ROUND', playerTook: false, computerTook: true });
-      setScore(prev => prev + 5);
+      // Start animation - cards fly to computer
+      dispatch({ type: 'SET_ANIMATING', animation: 'computer-takes' });
+      
+      // Wait for animation, then collect cards
+      setTimeout(() => {
+        dispatch({ type: 'COLLECT_CARDS_FOR_COMPUTER' });
+        dispatch({ type: 'SET_ANIMATING', animation: null });
+        // Затем завершаем раунд
+        dispatch({ type: 'END_ROUND', playerTook: false, computerTook: true });
+        setScore(prev => prev + 5);
+      }, 800);
       return;
     }
     

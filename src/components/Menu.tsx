@@ -205,7 +205,7 @@ export const Menu: React.FC<MenuProps> = ({ onStartGame }) => {
 
         {/* Version Info */}
         <div className="mt-4 text-center text-white/40 text-xs">
-          v0.6
+          v0.7
         </div>
 
         {/* Settings Modal */}
@@ -214,26 +214,32 @@ export const Menu: React.FC<MenuProps> = ({ onStartGame }) => {
             <div className="bg-gradient-to-b from-green-800 to-green-900 rounded-2xl p-6 max-w-md w-full max-h-[80vh] overflow-y-auto border-2 border-green-600/50 shadow-2xl">
               <h2 className="text-2xl font-bold text-white mb-4 text-center">⚙️ Настройки</h2>
               
-              <div className="space-y-4">
-                {/* Settings Buttons */}
-                <div className="grid grid-cols-4 gap-2">
+              <div className="space-y-3">
+                {/* Settings Buttons with descriptions */}
+                <div className="space-y-2">
                   <button
                     onClick={changeSortMode}
-                    className="py-2 px-1 bg-purple-600 hover:bg-purple-500 text-white rounded-xl font-bold text-xs transition-colors truncate"
-                    title={sortMode === 'suit' ? t('sortBySuit') : sortMode === 'rank' ? t('sortByRank') : t('sortByRankTrump')}
+                    className="w-full py-3 px-4 bg-purple-600 hover:bg-purple-500 text-white rounded-xl font-medium text-sm transition-colors flex items-center gap-3"
                   >
-                    {sortMode === 'suit' ? '🎨' : sortMode === 'rank' ? '🔢' : '🃏'}
+                    <span className="text-2xl">{sortMode === 'suit' ? '🎨' : sortMode === 'rank' ? '🔢' : '🃏'}</span>
+                    <div className="text-left">
+                      <div className="font-bold">Сортировка карт</div>
+                      <div className="text-xs text-white/70">{sortMode === 'suit' ? 'По масти' : sortMode === 'rank' ? 'По рангу' : 'По рангу + козыри'}</div>
+                    </div>
                   </button>
                   <button
                     onClick={changeSound}
-                    className={`py-2 px-1 rounded-xl font-bold text-xs transition-colors ${
+                    className={`w-full py-3 px-4 rounded-xl font-medium text-sm transition-colors flex items-center gap-3 ${
                       soundEnabled
                         ? 'bg-indigo-600 hover:bg-indigo-500 text-white'
                         : 'bg-gray-600 hover:bg-gray-500 text-white/80'
                     }`}
-                    title={soundEnabled ? t('soundOn') : t('soundOff')}
                   >
-                    {soundEnabled ? '🔊' : '🔇'}
+                    <span className="text-2xl">{soundEnabled ? '🔊' : '🔇'}</span>
+                    <div className="text-left">
+                      <div className="font-bold">Звуковые эффекты</div>
+                      <div className="text-xs text-white/70">{soundEnabled ? 'Включены' : 'Выключены'}</div>
+                    </div>
                   </button>
                   <button
                     onClick={() => {
@@ -241,21 +247,27 @@ export const Menu: React.FC<MenuProps> = ({ onStartGame }) => {
                       setHintsEnabled(newValue);
                       localStorage.setItem('durak_hints', String(newValue));
                     }}
-                    className={`py-2 px-1 rounded-xl font-bold text-xs transition-colors ${
+                    className={`w-full py-3 px-4 rounded-xl font-medium text-sm transition-colors flex items-center gap-3 ${
                       hintsEnabled
                         ? 'bg-purple-600 hover:bg-purple-500 text-white'
                         : 'bg-gray-600 hover:bg-gray-500 text-white/80'
                     }`}
-                    title={hintsEnabled ? t('hintsOn') : t('hintsOff')}
                   >
-                    {hintsEnabled ? '💡' : '🚫'}
+                    <span className="text-2xl">{hintsEnabled ? '💡' : '🚫'}</span>
+                    <div className="text-left">
+                      <div className="font-bold">Подсказки карт</div>
+                      <div className="text-xs text-white/70">{hintsEnabled ? 'Доступные карты подсвечиваются' : 'Подсказки отключены'}</div>
+                    </div>
                   </button>
                   <button
                     onClick={changeTheme}
-                    className="py-2 px-1 bg-pink-600 hover:bg-pink-500 text-white rounded-xl font-bold text-xs transition-colors flex items-center justify-center"
-                    title={`${t('theme')}: ${theme.name}`}
+                    className="w-full py-3 px-4 bg-pink-600 hover:bg-pink-500 text-white rounded-xl font-medium text-sm transition-colors flex items-center gap-3"
                   >
-                    {theme.emoji}
+                    <span className="text-2xl">{theme.emoji}</span>
+                    <div className="text-left">
+                      <div className="font-bold">Цветовая тема</div>
+                      <div className="text-xs text-white/70">{theme.name}</div>
+                    </div>
                   </button>
                 </div>
 
