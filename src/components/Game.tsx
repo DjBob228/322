@@ -1137,20 +1137,13 @@ export const Game: React.FC<GameProps> = ({ difficulty, deckSize, onBackToMenu }
         gainNode.gain.exponentialRampToValueAtTime(0.01, audioContext.currentTime + 0.1);
         oscillator.start(audioContext.currentTime);
         oscillator.stop(audioContext.currentTime + 0.1);
-      } else if (type === 'place') {
-        // Звук кладки карты на стол
+      } else if (type === 'place' || type === 'beat') {
+        // Одинаковый звук для кладки и удара карты
         oscillator.frequency.value = 400;
         gainNode.gain.setValueAtTime(0.15, audioContext.currentTime);
         gainNode.gain.exponentialRampToValueAtTime(0.01, audioContext.currentTime + 0.15);
         oscillator.start(audioContext.currentTime);
         oscillator.stop(audioContext.currentTime + 0.15);
-      } else if (type === 'beat') {
-        // Звук удара карты
-        oscillator.frequency.value = 600;
-        gainNode.gain.setValueAtTime(0.2, audioContext.currentTime);
-        gainNode.gain.exponentialRampToValueAtTime(0.01, audioContext.currentTime + 0.12);
-        oscillator.start(audioContext.currentTime);
-        oscillator.stop(audioContext.currentTime + 0.12);
       } else if (type === 'win') {
         oscillator.frequency.value = 523;
         gainNode.gain.setValueAtTime(0.2, audioContext.currentTime);
@@ -1170,19 +1163,20 @@ export const Game: React.FC<GameProps> = ({ difficulty, deckSize, onBackToMenu }
         oscillator.start(audioContext.currentTime);
         oscillator.stop(audioContext.currentTime + 0.2);
       } else if (type === 'collect') {
-        // Резкий звук подбора карт
-        oscillator.frequency.value = 600;
-        gainNode.gain.setValueAtTime(0.2, audioContext.currentTime);
-        gainNode.gain.exponentialRampToValueAtTime(0.01, audioContext.currentTime + 0.08);
+        // Резкий звук ошибки Windows (забирание карт)
+        oscillator.frequency.value = 150;
+        oscillator.type = 'square';
+        gainNode.gain.setValueAtTime(0.25, audioContext.currentTime);
+        gainNode.gain.exponentialRampToValueAtTime(0.01, audioContext.currentTime + 0.15);
         oscillator.start(audioContext.currentTime);
-        oscillator.stop(audioContext.currentTime + 0.08);
+        oscillator.stop(audioContext.currentTime + 0.15);
       } else if (type === 'pass') {
-        // Спокойный звук бито
-        oscillator.frequency.value = 380;
-        gainNode.gain.setValueAtTime(0.08, audioContext.currentTime);
-        gainNode.gain.exponentialRampToValueAtTime(0.01, audioContext.currentTime + 0.12);
+        // Звук бито (похож на place, но выше тональностью)
+        oscillator.frequency.value = 500;
+        gainNode.gain.setValueAtTime(0.15, audioContext.currentTime);
+        gainNode.gain.exponentialRampToValueAtTime(0.01, audioContext.currentTime + 0.15);
         oscillator.start(audioContext.currentTime);
-        oscillator.stop(audioContext.currentTime + 0.12);
+        oscillator.stop(audioContext.currentTime + 0.15);
       }
     } catch (e) {
       console.error('Sound error:', e);
@@ -1382,14 +1376,16 @@ export const Game: React.FC<GameProps> = ({ difficulty, deckSize, onBackToMenu }
                 </div>
               )}
               <div className="relative" style={{ width: '5rem', height: '7rem' }}>
-                {/* 3D stack effect - 15 layers with increasing offsets */}
+                {/* 3D stack effect - 15 layers with visible borders */}
                 {Array.from({ length: 15 }, (_, i) => (
                   <div 
                     key={i}
-                    className="absolute inset-0 bg-gradient-to-br from-blue-800 to-blue-950 rounded-lg border border-blue-600"
+                    className="absolute inset-0 rounded-lg"
                     style={{ 
                       transform: `translate(${(i + 1) * 0.8}px, ${(i + 1) * 0.8}px)`,
-                      boxShadow: '1px 1px 2px rgba(0,0,0,0.3)'
+                      background: `linear-gradient(135deg, hsl(220, 70%, ${35 - i * 1.5}%) 0%, hsl(220, 70%, ${25 - i * 1.5}%) 100%)`,
+                      border: '2px solid hsl(220, 60%, 50%)',
+                      boxShadow: '1px 1px 3px rgba(0,0,0,0.4)'
                     }}
                   ></div>
                 ))}
@@ -1404,7 +1400,7 @@ export const Game: React.FC<GameProps> = ({ difficulty, deckSize, onBackToMenu }
           )}
           
           <div 
-            className="flex flex-wrap gap-3 items-center justify-center relative z-10"
+            className="flex flex-wrap gap-2 items-center justify-center relative z-10"
             style={{
               transform: state.table.length > 4 
                 ? `scale(${Math.max(0.6, 1 - (state.table.length - 4) * 0.08)})`

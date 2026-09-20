@@ -209,7 +209,7 @@ export const Menu: React.FC<MenuProps> = ({ onStartGame }) => {
 
         {/* Version Info */}
         <div className="mt-4 text-center text-white/40 text-xs">
-          v1.5
+          v1.6
         </div>
 
         {/* Settings Modal */}
