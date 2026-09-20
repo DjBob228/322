@@ -882,9 +882,9 @@ export const Game: React.FC<GameProps> = ({ difficulty, deckSize, onBackToMenu }
     if (state.computerThinking) return;
 
     // Особый случай: компьютер взял карты, игрок может подкинуть
-    if (state.attacker === 'player' && state.showPassButton && state.table.length > 0) {
-      // Проверяем, можно ли подкинуть эту карту
-      if (canThrowCard(card, state.table)) {
+    if (state.attacker === 'player' && state.computerJustTook) {
+      // Проверяем, можно ли подкинуть эту карту (используем lastTableRanks)
+      if (state.lastTableRanks.has(card.rank)) {
         if (state.selectedCard?.id === card.id) {
           // Двойной клик - подкидываем карту
           dispatch({ type: 'PLAYER_THROW_AFTER_COMPUTER_TAKES', card });
@@ -927,8 +927,8 @@ export const Game: React.FC<GameProps> = ({ difficulty, deckSize, onBackToMenu }
     if (!state.selectedCard || state.status !== 'playing') return;
 
     // Особый случай: компьютер взял карты, игрок может подкинуть
-    if (state.attacker === 'player' && state.showPassButton && state.table.length > 0) {
-      if (canThrowCard(state.selectedCard, state.table)) {
+    if (state.attacker === 'player' && state.computerJustTook) {
+      if (state.lastTableRanks.has(state.selectedCard.rank)) {
         dispatch({ type: 'PLAYER_THROW_AFTER_COMPUTER_TAKES', card: state.selectedCard });
         playSound('card');
         return;
@@ -1127,7 +1127,12 @@ export const Game: React.FC<GameProps> = ({ difficulty, deckSize, onBackToMenu }
 
     if (state.attacker === 'player') {
       state.playerHand.forEach(c => {
-        if (state.table.length === 0 || canThrowCard(c, state.table)) {
+        // Если компьютер только что взял карты, проверяем lastTableRanks
+        if (state.computerJustTook) {
+          if (state.lastTableRanks.has(c.rank)) {
+            playable.add(c.id);
+          }
+        } else if (state.table.length === 0 || canThrowCard(c, state.table)) {
           playable.add(c.id);
         }
       });

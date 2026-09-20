@@ -23,7 +23,7 @@ function App() {
   };
 
   return (
-    <div className="w-full h-full min-h-screen">
+    <div className="w-full h-full min-h-screen overflow-x-hidden">
       {screen === 'menu' && (
         <Menu onStartGame={handleStartGame} />
       )}
