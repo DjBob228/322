@@ -45,6 +45,7 @@ interface State {
   computerThinking: boolean;
   roundEnded: boolean;
   playerJustTook: boolean; // Игрок только что взял карты, компьютер может подкидывать
+  computerJustTook: boolean; // Компьютер только что взял карты, игрок может подкидывать
   lastTableRanks: Set<string>; // Ранги карт, которые были на столе (для подкидывания после взятия)
   lastAttackCards: Card[];
   lastAttackWasSixes: boolean;
@@ -168,6 +169,7 @@ function reducer(state: State, action: Action): State {
         computerThinking: false,
         roundEnded: false,
         playerJustTook: false,
+        computerJustTook: false,
         lastTableRanks: new Set(),
         lastAttackCards: [],
         lastAttackWasSixes: false,
@@ -332,6 +334,7 @@ function reducer(state: State, action: Action): State {
         message: t('computerTakes'),
         computerThinking: false,
         playerJustTook: false,
+        computerJustTook: true, // Компьютер только что взял карты
         lastTableRanks: ranks, // Сохраняем ранги для подкидывания
       };
     }
@@ -379,6 +382,7 @@ function reducer(state: State, action: Action): State {
         playerHand: newHand,
         table: [], // Очищаем стол
         playerJustTook: false,
+        computerJustTook: false,
         lastTableRanks: new Set<string>(),
         cardsShownToComputer: newCardsShown,
       };
@@ -417,6 +421,7 @@ function reducer(state: State, action: Action): State {
         roundEnded: true,
         computerThinking: false,
         playerJustTook: false, // Сбрасываем флаг
+        computerJustTook: false, // Сбрасываем флаг
         lastTableRanks: new Set<string>(), // Сбрасываем ранги
         lastAttackCards: [],
         lastAttackWasSixes: false,
@@ -432,6 +437,7 @@ function reducer(state: State, action: Action): State {
         roundEnded: false,
         computerThinking: false,
         playerJustTook: false,
+        computerJustTook: false,
         lastTableRanks: new Set<string>(),
       };
     }
@@ -446,6 +452,7 @@ function reducer(state: State, action: Action): State {
         showTakeButton: false,
         showPassButton: false,
         playerJustTook: false,
+        computerJustTook: false,
         lastTableRanks: new Set<string>(),
       };
       const withCards = drawFromDeck(newState);
@@ -499,6 +506,7 @@ function reducer(state: State, action: Action): State {
         table: [], 
         computerThinking: false,
         playerJustTook: false,
+        computerJustTook: false,
         lastTableRanks: new Set<string>()
       };
       return drawFromDeck(clearedState);
@@ -526,6 +534,7 @@ const initialState: State = {
   computerThinking: false,
   roundEnded: false,
   playerJustTook: false,
+  computerJustTook: false,
   lastTableRanks: new Set(),
   lastAttackCards: [],
   lastAttackWasSixes: false,
@@ -844,27 +853,15 @@ export const Game: React.FC<GameProps> = ({ difficulty, deckSize, onBackToMenu }
 
   // Trigger computer actions based on state
   useEffect(() => {
-    console.log('useEffect triggered:', {
-      status: state.status,
-      attacker: state.attacker,
-      tableLength: state.table.length,
-      computerThinking: state.computerThinking,
-      playerJustTook: state.playerJustTook,
-      roundEnded: state.roundEnded
-    });
-    
     if (state.status !== 'playing' || state.computerThinking) return;
 
     // Добавляем небольшую задержку, чтобы state полностью обновился
     const timeoutId = setTimeout(() => {
       if (state.attacker === 'computer' && state.table.length === 0 && !state.playerJustTook) {
-        console.log('Calling computerAttack');
         computerAttack();
       } else if (state.attacker === 'computer' && (state.table.length > 0 || state.playerJustTook)) {
-        console.log('Calling computerThrow');
         computerThrow();
       } else if (state.attacker === 'player' && state.table.length > 0) {
-        console.log('Calling computerDefend');
         computerDefend();
       }
     }, 100);
@@ -980,9 +977,8 @@ export const Game: React.FC<GameProps> = ({ difficulty, deckSize, onBackToMenu }
   const handlePass = () => {
     if (state.status !== 'playing') return;
     
-    // Если компьютер взял карты и игрок нажимает "Бито"
-    if (state.attacker === 'player' && state.showPassButton) {
-      // Завершаем раунд - компьютер взял карты, ход остается у игрока
+    // Если компьютер только что взял карты и игрок нажимает "Бито" - ход остается у игрока
+    if (state.computerJustTook) {
       dispatch({ type: 'END_ROUND', playerTook: false, computerTook: true });
       setScore(prev => prev + 5);
       return;

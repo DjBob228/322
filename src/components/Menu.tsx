@@ -247,6 +247,11 @@ export const Menu: React.FC<MenuProps> = ({ onStartGame }) => {
           {t('howToPlay')}
         </button>
 
+        {/* Version Info */}
+        <div className="mt-4 text-center text-white/40 text-xs">
+          v0.1
+        </div>
+
         {/* How to Play Modal */}
         {showHowToPlay && (
           <div className="fixed inset-0 z-50 bg-black/70 backdrop-blur-sm flex items-center justify-center p-4">
