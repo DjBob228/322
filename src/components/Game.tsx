@@ -336,6 +336,7 @@ function reducer(state: State, action: Action): State {
         playerJustTook: false,
         computerJustTook: true, // Компьютер только что взял карты
         lastTableRanks: ranks, // Сохраняем ранги для подкидывания
+        // Не завершаем раунд сразу - даём игроку время подкинуть карты
       };
     }
 
@@ -616,9 +617,9 @@ export const Game: React.FC<GameProps> = ({ difficulty, deckSize, onBackToMenu }
   const initGame = useCallback(() => {
     setIsTaking(false);
     const newDeck = shuffleDeck(createDeck(deckSize));
-    const trump = newDeck[newDeck.length - 1];
     const pHand = newDeck.splice(0, 6);
     const cHand = newDeck.splice(0, 6);
+    const trump = newDeck.splice(newDeck.length - 1, 1)[0]; // Берём последнюю карту и удаляем её из колоды
     const firstAttacker = determineFirstAttacker(pHand, cHand, trump.suit);
 
     // Находим наименьшие козыри
@@ -841,11 +842,7 @@ export const Game: React.FC<GameProps> = ({ difficulty, deckSize, onBackToMenu }
         setTimeout(() => {
           dispatch({ type: 'COMPUTER_TAKES' });
           dispatch({ type: 'SET_ANIMATING', animation: null });
-          
-          // After computer takes, end round and transfer turn to player
-          setTimeout(() => {
-            dispatch({ type: 'END_ROUND', playerTook: false, computerTook: true });
-          }, 800);
+          // Не вызываем END_ROUND здесь - даём игроку время подкинуть карты или нажать "Бито"
         }, 1000);
       }
     }, 800 + Math.random() * 600);
@@ -1206,7 +1203,7 @@ export const Game: React.FC<GameProps> = ({ difficulty, deckSize, onBackToMenu }
   const computerKnownCards = getComputerKnownCards();
 
   return (
-    <div className={`min-h-screen h-screen bg-gradient-to-b ${theme.background} flex flex-col relative overflow-y-auto pb-4`}>
+    <div className={`min-h-screen h-screen bg-gradient-to-b ${theme.background} flex flex-col relative overflow-x-hidden overflow-y-auto pb-4`}>
       {/* Felt texture with pattern */}
       <div className="absolute inset-0 opacity-30 pointer-events-none" style={{
         backgroundImage: `
