@@ -59,6 +59,7 @@ type Action =
   | { type: 'SELECT_CARD'; card: Card | null }
   | { type: 'PLAYER_ATTACK'; card: Card }
   | { type: 'PLAYER_DEFEND'; card: Card; attackId: string }
+  | { type: 'PLAYER_THROW_AFTER_COMPUTER_TAKES'; card: Card }
   | { type: 'COMPUTER_ATTACK'; card: Card }
   | { type: 'COMPUTER_DEFEND'; card: Card; attackId: string }
   | { type: 'COMPUTER_THROW'; card: Card }
@@ -218,6 +219,31 @@ function reducer(state: State, action: Action): State {
       };
     }
 
+    case 'PLAYER_THROW_AFTER_COMPUTER_TAKES': {
+      // Игрок подкидывает карту после того, как компьютер взял карты
+      const newHand = state.playerHand.filter(c => c.id !== action.card.id);
+      const newTable = [...state.table, { attack: action.card, defense: null }];
+      
+      // Обновляем lastTableRanks
+      const newRanks = new Set(state.lastTableRanks);
+      newRanks.add(action.card.rank);
+      
+      // Computer sees this card
+      const newCardsShown = new Set(state.cardsShownToComputer);
+      newCardsShown.add(action.card.id);
+      
+      return {
+        ...state,
+        playerHand: newHand,
+        table: newTable,
+        selectedCard: null,
+        showPassButton: true, // Оставляем кнопку "Бито"
+        message: 'Подкиньте еще или нажмите "Бито".',
+        lastTableRanks: newRanks,
+        cardsShownToComputer: newCardsShown,
+      };
+    }
+
     case 'COMPUTER_ATTACK': {
       const newHand = state.computerHand.filter(c => c.id !== action.card.id);
       const newTable = [...state.table, { attack: action.card, defense: null }];
@@ -288,25 +314,26 @@ function reducer(state: State, action: Action): State {
     case 'COMPUTER_TAKES': {
       const tableCards = state.table.flatMap(p => [p.attack, ...(p.defense ? [p.defense] : [])]);
       const newHand = [...state.computerHand, ...tableCards];
-      // Очищаем стол и добираем карты
-      const newState = {
+      
+      // Сохраняем ранги карт со стола для возможности подкидывания игроком
+      const ranks = new Set<string>();
+      state.table.forEach(p => {
+        ranks.add(p.attack.rank);
+        if (p.defense) ranks.add(p.defense.rank);
+      });
+      
+      // НЕ очищаем стол сразу - игрок может подкинуть карты
+      return {
         ...state,
         computerHand: newHand,
-        table: [],
+        table: state.table, // Оставляем стол для подкидывания
         showTakeButton: false,
-        showPassButton: false,
-        message: 'Ожидание...',
+        showPassButton: true, // Показываем кнопку "Бито" для игрока
+        message: 'Компьютер взял карты. Подкиньте или нажмите "Бито".',
         computerThinking: false,
         playerJustTook: false,
-        lastTableRanks: new Set<string>(),
+        lastTableRanks: ranks, // Сохраняем ранги для подкидывания
       };
-      const withCards = drawFromDeck(newState);
-      
-      // Проверяем, не закончилась ли игра
-      const endCheck = checkGameEnd(withCards);
-      if (endCheck) return endCheck;
-      
-      return withCards;
     }
 
     case 'PLAYER_TAKES': {
@@ -851,6 +878,21 @@ export const Game: React.FC<GameProps> = ({ difficulty, deckSize, onBackToMenu }
     if (state.status !== 'playing') return;
     if (state.computerThinking) return;
 
+    // Особый случай: компьютер взял карты, игрок может подкинуть
+    if (state.attacker === 'player' && state.showPassButton && state.table.length > 0) {
+      // Проверяем, можно ли подкинуть эту карту
+      if (canThrowCard(card, state.table)) {
+        if (state.selectedCard?.id === card.id) {
+          // Двойной клик - подкидываем карту
+          dispatch({ type: 'PLAYER_THROW_AFTER_COMPUTER_TAKES', card });
+          playSound('card');
+        } else {
+          dispatch({ type: 'SELECT_CARD', card });
+        }
+      }
+      return;
+    }
+
     if (state.attacker === 'player') {
       if (state.table.length === 0 || canThrowCard(card, state.table)) {
         if (state.selectedCard?.id === card.id) {
@@ -880,6 +922,15 @@ export const Game: React.FC<GameProps> = ({ difficulty, deckSize, onBackToMenu }
   // Confirm play button
   const confirmPlay = () => {
     if (!state.selectedCard || state.status !== 'playing') return;
+
+    // Особый случай: компьютер взял карты, игрок может подкинуть
+    if (state.attacker === 'player' && state.showPassButton && state.table.length > 0) {
+      if (canThrowCard(state.selectedCard, state.table)) {
+        dispatch({ type: 'PLAYER_THROW_AFTER_COMPUTER_TAKES', card: state.selectedCard });
+        playSound('card');
+        return;
+      }
+    }
 
     if (state.attacker === 'player') {
       dispatch({ type: 'PLAYER_ATTACK', card: state.selectedCard });
@@ -922,6 +973,17 @@ export const Game: React.FC<GameProps> = ({ difficulty, deckSize, onBackToMenu }
   // Player passes (bito)
   const handlePass = () => {
     if (state.status !== 'playing') return;
+    
+    // Если компьютер взял карты и игрок нажимает "Бито"
+    if (state.attacker === 'player' && state.showPassButton && state.table.length > 0) {
+      // Очищаем стол и завершаем раунд
+      dispatch({ type: 'CLEAR_TABLE_AND_DRAW' });
+      dispatch({ type: 'END_ROUND', playerTook: false, computerTook: true });
+      setScore(prev => prev + 5);
+      return;
+    }
+    
+    // Обычный случай - бито
     dispatch({ type: 'END_ROUND', playerTook: false, computerTook: false });
     setScore(prev => prev + 5);
   };
