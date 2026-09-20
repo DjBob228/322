@@ -5,19 +5,33 @@ class BackgroundMusic {
   private oscillators: OscillatorNode[] = [];
   private gainNodes: GainNode[] = [];
 
-  constructor() {
-    if (typeof window !== 'undefined') {
-      const AudioContextClass = window.AudioContext || (window as any).webkitAudioContext;
-      if (AudioContextClass) {
-        this.audioContext = new AudioContextClass();
+  private initAudioContext() {
+    if (this.audioContext) return;
+    
+    try {
+      if (typeof window !== 'undefined') {
+        const AudioContextClass = window.AudioContext || (window as any).webkitAudioContext;
+        if (AudioContextClass) {
+          this.audioContext = new AudioContextClass();
+        }
       }
+    } catch (error) {
+      console.warn('AudioContext not available:', error);
+      this.audioContext = null;
     }
   }
 
   async start() {
-    if (!this.audioContext || this.isPlaying) return;
+    if (this.isPlaying) return;
 
     try {
+      this.initAudioContext();
+      
+      if (!this.audioContext) {
+        console.warn('AudioContext not available, skipping background music');
+        return;
+      }
+
       if (this.audioContext.state === 'suspended') {
         await this.audioContext.resume();
       }
@@ -25,7 +39,8 @@ class BackgroundMusic {
       this.isPlaying = true;
       this.playMelody();
     } catch (error) {
-      console.error('Failed to start background music:', error);
+      console.warn('Failed to start background music:', error);
+      this.isPlaying = false;
     }
   }
 
@@ -90,4 +105,19 @@ class BackgroundMusic {
   }
 }
 
-export const backgroundMusic = new BackgroundMusic();
+// Lazy initialization to avoid blocking
+let backgroundMusicInstance: BackgroundMusic | null = null;
+
+export const backgroundMusic = {
+  start: () => {
+    if (!backgroundMusicInstance) {
+      backgroundMusicInstance = new BackgroundMusic();
+    }
+    backgroundMusicInstance.start();
+  },
+  stop: () => {
+    if (backgroundMusicInstance) {
+      backgroundMusicInstance.stop();
+    }
+  }
+};

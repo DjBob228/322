@@ -570,18 +570,15 @@ export const Game: React.FC<GameProps> = ({ difficulty, deckSize, onBackToMenu }
   // Audio context for sounds
   const audioContextRef = useRef<AudioContext | null>(null);
   
-  // Initialize audio context once
+  // Initialize audio context lazily
   useEffect(() => {
-    if (typeof window !== 'undefined') {
-      const AudioContextClass = window.AudioContext || (window as any).webkitAudioContext;
-      if (AudioContextClass) {
-        audioContextRef.current = new AudioContextClass();
-      }
-    }
-    
     return () => {
       if (audioContextRef.current) {
-        audioContextRef.current.close();
+        try {
+          audioContextRef.current.close();
+        } catch (e) {
+          // Ignore errors
+        }
       }
     };
   }, []);
@@ -1038,9 +1035,19 @@ export const Game: React.FC<GameProps> = ({ difficulty, deckSize, onBackToMenu }
 
   // Play sound
   const playSound = async (type: 'card' | 'win' | 'lose' | 'take') => {
-    if (!soundEnabled || !audioContextRef.current) return;
+    if (!soundEnabled) return;
     
     try {
+      // Lazy initialization of AudioContext
+      if (!audioContextRef.current && typeof window !== 'undefined') {
+        const AudioContextClass = window.AudioContext || (window as any).webkitAudioContext;
+        if (AudioContextClass) {
+          audioContextRef.current = new AudioContextClass();
+        }
+      }
+      
+      if (!audioContextRef.current) return;
+      
       // Resume audio context if suspended (required by browsers after user interaction)
       if (audioContextRef.current.state === 'suspended') {
         await audioContextRef.current.resume();
