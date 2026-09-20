@@ -1366,10 +1366,17 @@ export const Game: React.FC<GameProps> = ({ difficulty, deckSize, onBackToMenu }
                 </div>
               )}
               <div className="relative">
-                {/* 3D stack effect - bottom layers */}
+                {/* 3D stack effect - 10 layers with varying offsets */}
+                <div className="absolute inset-0 bg-gradient-to-br from-blue-700 to-blue-900 rounded-lg border-2 border-blue-500 shadow-md" style={{ transform: 'translate(1px, 1px)' }}></div>
                 <div className="absolute inset-0 bg-gradient-to-br from-blue-700 to-blue-900 rounded-lg border-2 border-blue-500 shadow-md" style={{ transform: 'translate(2px, 2px)' }}></div>
+                <div className="absolute inset-0 bg-gradient-to-br from-blue-700 to-blue-900 rounded-lg border-2 border-blue-500 shadow-md" style={{ transform: 'translate(3px, 3px)' }}></div>
                 <div className="absolute inset-0 bg-gradient-to-br from-blue-700 to-blue-900 rounded-lg border-2 border-blue-500 shadow-md" style={{ transform: 'translate(4px, 4px)' }}></div>
+                <div className="absolute inset-0 bg-gradient-to-br from-blue-700 to-blue-900 rounded-lg border-2 border-blue-500 shadow-md" style={{ transform: 'translate(5px, 5px)' }}></div>
                 <div className="absolute inset-0 bg-gradient-to-br from-blue-700 to-blue-900 rounded-lg border-2 border-blue-500 shadow-md" style={{ transform: 'translate(6px, 6px)' }}></div>
+                <div className="absolute inset-0 bg-gradient-to-br from-blue-700 to-blue-900 rounded-lg border-2 border-blue-500 shadow-md" style={{ transform: 'translate(7px, 7px)' }}></div>
+                <div className="absolute inset-0 bg-gradient-to-br from-blue-700 to-blue-900 rounded-lg border-2 border-blue-500 shadow-md" style={{ transform: 'translate(8px, 8px)' }}></div>
+                <div className="absolute inset-0 bg-gradient-to-br from-blue-700 to-blue-900 rounded-lg border-2 border-blue-500 shadow-md" style={{ transform: 'translate(9px, 9px)' }}></div>
+                <div className="absolute inset-0 bg-gradient-to-br from-blue-700 to-blue-900 rounded-lg border-2 border-blue-500 shadow-md" style={{ transform: 'translate(10px, 10px)' }}></div>
                 
                 {/* Top card */}
                 <CardComponent card={state.deck[0]} faceDown className="w-20 relative z-10" />
@@ -1408,13 +1415,15 @@ export const Game: React.FC<GameProps> = ({ difficulty, deckSize, onBackToMenu }
                   <div 
                     key={i} 
                     className="relative animate-card-appear"
-                    style={{ width: '5rem', height: '7rem' }}
+                    style={{ width: '7rem', height: '8rem' }}
                   >
-                    <div className={animationClass}>
+                    {/* Attack card (underneath) with shadow/fade */}
+                    <div className={`${animationClass} absolute top-10 left-10`} style={{ opacity: pair.defense ? 0.7 : 1 }}>
                       <CardComponent card={pair.attack} className="w-20" />
                     </div>
+                    {/* Defense card (on top) - positioned left and up */}
                     {pair.defense && (
-                      <div className="absolute top-8 left-10" style={{ transform: 'rotate(8deg)' }}>
+                      <div className="absolute top-4 left-4" style={{ transform: 'rotate(8deg)' }}>
                         <CardComponent card={pair.defense} className="w-20" />
                       </div>
                     )}
