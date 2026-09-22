@@ -27,8 +27,28 @@ export const Menu: React.FC<MenuProps> = ({ onStartGame }) => {
   };
 
   return (
-    <div className={`min-h-screen bg-gradient-to-b ${theme.background} flex flex-col items-center justify-center p-4`}>
-      <div className="max-w-md w-full">
+    <div className={`min-h-screen bg-gradient-to-b ${theme.background} flex flex-col items-center justify-center p-4 relative overflow-hidden`}>
+      {/* Декоративные масти по краям экрана */}
+      <div className="absolute inset-0 pointer-events-none">
+        {/* Большие масти по углам */}
+        <div className="absolute top-10 left-10 text-9xl opacity-15 drop-shadow-lg" style={{ color: theme.textColor }}>♠</div>
+        <div className="absolute top-10 right-10 text-9xl opacity-15 drop-shadow-lg text-red-500">♥</div>
+        <div className="absolute bottom-10 left-10 text-9xl opacity-15 drop-shadow-lg text-red-500">♦</div>
+        <div className="absolute bottom-10 right-10 text-9xl opacity-15 drop-shadow-lg" style={{ color: theme.textColor }}>♣</div>
+        
+        {/* Дополнительные масти в середине */}
+        <div className="absolute top-1/4 left-1/4 text-6xl opacity-10" style={{ color: theme.textColor }}>♠</div>
+        <div className="absolute top-1/3 right-1/3 text-6xl opacity-10 text-red-500">♥</div>
+        <div className="absolute bottom-1/3 left-1/3 text-6xl opacity-10 text-red-500">♦</div>
+        <div className="absolute bottom-1/4 right-1/4 text-6xl opacity-10" style={{ color: theme.textColor }}>♣</div>
+        
+        {/* Диагональные линии */}
+        <div className="absolute inset-0 opacity-5" style={{
+          backgroundImage: `repeating-linear-gradient(45deg, transparent, transparent 35px, ${theme.tableBorder} 35px, ${theme.tableBorder} 70px)`
+        }}></div>
+      </div>
+
+      <div className="max-w-md w-full relative z-10">
         <h1 className="text-5xl font-bold text-white mb-2 text-center">
           <span className="text-black">♠</span>
           <span className="text-red-500">♦</span>
@@ -128,7 +148,7 @@ export const Menu: React.FC<MenuProps> = ({ onStartGame }) => {
         {/* Settings Modal */}
         {showSettings && (
           <div className="fixed inset-0 z-50 bg-black/70 backdrop-blur-sm flex items-center justify-center p-4">
-            <div className="bg-gradient-to-b from-green-800 to-green-900 rounded-2xl p-4 max-w-md w-full max-h-[80vh] overflow-y-auto border-2 border-green-600/50 shadow-2xl">
+            <div className={`bg-gradient-to-b ${theme.background} rounded-2xl p-4 max-w-md w-full max-h-[80vh] overflow-y-auto border-2 ${theme.tableBorder} shadow-2xl`}>
               <h2 className="text-xl font-bold text-white mb-3 text-center">⚙️ Настройки</h2>
               
               <div className="space-y-2">
@@ -222,7 +242,7 @@ export const Menu: React.FC<MenuProps> = ({ onStartGame }) => {
 
         {/* Version Info */}
         <div className="mt-4 text-center text-white/40 text-xs">
-          v0.25
+          v0.26
         </div>
       </div>
     </div>

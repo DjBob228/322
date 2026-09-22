@@ -522,6 +522,8 @@ export const Game: React.FC<GameProps> = ({ difficulty, deckSize, onBackToMenu }
   const stateRef = useRef(state);
   const audioContextRef = useRef<AudioContext | null>(null);
   const [isTaking, setIsTaking] = useState(false);
+  const [showFirstTurnNotification, setShowFirstTurnNotification] = useState(false);
+  const [firstTurnMessage, setFirstTurnMessage] = useState('');
   
   stateRef.current = state;
 
@@ -618,10 +620,18 @@ export const Game: React.FC<GameProps> = ({ difficulty, deckSize, onBackToMenu }
     if (firstAttacker === 'computer') {
       message = 'Компьютер атакует...';
       computerKnownTrump = computerLowestTrump;
+      setFirstTurnMessage('🤖 Компьютер ходит первым');
     } else {
       message = 'Ваш ход! Выберите карту для атаки.';
       playerKnownTrump = playerLowestTrump;
+      setFirstTurnMessage('🎯 Вы ходите первым');
     }
+    
+    // Показать красивое уведомление о первом ходе
+    setShowFirstTurnNotification(true);
+    setTimeout(() => {
+      setShowFirstTurnNotification(false);
+    }, 2500);
 
     dispatch({
       type: 'INIT',
@@ -1103,6 +1113,16 @@ export const Game: React.FC<GameProps> = ({ difficulty, deckSize, onBackToMenu }
 
   return (
     <div className="min-h-screen h-screen bg-gradient-to-b from-green-800 via-green-700 to-green-900 flex flex-col relative overflow-y-auto pb-4">
+      {/* Красивое уведомление о первом ходе */}
+      {showFirstTurnNotification && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center pointer-events-none">
+          <div className="bg-gradient-to-br from-yellow-500 to-orange-600 text-white px-8 py-6 rounded-2xl shadow-2xl animate-bounce-in text-center">
+            <div className="text-3xl font-bold mb-2">{firstTurnMessage}</div>
+            <div className="text-sm opacity-90">Младший козырь определяет ход</div>
+          </div>
+        </div>
+      )}
+      
       <div className="relative z-10 flex items-center justify-between p-3 bg-black/20 shrink-0">
         <div className="flex items-center gap-2">
           <button
@@ -1168,6 +1188,11 @@ export const Game: React.FC<GameProps> = ({ difficulty, deckSize, onBackToMenu }
         </div>
 
         <div className="flex-1 min-h-[130px] bg-green-600/20 rounded-xl border-2 border-green-500/20 flex items-center justify-center p-3 relative overflow-hidden">
+          {/* Декоративный узор на столе */}
+          <div className="absolute inset-0 opacity-10 pointer-events-none" style={{
+            backgroundImage: `repeating-linear-gradient(45deg, transparent, transparent 20px, rgba(255,255,255,0.1) 20px, rgba(255,255,255,0.1) 40px)`
+          }}></div>
+          
           {state.deck.length > 0 && (
             <div className="absolute right-4 top-4 flex items-center gap-2 z-20">
               {state.trumpCard && (
