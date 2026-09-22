@@ -745,12 +745,22 @@ export const Game: React.FC<GameProps> = ({ difficulty, deckSize, onBackToMenu }
     if (cs.status !== 'playing' || cs.computerThinking) return;
     if (cs.attacker !== 'computer') return;
     
+    // Если игрок подкидывает карты после того как бот взял, не вмешиваемся
+    if (cs.computerJustTook && cs.showPassButton) {
+      return;
+    }
+    
     if (cs.playerJustTook) {
       const throwableCards = cs.computerHand.filter(c => cs.lastTableRanks.has(c.rank));
       
       if (throwableCards.length === 0 || cs.table.length >= 6) {
-        dispatch({ type: 'PLAYER_COLLECT_ALL' });
-        dispatch({ type: 'END_ROUND', playerTook: true, computerTook: false });
+        // Запускаем анимацию взятия всех карт
+        dispatch({ type: 'SET_ANIMATING', animation: 'player-takes' });
+        setTimeout(() => {
+          dispatch({ type: 'PLAYER_COLLECT_ALL' });
+          dispatch({ type: 'SET_ANIMATING', animation: null });
+          dispatch({ type: 'END_ROUND', playerTook: true, computerTook: false });
+        }, 800);
         return;
       }
 
@@ -760,8 +770,13 @@ export const Game: React.FC<GameProps> = ({ difficulty, deckSize, onBackToMenu }
         if (cs2.status !== 'playing' || cs2.attacker !== 'computer') return;
         
         if (cs2.table.length >= 6) {
-          dispatch({ type: 'PLAYER_COLLECT_ALL' });
-          dispatch({ type: 'END_ROUND', playerTook: true, computerTook: false });
+          // Запускаем анимацию взятия всех карт
+          dispatch({ type: 'SET_ANIMATING', animation: 'player-takes' });
+          setTimeout(() => {
+            dispatch({ type: 'PLAYER_COLLECT_ALL' });
+            dispatch({ type: 'SET_ANIMATING', animation: null });
+            dispatch({ type: 'END_ROUND', playerTook: true, computerTook: false });
+          }, 800);
           return;
         }
         
@@ -781,8 +796,13 @@ export const Game: React.FC<GameProps> = ({ difficulty, deckSize, onBackToMenu }
             dispatch({ type: 'SET_THINKING', thinking: false });
           }, 800);
         } else {
-          dispatch({ type: 'PLAYER_COLLECT_ALL' });
-          dispatch({ type: 'END_ROUND', playerTook: true, computerTook: false });
+          // Запускаем анимацию взятия всех карт
+          dispatch({ type: 'SET_ANIMATING', animation: 'player-takes' });
+          setTimeout(() => {
+            dispatch({ type: 'PLAYER_COLLECT_ALL' });
+            dispatch({ type: 'SET_ANIMATING', animation: null });
+            dispatch({ type: 'END_ROUND', playerTook: true, computerTook: false });
+          }, 800);
         }
       }, 600 + Math.random() * 200);
       return;
@@ -956,21 +976,14 @@ export const Game: React.FC<GameProps> = ({ difficulty, deckSize, onBackToMenu }
     setIsTaking(true);
     playSound('collect');
     
+    // Просто устанавливаем флаг что игрок берет карты
+    // Бот подкинет если может, потом запустится анимация
+    dispatch({ type: 'PLAYER_TAKES' });
+    
+    // Сбрасываем флаг через некоторое время
     setTimeout(() => {
-      const currentState = stateRef.current;
-      
-      dispatch({ type: 'SET_ANIMATING', animation: 'player-takes' });
-      
-      setTimeout(() => {
-        dispatch({ type: 'PLAYER_TAKES' });
-        dispatch({ type: 'SET_ANIMATING', animation: null });
-        setScore(prev => Math.max(0, prev - 10));
-        
-        setTimeout(() => {
-          setIsTaking(false);
-        }, 300);
-      }, 600);
-    }, 1500);
+      setIsTaking(false);
+    }, 2000);
   };
 
   const handlePass = () => {
@@ -1249,7 +1262,7 @@ export const Game: React.FC<GameProps> = ({ difficulty, deckSize, onBackToMenu }
             </div>
           )}
           
-          <div className="flex flex-wrap gap-1 items-center justify-center relative z-10">
+          <div className="flex flex-wrap gap-0.5 items-center justify-center relative z-10">
             {state.table.length === 0 ? (
               <div className="text-green-300/60 text-base font-medium">
                 {state.attacker === 'player' ? 'Выберите карту для атаки' : 'Ожидание...'}
