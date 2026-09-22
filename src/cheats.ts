@@ -23,7 +23,6 @@ let botCheatMode = false;
 export const cheats: CheatCodes = {
   setDeckSize: (size: number) => {
     console.log(`🎴 Колода подбора установлена на ${size} карт`);
-    // Эта функция будет вызываться из Game.tsx через dispatch
     if (typeof window !== 'undefined') {
       (window as any).__setDeckSize = size;
     }

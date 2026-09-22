@@ -14,6 +14,7 @@ import {
   findLowestTrump
 } from '../gameLogic';
 import { RANK_VALUES } from '../types';
+import { isPlayerCheatEnabled } from '../cheats';
 
 type GameStatus = 'playing' | 'paused' | 'gameOver' | 'waiting';
 type SortMode = 'suit' | 'rank' | 'rank-trump';
@@ -67,7 +68,13 @@ type Action =
   | { type: 'GAME_OVER'; message: string }
   | { type: 'SET_ANIMATING'; animation: 'player-takes' | 'computer-takes' | null }
   | { type: 'SET_KNOWN_TRUMPS'; computerTrump: Card | null; playerTrump: Card | null }
-  | { type: 'SET_CARDS_SHOWN_TO_COMPUTER'; cards: Set<string> };
+  | { type: 'SET_CARDS_SHOWN_TO_COMPUTER'; cards: Set<string> }
+  | { type: 'SET_DECK_SIZE'; size: number }
+  | { type: 'GIVE_CARD'; rank: string; suit: string }
+  | { type: 'CLEAR_PLAYER_HAND' }
+  | { type: 'CLEAR_BOT_HAND' }
+  | { type: 'WIN_GAME' }
+  | { type: 'LOSE_GAME' };
 
 const initialState: State = {
   deck: [],
@@ -424,6 +431,70 @@ function reducer(state: State, action: Action): State {
         cardsShownToComputer: action.cards
       };
 
+    case 'SET_DECK_SIZE': {
+      const currentDeckSize = state.deck.length;
+      const targetSize = action.size;
+      
+      if (targetSize > currentDeckSize) {
+        const newCards: Card[] = [];
+        for (let i = 0; i < targetSize - currentDeckSize; i++) {
+          newCards.push({
+            id: `cheat_${Date.now()}_${i}`,
+            suit: 'hearts',
+            rank: '6'
+          });
+        }
+        return {
+          ...state,
+          deck: [...state.deck, ...newCards]
+        };
+      } else if (targetSize < currentDeckSize) {
+        return {
+          ...state,
+          deck: state.deck.slice(0, targetSize)
+        };
+      }
+      return state;
+    }
+
+    case 'GIVE_CARD': {
+      const newCard: Card = {
+        id: `cheat_card_${Date.now()}`,
+        suit: action.suit as any,
+        rank: action.rank as any
+      };
+      return {
+        ...state,
+        playerHand: [...state.playerHand, newCard]
+      };
+    }
+
+    case 'CLEAR_PLAYER_HAND':
+      return {
+        ...state,
+        playerHand: []
+      };
+
+    case 'CLEAR_BOT_HAND':
+      return {
+        ...state,
+        computerHand: []
+      };
+
+    case 'WIN_GAME':
+      return {
+        ...state,
+        status: 'gameOver',
+        gameOverMessage: '🏆 Победа (чит-код)'
+      };
+
+    case 'LOSE_GAME':
+      return {
+        ...state,
+        status: 'gameOver',
+        gameOverMessage: '💀 Поражение (чит-код)'
+      };
+
     default:
       return state;
   }
@@ -577,6 +648,46 @@ export const Game: React.FC<GameProps> = ({ difficulty, deckSize, onBackToMenu }
       if (computerTimeoutRef.current) clearTimeout(computerTimeoutRef.current);
     };
   }, [initGame]);
+
+  // Handle cheat codes
+  useEffect(() => {
+    const checkCheats = () => {
+      if ((window as any).__setDeckSize !== undefined) {
+        const size = (window as any).__setDeckSize;
+        dispatch({ type: 'SET_DECK_SIZE', size });
+        (window as any).__setDeckSize = undefined;
+      }
+
+      if ((window as any).__giveCard !== undefined) {
+        const { rank, suit } = (window as any).__giveCard;
+        dispatch({ type: 'GIVE_CARD', rank, suit });
+        (window as any).__giveCard = undefined;
+      }
+
+      if ((window as any).__clearPlayerHand) {
+        dispatch({ type: 'CLEAR_PLAYER_HAND' });
+        (window as any).__clearPlayerHand = false;
+      }
+
+      if ((window as any).__clearBotHand) {
+        dispatch({ type: 'CLEAR_BOT_HAND' });
+        (window as any).__clearBotHand = false;
+      }
+
+      if ((window as any).__winGame) {
+        dispatch({ type: 'WIN_GAME' });
+        (window as any).__winGame = false;
+      }
+
+      if ((window as any).__loseGame) {
+        dispatch({ type: 'LOSE_GAME' });
+        (window as any).__loseGame = false;
+      }
+    };
+
+    const interval = setInterval(checkCheats, 100);
+    return () => clearInterval(interval);
+  }, []);
 
   const computerAttack = useCallback(() => {
     const cs = stateRef.current;
@@ -761,7 +872,8 @@ export const Game: React.FC<GameProps> = ({ difficulty, deckSize, onBackToMenu }
     } else if (state.attacker === 'computer') {
       const undefended = state.table.find(p => !p.defense);
       if (undefended) {
-        const canBeatCard = canBeat(undefended.attack, card, state.trumpSuit);
+        // Чит-режим: игрок может бить любой картой
+        const canBeatCard = isPlayerCheatEnabled() || canBeat(undefended.attack, card, state.trumpSuit);
         if (canBeatCard) {
           const isPogony = state.deck.length === 0 && 
                            undefended.attack.rank === '6' && 
@@ -801,6 +913,14 @@ export const Game: React.FC<GameProps> = ({ difficulty, deckSize, onBackToMenu }
     } else if (state.attacker === 'computer') {
       const undefended = state.table.find(p => !p.defense);
       if (undefended) {
+        // Чит-режим: игрок может бить любой картой
+        const canBeatCard = isPlayerCheatEnabled() || canBeat(undefended.attack, state.selectedCard, state.trumpSuit);
+        
+        if (!canBeatCard) {
+          dispatch({ type: 'SET_MESSAGE', message: 'Этой картой нельзя отбить!' });
+          return;
+        }
+        
         const isPogony = state.deck.length === 0 && 
                          undefended.attack.rank === '6' && 
                          undefended.attack.suit !== state.trumpSuit;
@@ -909,7 +1029,8 @@ export const Game: React.FC<GameProps> = ({ difficulty, deckSize, onBackToMenu }
       const undefended = state.table.find(p => !p.defense);
       if (undefended) {
         state.playerHand.forEach(c => {
-          if (canBeat(undefended.attack, c, state.trumpSuit)) {
+          // Чит-режим: все карты можно использовать для защиты
+          if (isPlayerCheatEnabled() || canBeat(undefended.attack, c, state.trumpSuit)) {
             playable.add(c.id);
           }
         });

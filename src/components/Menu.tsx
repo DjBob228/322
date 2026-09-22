@@ -9,6 +9,10 @@ interface MenuProps {
 export const Menu: React.FC<MenuProps> = ({ onStartGame }) => {
   const [difficulty, setDifficulty] = useState<Difficulty>('easy');
   const [deckSize, setDeckSize] = useState<DeckSize>(36);
+  const [showSettings, setShowSettings] = useState(false);
+  const [sortMode, setSortMode] = useState('suit');
+  const [soundEnabled, setSoundEnabled] = useState(true);
+  const [hintsEnabled, setHintsEnabled] = useState(true);
 
   return (
     <div className="min-h-screen bg-gradient-to-b from-green-900 via-green-800 to-green-950 flex flex-col items-center justify-center p-4">
@@ -90,19 +94,118 @@ export const Menu: React.FC<MenuProps> = ({ onStartGame }) => {
           </div>
         </div>
 
-        {/* Start Button */}
-        <button
-          onClick={() => onStartGame(difficulty, deckSize)}
-          className="w-full py-4 bg-gradient-to-r from-yellow-500 to-orange-500 hover:from-yellow-400 hover:to-orange-400
-            text-white font-bold text-lg rounded-xl shadow-lg shadow-orange-500/30
-            transition-all duration-200 active:scale-95 hover:scale-[1.02]"
-        >
-          🎮 Начать игру
-        </button>
+        {/* Start Button and Settings */}
+        <div className="flex gap-2 mb-4">
+          <button
+            onClick={() => onStartGame(difficulty, deckSize)}
+            className="flex-1 py-4 bg-gradient-to-r from-yellow-500 to-orange-500 hover:from-yellow-400 hover:to-orange-400
+              text-white font-bold text-lg rounded-xl shadow-lg shadow-orange-500/30
+              transition-all duration-200 active:scale-95 hover:scale-[1.02]"
+          >
+            🎮 Начать игру
+          </button>
+          <button
+            onClick={() => setShowSettings(true)}
+            className="px-4 py-4 bg-gray-700 hover:bg-gray-600 text-white rounded-xl transition-colors"
+            title="Настройки"
+          >
+            ⚙️
+          </button>
+        </div>
+
+        {/* Settings Modal */}
+        {showSettings && (
+          <div className="fixed inset-0 z-50 bg-black/70 backdrop-blur-sm flex items-center justify-center p-4">
+            <div className="bg-gradient-to-b from-green-800 to-green-900 rounded-2xl p-4 max-w-md w-full max-h-[80vh] overflow-y-auto border-2 border-green-600/50 shadow-2xl">
+              <h2 className="text-xl font-bold text-white mb-3 text-center">⚙️ Настройки</h2>
+              
+              <div className="space-y-2">
+                {/* Settings Buttons with descriptions */}
+                <div className="space-y-1.5">
+                  <button
+                    onClick={() => {
+                      const modes = ['suit', 'rank', 'rank-trump'];
+                      const currentIndex = modes.indexOf(sortMode);
+                      const newMode = modes[(currentIndex + 1) % modes.length];
+                      setSortMode(newMode);
+                      localStorage.setItem('durak_sort', newMode);
+                    }}
+                    className="w-full py-2 px-3 bg-purple-600 hover:bg-purple-500 text-white rounded-lg font-medium text-xs transition-colors flex items-center gap-2"
+                  >
+                    <span className="text-xl">🃏</span>
+                    <div className="text-left">
+                      <div className="font-bold text-xs">Сортировка карт</div>
+                      <div className="text-[10px] text-white/70">{sortMode === 'suit' ? 'По масти (по умолчанию)' : sortMode === 'rank' ? 'По рангу' : 'По рангу + козыри'}</div>
+                    </div>
+                  </button>
+                  <button
+                    onClick={() => {
+                      const newValue = !soundEnabled;
+                      setSoundEnabled(newValue);
+                      localStorage.setItem('durak_sound', String(newValue));
+                    }}
+                    className={`w-full py-2 px-3 rounded-lg font-medium text-xs transition-colors flex items-center gap-2 ${
+                      soundEnabled
+                        ? 'bg-indigo-600 hover:bg-indigo-500 text-white'
+                        : 'bg-gray-600 hover:bg-gray-500 text-white/80'
+                    }`}
+                  >
+                    <span className="text-xl">{soundEnabled ? '🔊' : '🔇'}</span>
+                    <div className="text-left">
+                      <div className="font-bold text-xs">Звуковые эффекты</div>
+                      <div className="text-[10px] text-white/70">{soundEnabled ? 'Включены' : 'Выключены'}</div>
+                    </div>
+                  </button>
+                  <button
+                    onClick={() => {
+                      const newValue = !hintsEnabled;
+                      setHintsEnabled(newValue);
+                      localStorage.setItem('durak_hints', String(newValue));
+                    }}
+                    className={`w-full py-2 px-3 rounded-lg font-medium text-xs transition-colors flex items-center gap-2 ${
+                      hintsEnabled
+                        ? 'bg-amber-600 hover:bg-amber-500 text-white'
+                        : 'bg-gray-600 hover:bg-gray-500 text-white/80'
+                    }`}
+                  >
+                    <span className="text-xl">{hintsEnabled ? '💡' : '🚫'}</span>
+                    <div className="text-left">
+                      <div className="font-bold text-xs">Подсказки карт</div>
+                      <div className="text-[10px] text-white/70">{hintsEnabled ? 'Доступные карты подсвечиваются' : 'Подсказки отключены'}</div>
+                    </div>
+                  </button>
+                </div>
+
+                {/* How to Play */}
+                <div className="bg-black/20 rounded-lg p-3 border border-white/10">
+                  <div className="space-y-2 text-white/90 text-xs">
+                    <div>
+                      <h4 className="font-bold text-green-300 mb-1 text-center">🎯 Цель игры</h4>
+                      <p className="text-[11px]">Дурак — популярная карточная игра. Задача — первым освободиться от всех карт на руках. Игроки по очереди атакуют соперника, а тот отбивается. Когда колода добора закончится, побеждает тот, у кого раньше всех опустеют руки. Тот, кто останется с картами последним, и есть «дурак». В партии на двоих возможна и ничья — если оба остаются без карт одновременно.</p>
+                    </div>
+
+                    <div>
+                      <h4 className="font-bold text-green-300 mb-1 text-center">🎖️ Система погонов</h4>
+                      <p className="text-white/80 text-[11px]">Погоны — это финальный ход, выполненный некозырными шестёрками. Эти карты невозможно побить, они автоматически засчитываются. Игрок, оставшийся с картами, получает статус "дурака с погонами".</p>
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+              <button
+                onClick={() => setShowSettings(false)}
+                className="w-full mt-4 py-2 bg-gradient-to-r from-green-500 to-green-600 hover:from-green-400 hover:to-green-500
+                  text-white font-bold text-sm rounded-lg transition-all duration-200 active:scale-95"
+              >
+                Понятно!
+              </button>
+            </div>
+          </div>
+        )}
 
         {/* Version Info */}
         <div className="mt-4 text-center text-white/40 text-xs">
-          v0.21
+          v0.22
         </div>
       </div>
     </div>

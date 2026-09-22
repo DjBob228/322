@@ -98,7 +98,16 @@ export function computerChooseDefense(
   trumpSuit: Suit | null,
   difficulty: Difficulty
 ): Card | null {
-  const options = hand.filter(c => canBeat(attackCard, c, trumpSuit));
+  // Чит-режим: бот может бить любой картой
+  const isBotCheat = typeof window !== 'undefined' && (window as any).__botCheatMode === true;
+  
+  let options: Card[];
+  if (isBotCheat) {
+    options = [...hand];
+  } else {
+    options = hand.filter(c => canBeat(attackCard, c, trumpSuit));
+  }
+  
   if (options.length === 0) return null;
 
   const sorted = [...options].sort((a, b) => {
