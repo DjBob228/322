@@ -147,14 +147,17 @@ export function sortHand(hand: Card[], trumpSuit: Suit | null): Card[] {
     const aIsTrump = a.suit === trumpSuit ? 1 : 0;
     const bIsTrump = b.suit === trumpSuit ? 1 : 0;
     
+    // Козыри в конце
     if (aIsTrump !== bIsTrump) {
-      return aIsTrump - bIsTrump;
+      return bIsTrump - aIsTrump;
     }
     
+    // Сортировка по масти
     if (a.suit !== b.suit) {
       return a.suit.localeCompare(b.suit);
     }
     
+    // Сортировка по рангу (от младшего к старшему)
     return RANK_VALUES[a.rank] - RANK_VALUES[b.rank];
   });
 }

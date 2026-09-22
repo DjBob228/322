@@ -27,7 +27,7 @@ export const Menu: React.FC<MenuProps> = ({ onStartGame }) => {
   };
 
   return (
-    <div className="min-h-screen bg-gradient-to-b from-green-900 via-green-800 to-green-950 flex flex-col items-center justify-center p-4">
+    <div className={`min-h-screen bg-gradient-to-b ${theme.background} flex flex-col items-center justify-center p-4`}>
       <div className="max-w-md w-full">
         <h1 className="text-5xl font-bold text-white mb-2 text-center">
           <span className="text-black">♠</span>
@@ -222,7 +222,7 @@ export const Menu: React.FC<MenuProps> = ({ onStartGame }) => {
 
         {/* Version Info */}
         <div className="mt-4 text-center text-white/40 text-xs">
-          v0.24
+          v0.25
         </div>
       </div>
     </div>
