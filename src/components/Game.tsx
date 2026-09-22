@@ -813,8 +813,10 @@ export const Game: React.FC<GameProps> = ({ difficulty, deckSize, onBackToMenu }
     const allDefended = cs.table.every(p => p.defense !== null);
     
     if (allDefended) {
+      // Если все карты отбиты, показываем кнопку "Бито" вместо автоматического завершения
       if (cs.table.length >= 6 || cs.playerHand.length === 0) {
-        dispatch({ type: 'END_ROUND', playerTook: false, computerTook: false });
+        dispatch({ type: 'SHOW_BUTTONS', take: false, pass: true });
+        dispatch({ type: 'SET_MESSAGE', message: 'Нажмите "Бито" для завершения хода' });
         return;
       }
       
@@ -827,7 +829,9 @@ export const Game: React.FC<GameProps> = ({ difficulty, deckSize, onBackToMenu }
         if (card && cs2.table.length < 6) {
           dispatch({ type: 'COMPUTER_THROW', card });
         } else {
-          dispatch({ type: 'END_ROUND', playerTook: false, computerTook: false });
+          // Показываем кнопку "Бито" вместо автоматического завершения
+          dispatch({ type: 'SHOW_BUTTONS', take: false, pass: true });
+          dispatch({ type: 'SET_MESSAGE', message: 'Нажмите "Бито" для завершения хода' });
         }
       }, 600 + Math.random() * 400);
     }
@@ -1368,8 +1372,8 @@ export const Game: React.FC<GameProps> = ({ difficulty, deckSize, onBackToMenu }
                   const overlapNeeded = totalCardsWidth - availableWidth;
                   const overlapPerCard = overlapNeeded / (cardCount - 1);
                   
-                  // Ограничиваем максимальное перекрытие до 40px (50% от ширины карты)
-                  const maxOverlapPx = 40;
+                  // Ограничиваем максимальное перекрытие до 60px (75% от ширины карты)
+                  const maxOverlapPx = 60;
                   const finalOverlapPx = Math.min(overlapPerCard, maxOverlapPx);
                   marginLeft = `-${finalOverlapPx}px`;
                 }
