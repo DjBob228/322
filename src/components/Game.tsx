@@ -15,6 +15,7 @@ import {
 } from '../gameLogic';
 import { RANK_VALUES } from '../types';
 import { isPlayerCheatEnabled } from '../cheats';
+import { themes, getNextTheme, type Theme } from '../themes';
 
 type GameStatus = 'playing' | 'paused' | 'gameOver' | 'waiting';
 type SortMode = 'suit' | 'rank' | 'rank-trump';
@@ -43,6 +44,7 @@ interface State {
   computerKnownTrump: Card | null;
   playerKnownTrump: Card | null;
   cardsShownToComputer: Set<string>;
+  roundCount: number;
 }
 
 type Action =
@@ -99,7 +101,8 @@ const initialState: State = {
   animatingCards: null,
   computerKnownTrump: null,
   playerKnownTrump: null,
-  cardsShownToComputer: new Set()
+  cardsShownToComputer: new Set(),
+  roundCount: 0
 };
 
 function drawFromDeck(state: State): State {
@@ -366,6 +369,7 @@ function reducer(state: State, action: Action): State {
         roundEnded: true,
         computerThinking: false,
         playerJustTook: false,
+        roundCount: state.roundCount + 1,
         computerJustTook: false,
         lastTableRanks: new Set<string>(),
         lastAttackCards: []
@@ -525,6 +529,17 @@ export const Game: React.FC<GameProps> = ({ difficulty, deckSize, onBackToMenu }
   const [showFirstTurnNotification, setShowFirstTurnNotification] = useState(false);
   const [isFadingOut, setIsFadingOut] = useState(false);
   const [firstTurnMessage, setFirstTurnMessage] = useState('');
+  const [currentTheme, setCurrentTheme] = useState<Theme>(() => 
+    (localStorage.getItem('durak_theme') as Theme) || 'green'
+  );
+  
+  const theme = themes[currentTheme];
+  
+  const changeTheme = () => {
+    const nextTheme = getNextTheme(currentTheme);
+    setCurrentTheme(nextTheme);
+    localStorage.setItem('durak_theme', nextTheme);
+  };
   
   stateRef.current = state;
 
@@ -1150,7 +1165,7 @@ export const Game: React.FC<GameProps> = ({ difficulty, deckSize, onBackToMenu }
   }, [state.status]);
 
   return (
-    <div className="min-h-screen h-screen bg-gradient-to-b from-green-800 via-green-700 to-green-900 flex flex-col relative overflow-y-auto pb-4">
+    <div className={`min-h-screen h-screen bg-gradient-to-b ${theme.background} flex flex-col relative overflow-y-auto pb-4`}>
       {/* Маленькое уведомление о первом ходе в правом верхнем углу */}
       {showFirstTurnNotification && (
         <div className={`fixed top-20 right-4 z-50 pointer-events-none transition-opacity duration-1000 ${
@@ -1184,6 +1199,9 @@ export const Game: React.FC<GameProps> = ({ difficulty, deckSize, onBackToMenu }
           </div>
           <div className="text-white/50 text-sm">
             🏆 {highScore}
+          </div>
+          <div className="text-white text-sm">
+            🎯 Раунд: <span className="text-yellow-300 font-bold">{state.roundCount}</span>
           </div>
           <button
             onClick={() => setSoundEnabled(!soundEnabled)}
@@ -1405,21 +1423,52 @@ export const Game: React.FC<GameProps> = ({ difficulty, deckSize, onBackToMenu }
 
       {showExitConfirm && (
         <div className="absolute inset-0 z-50 bg-black/70 backdrop-blur-sm flex items-center justify-center animate-fade-in">
-          <div className="bg-gray-800 rounded-2xl p-6 text-center shadow-2xl border border-gray-600 animate-scale-in max-w-sm mx-4">
-            <h2 className="text-xl font-bold text-white mb-4">Выйти в меню?</h2>
-            <p className="text-gray-300 text-sm mb-6">Текущая игра будет потеряна</p>
-            <div className="space-y-2">
-              <button
-                onClick={onBackToMenu}
-                className="block w-full px-6 py-3 bg-red-500 hover:bg-red-400 text-white rounded-lg font-bold transition-colors"
-              >
-                ✓ Да, выйти
-              </button>
+          <div className={`${theme.background} rounded-2xl p-6 text-center shadow-2xl border-2 ${theme.tableBorder} animate-scale-in max-w-md mx-4`}>
+            <h2 className="text-2xl font-bold text-white mb-6">⏸️ Партия на паузе</h2>
+            <div className="space-y-3">
               <button
                 onClick={() => setShowExitConfirm(false)}
-                className="block w-full px-6 py-3 bg-gray-600 hover:bg-gray-500 text-white rounded-lg font-bold transition-colors"
+                className="block w-full px-6 py-3 bg-green-600 hover:bg-green-500 text-white rounded-lg font-bold transition-colors"
               >
-                ✕ Отмена
+                ▶️ Продолжить
+              </button>
+              <button
+                onClick={() => setSoundEnabled(!soundEnabled)}
+                className={`block w-full px-6 py-3 rounded-lg font-bold transition-colors ${
+                  soundEnabled
+                    ? 'bg-indigo-600 hover:bg-indigo-500 text-white'
+                    : 'bg-gray-600 hover:bg-gray-500 text-white/80'
+                }`}
+              >
+                {soundEnabled ? '🔊 Звук: ВКЛ' : '🔇 Звук: ВЫКЛ'}
+              </button>
+              <button
+                onClick={() => setHintsEnabled(!hintsEnabled)}
+                className={`block w-full px-6 py-3 rounded-lg font-bold transition-colors ${
+                  hintsEnabled
+                    ? 'bg-amber-600 hover:bg-amber-500 text-white'
+                    : 'bg-gray-600 hover:bg-gray-500 text-white/80'
+                }`}
+              >
+                {hintsEnabled ? '💡 Подсказки: ВКЛ' : '🚫 Подсказки: ВЫКЛ'}
+              </button>
+              <button
+                onClick={changeTheme}
+                className="block w-full px-6 py-3 bg-pink-600 hover:bg-pink-500 text-white rounded-lg font-bold transition-colors"
+              >
+                {theme.emoji} Тема: {theme.name}
+              </button>
+              <button
+                onClick={restartGame}
+                className="block w-full px-6 py-3 bg-blue-600 hover:bg-blue-500 text-white rounded-lg font-bold transition-colors"
+              >
+                🔄 Новая партия
+              </button>
+              <button
+                onClick={onBackToMenu}
+                className="block w-full px-6 py-3 bg-red-600 hover:bg-red-500 text-white rounded-lg font-bold transition-colors"
+              >
+                🚪 Выйти в меню
               </button>
             </div>
           </div>
