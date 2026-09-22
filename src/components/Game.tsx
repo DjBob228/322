@@ -730,7 +730,7 @@ export const Game: React.FC<GameProps> = ({ difficulty, deckSize, onBackToMenu }
       if (cs2.status !== 'playing') return;
       if (cs2.attacker !== 'computer') return;
       
-      const card = computerChooseAttack(cs2.computerHand, cs2.table, cs2.trumpSuit, difficulty);
+      const card = computerChooseAttack(cs2.computerHand, cs2.table, cs2.trumpSuit, difficulty, cs2.playerHand);
       if (card) {
         dispatch({ type: 'COMPUTER_ATTACK', card });
         playSound('place');
@@ -803,7 +803,7 @@ export const Game: React.FC<GameProps> = ({ difficulty, deckSize, onBackToMenu }
         const cs2 = stateRef.current;
         if (cs2.status !== 'playing' || cs2.attacker !== 'computer') return;
         
-        const card = computerShouldThrow(cs2.computerHand, cs2.table, cs2.trumpSuit, difficulty, cs2.playerHand.length);
+        const card = computerShouldThrow(cs2.computerHand, cs2.table, cs2.trumpSuit, difficulty, cs2.playerHand);
         if (card && cs2.table.length < 6) {
           dispatch({ type: 'COMPUTER_THROW', card });
         } else {
@@ -829,7 +829,7 @@ export const Game: React.FC<GameProps> = ({ difficulty, deckSize, onBackToMenu }
       const currentUndefended = cs2.table.find(p => !p.defense);
       if (!currentUndefended) return;
       
-      const defenseCard = computerChooseDefense(cs2.computerHand, currentUndefended.attack, cs2.trumpSuit, difficulty);
+      const defenseCard = computerChooseDefense(cs2.computerHand, currentUndefended.attack, cs2.trumpSuit, difficulty, cs2.table, cs2.playerHand);
       if (defenseCard) {
         dispatch({ type: 'COMPUTER_DEFEND', card: defenseCard, attackId: currentUndefended.attack.id });
         playSound('beat');
