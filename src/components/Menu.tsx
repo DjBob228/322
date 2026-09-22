@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 
 import { Difficulty, DeckSize } from '../types';
+import { themes, getNextTheme, type Theme } from '../themes';
 
 interface MenuProps {
   onStartGame: (difficulty: Difficulty, deckSize: DeckSize) => void;
@@ -13,6 +14,17 @@ export const Menu: React.FC<MenuProps> = ({ onStartGame }) => {
   const [sortMode, setSortMode] = useState('suit');
   const [soundEnabled, setSoundEnabled] = useState(true);
   const [hintsEnabled, setHintsEnabled] = useState(true);
+  const [currentTheme, setCurrentTheme] = useState<Theme>(() => 
+    (localStorage.getItem('durak_theme') as Theme) || 'green'
+  );
+
+  const theme = themes[currentTheme];
+
+  const changeTheme = () => {
+    const nextTheme = getNextTheme(currentTheme);
+    setCurrentTheme(nextTheme);
+    localStorage.setItem('durak_theme', nextTheme);
+  };
 
   return (
     <div className="min-h-screen bg-gradient-to-b from-green-900 via-green-800 to-green-950 flex flex-col items-center justify-center p-4">
@@ -174,6 +186,16 @@ export const Menu: React.FC<MenuProps> = ({ onStartGame }) => {
                       <div className="text-[10px] text-white/70">{hintsEnabled ? 'Доступные карты подсвечиваются' : 'Подсказки отключены'}</div>
                     </div>
                   </button>
+                  <button
+                    onClick={changeTheme}
+                    className="w-full py-2 px-3 bg-pink-600 hover:bg-pink-500 text-white rounded-lg font-medium text-xs transition-colors flex items-center gap-2"
+                  >
+                    <span className="text-xl">{theme.emoji}</span>
+                    <div className="text-left">
+                      <div className="font-bold text-xs">Цветовая тема</div>
+                      <div className="text-[10px] text-white/70">{theme.name}</div>
+                    </div>
+                  </button>
                 </div>
 
                 {/* How to Play */}
@@ -205,7 +227,7 @@ export const Menu: React.FC<MenuProps> = ({ onStartGame }) => {
 
         {/* Version Info */}
         <div className="mt-4 text-center text-white/40 text-xs">
-          v0.22
+          v0.23
         </div>
       </div>
     </div>

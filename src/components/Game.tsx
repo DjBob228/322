@@ -1307,7 +1307,7 @@ export const Game: React.FC<GameProps> = ({ difficulty, deckSize, onBackToMenu }
           <div className="flex justify-center w-full px-4">
             {sortCards(state.playerHand).map((card, i) => {
               const cardCount = state.playerHand.length;
-              const cardWidth = 80;
+              const cardWidth = 80; // w-20 = 5rem = 80px
               const availableWidth = screenWidth - 64;
               const totalCardsWidth = cardCount * cardWidth;
               
@@ -1315,14 +1315,17 @@ export const Game: React.FC<GameProps> = ({ difficulty, deckSize, onBackToMenu }
               
               if (i > 0) {
                 if (totalCardsWidth <= availableWidth) {
+                  // Карты помещаются без перекрытия
                   marginLeft = '0';
                 } else {
+                  // Рассчитываем необходимое перекрытие в пикселях
                   const overlapNeeded = totalCardsWidth - availableWidth;
                   const overlapPerCard = overlapNeeded / (cardCount - 1);
-                  const overlapPercent = (overlapPerCard / cardWidth) * 100;
-                  const maxOverlapPercent = 45;
-                  const finalOverlapPercent = Math.min(overlapPercent, maxOverlapPercent);
-                  marginLeft = `-${finalOverlapPercent}%`;
+                  
+                  // Ограничиваем максимальное перекрытие до 40px (50% от ширины карты)
+                  const maxOverlapPx = 40;
+                  const finalOverlapPx = Math.min(overlapPerCard, maxOverlapPx);
+                  marginLeft = `-${finalOverlapPx}px`;
                 }
               }
               
