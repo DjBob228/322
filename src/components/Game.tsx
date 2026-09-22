@@ -875,15 +875,6 @@ export const Game: React.FC<GameProps> = ({ difficulty, deckSize, onBackToMenu }
         // Чит-режим: игрок может бить любой картой
         const canBeatCard = isPlayerCheatEnabled() || canBeat(undefended.attack, card, state.trumpSuit);
         if (canBeatCard) {
-          const isPogony = state.deck.length === 0 && 
-                           undefended.attack.rank === '6' && 
-                           undefended.attack.suit !== state.trumpSuit;
-          
-          if (isPogony) {
-            dispatch({ type: 'SET_MESSAGE', message: 'Погоны нельзя отбить!' });
-            return;
-          }
-          
           if (state.selectedCard?.id === card.id) {
             dispatch({ type: 'PLAYER_DEFEND', card, attackId: undefended.attack.id });
             dispatch({ type: 'SET_MESSAGE', message: 'Ожидание...' });
@@ -918,15 +909,6 @@ export const Game: React.FC<GameProps> = ({ difficulty, deckSize, onBackToMenu }
         
         if (!canBeatCard) {
           dispatch({ type: 'SET_MESSAGE', message: 'Этой картой нельзя отбить!' });
-          return;
-        }
-        
-        const isPogony = state.deck.length === 0 && 
-                         undefended.attack.rank === '6' && 
-                         undefended.attack.suit !== state.trumpSuit;
-        
-        if (isPogony) {
-          dispatch({ type: 'SET_MESSAGE', message: 'Погоны нельзя отбить!' });
           return;
         }
         
@@ -1185,13 +1167,13 @@ export const Game: React.FC<GameProps> = ({ difficulty, deckSize, onBackToMenu }
 
         <div className="flex-1 min-h-[130px] bg-green-600/20 rounded-xl border-2 border-green-500/20 flex items-center justify-center p-3 relative overflow-hidden">
           {state.deck.length > 0 && (
-            <div className="absolute right-4 top-1/2 -translate-y-1/2 flex items-center gap-2 z-20">
+            <div className="absolute left-4 top-4 flex items-center gap-2 z-5">
               {state.trumpCard && (
                 <div style={{ transform: 'rotate(90deg)' }}>
-                  <CardComponent card={state.trumpCard} className="w-20" />
+                  <CardComponent card={state.trumpCard} className="w-16" />
                 </div>
               )}
-              <div className="relative" style={{ width: '5rem', height: '7rem' }}>
+              <div className="relative" style={{ width: '4rem', height: '5.6rem' }}>
                 {(() => {
                   const layerCount = state.deck.length === 1 ? 0 : Math.min(4, Math.max(1, Math.ceil(state.deck.length / 6)));
                   return Array.from({ length: layerCount }, (_, i) => (
@@ -1208,7 +1190,7 @@ export const Game: React.FC<GameProps> = ({ difficulty, deckSize, onBackToMenu }
                   ));
                 })()}
                 
-                <CardComponent card={state.deck[0]} faceDown className="w-20 relative z-10" />
+                <CardComponent card={state.deck[0]} faceDown className="w-16 relative z-10" />
                 <div className="absolute -top-1 -right-1 bg-white text-green-800 rounded-full w-5 h-5 flex items-center justify-center text-[10px] font-bold shadow z-20">
                   {state.deck.length}
                 </div>
