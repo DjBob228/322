@@ -4,13 +4,15 @@ import { Game } from './components/Game';
 
 type Screen = 'menu' | 'game';
 
+import { Difficulty, DeckSize } from './types';
+
 function App() {
   const [screen, setScreen] = useState<Screen>('menu');
-  const [difficulty, setDifficulty] = useState('easy');
-  const [deckSize, setDeckSize] = useState(36);
+  const [difficulty, setDifficulty] = useState<Difficulty>('easy');
+  const [deckSize, setDeckSize] = useState<DeckSize>(36);
   const [gameKey, setGameKey] = useState(0);
 
-  const handleStartGame = (diff: string, deck: number) => {
+  const handleStartGame = (diff: Difficulty, deck: DeckSize) => {
     setDifficulty(diff);
     setDeckSize(deck);
     setGameKey(prev => prev + 1);

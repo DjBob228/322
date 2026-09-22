@@ -12,9 +12,9 @@ export interface TablePair {
   defense: Card | null;
 }
 
-export type Attacker = 'player' | 'computer';
 export type Difficulty = 'easy' | 'medium' | 'hard';
 export type DeckSize = 36 | 52;
+export type Attacker = 'player' | 'computer';
 
 export const SUIT_SYMBOLS: Record<Suit, string> = {
   hearts: '♥',

@@ -1,12 +1,14 @@
 import React, { useState } from 'react';
 
+import { Difficulty, DeckSize } from '../types';
+
 interface MenuProps {
-  onStartGame: (difficulty: string, deckSize: number) => void;
+  onStartGame: (difficulty: Difficulty, deckSize: DeckSize) => void;
 }
 
 export const Menu: React.FC<MenuProps> = ({ onStartGame }) => {
-  const [difficulty, setDifficulty] = useState('easy');
-  const [deckSize, setDeckSize] = useState(36);
+  const [difficulty, setDifficulty] = useState<Difficulty>('easy');
+  const [deckSize, setDeckSize] = useState<DeckSize>(36);
 
   return (
     <div className="min-h-screen bg-gradient-to-b from-green-900 via-green-800 to-green-950 flex flex-col items-center justify-center p-4">
@@ -29,9 +31,9 @@ export const Menu: React.FC<MenuProps> = ({ onStartGame }) => {
           </h3>
           <div className="space-y-2">
             {[
-              { key: 'easy', label: 'Легкая', emoji: '😊', desc: 'Компьютер иногда ошибается' },
-              { key: 'medium', label: 'Средняя', emoji: '🤔', desc: 'Сбалансированная игра' },
-              { key: 'hard', label: 'Сложная', emoji: '😈', desc: 'Оптимальная стратегия' }
+              { key: 'easy' as Difficulty, label: 'Легкая', emoji: '😊', desc: 'Компьютер иногда ошибается' },
+              { key: 'medium' as Difficulty, label: 'Средняя', emoji: '🤔', desc: 'Сбалансированная игра' },
+              { key: 'hard' as Difficulty, label: 'Сложная', emoji: '😈', desc: 'Оптимальная стратегия' }
             ].map(d => (
               <button
                 key={d.key}
@@ -64,7 +66,7 @@ export const Menu: React.FC<MenuProps> = ({ onStartGame }) => {
           </h3>
           <div className="grid grid-cols-2 gap-3">
             <button
-              onClick={() => setDeckSize(36)}
+              onClick={() => setDeckSize(36 as DeckSize)}
               className={`p-4 rounded-xl transition-all duration-200 border-2
                 ${deckSize === 36
                   ? 'bg-green-600/40 border-green-400 shadow-lg shadow-green-500/20'
@@ -75,7 +77,7 @@ export const Menu: React.FC<MenuProps> = ({ onStartGame }) => {
               <div className="text-white/50 text-xs">Классическая игра</div>
             </button>
             <button
-              onClick={() => setDeckSize(52)}
+              onClick={() => setDeckSize(52 as DeckSize)}
               className={`p-4 rounded-xl transition-all duration-200 border-2
                 ${deckSize === 52
                   ? 'bg-green-600/40 border-green-400 shadow-lg shadow-green-500/20'
