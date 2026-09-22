@@ -523,6 +523,7 @@ export const Game: React.FC<GameProps> = ({ difficulty, deckSize, onBackToMenu }
   const audioContextRef = useRef<AudioContext | null>(null);
   const [isTaking, setIsTaking] = useState(false);
   const [showFirstTurnNotification, setShowFirstTurnNotification] = useState(false);
+  const [isFadingOut, setIsFadingOut] = useState(false);
   const [firstTurnMessage, setFirstTurnMessage] = useState('');
   
   stateRef.current = state;
@@ -620,18 +621,29 @@ export const Game: React.FC<GameProps> = ({ difficulty, deckSize, onBackToMenu }
     if (firstAttacker === 'computer') {
       message = 'Компьютер атакует...';
       computerKnownTrump = computerLowestTrump;
-      setFirstTurnMessage('🤖 Компьютер ходит первым');
     } else {
       message = 'Ваш ход! Выберите карту для атаки.';
       playerKnownTrump = playerLowestTrump;
-      setFirstTurnMessage('🎯 Вы ходите первым');
     }
     
-    // Показать красивое уведомление о первом ходе
+    // Показать уведомление о первом ходе
+    setFirstTurnMessage(firstAttacker === 'computer' 
+      ? '🤖 Компьютер ходит первым\nМладший козырь' 
+      : '🎯 Вы ходите первым\nМладший козырь');
     setShowFirstTurnNotification(true);
+    setIsFadingOut(false);
+    
+    // Начинаем плавное появление
+    setTimeout(() => {
+      // Начинаем плавное исчезновение через 3.5 секунды
+      setIsFadingOut(true);
+    }, 3500);
+    
+    // Полностью скрываем через 4.5 секунды
     setTimeout(() => {
       setShowFirstTurnNotification(false);
-    }, 2500);
+      setIsFadingOut(false);
+    }, 4500);
 
     dispatch({
       type: 'INIT',
@@ -646,6 +658,15 @@ export const Game: React.FC<GameProps> = ({ difficulty, deckSize, onBackToMenu }
     if (computerKnownTrump || playerKnownTrump) {
       setTimeout(() => {
         dispatch({ type: 'SET_KNOWN_TRUMPS', computerTrump: computerKnownTrump, playerTrump: playerKnownTrump });
+      }, 0);
+    }
+    
+    // Если игрок ходит первым, бот запоминает его козырную карту
+    if (firstAttacker === 'player' && playerLowestTrump) {
+      setTimeout(() => {
+        const initialKnownCards = new Set<string>();
+        initialKnownCards.add(playerLowestTrump.id);
+        dispatch({ type: 'SET_CARDS_SHOWN_TO_COMPUTER', cards: initialKnownCards });
       }, 0);
     }
 
@@ -1113,12 +1134,15 @@ export const Game: React.FC<GameProps> = ({ difficulty, deckSize, onBackToMenu }
 
   return (
     <div className="min-h-screen h-screen bg-gradient-to-b from-green-800 via-green-700 to-green-900 flex flex-col relative overflow-y-auto pb-4">
-      {/* Красивое уведомление о первом ходе */}
+      {/* Маленькое уведомление о первом ходе в правом верхнем углу */}
       {showFirstTurnNotification && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center pointer-events-none">
-          <div className="bg-gradient-to-br from-yellow-500 to-orange-600 text-white px-8 py-6 rounded-2xl shadow-2xl animate-bounce-in text-center">
-            <div className="text-3xl font-bold mb-2">{firstTurnMessage}</div>
-            <div className="text-sm opacity-90">Младший козырь определяет ход</div>
+        <div className={`fixed top-20 right-4 z-50 pointer-events-none transition-opacity duration-1000 ${
+          isFadingOut ? 'opacity-0' : 'opacity-100 animate-slide-in-right'
+        }`}>
+          <div className="bg-gradient-to-br from-green-700 to-green-900 rounded-xl p-4 shadow-2xl border-2 border-green-500/30 max-w-xs">
+            <div className="text-white text-sm font-bold whitespace-pre-line leading-relaxed">
+              {firstTurnMessage}
+            </div>
           </div>
         </div>
       )}
