@@ -1261,30 +1261,60 @@ export const Game: React.FC<GameProps> = ({ difficulty, deckSize, onBackToMenu }
           {state.deck.length > 0 && (
             <div className="absolute right-4 top-4 flex items-center gap-2 z-20">
               {state.trumpCard && (
-                <div style={{ transform: 'rotate(90deg)' }}>
-                  <CardComponent card={state.trumpCard} faceDown className="w-20" />
+                <div>
+                  <CardComponent card={state.trumpCard} className="w-20" />
                 </div>
               )}
-              <div className="relative" style={{ width: '5rem', height: '7rem' }}>
+              <div className="relative" style={{ width: '5rem', height: '7rem', perspective: '1000px' }}>
                 {(() => {
-                  // Создаем слои для 3D эффекта
-                  const layerCount = Math.min(6, Math.max(0, state.deck.length - 1));
-                  return Array.from({ length: layerCount }, (_, i) => (
-                    <div 
-                      key={i}
-                      className="absolute inset-0 rounded-lg"
-                      style={{ 
-                        transform: `translate(${(i + 1) * 3}px, -${(i + 1) * 3}px)`,
-                        background: 'linear-gradient(135deg, #1e40af 0%, #1e3a8a 100%)',
-                        border: '2px solid #3b82f6',
-                        boxShadow: '1px -1px 3px rgba(0,0,0,0.4)'
-                      }}
-                    ></div>
-                  ));
+                  // Рендерим только верхние 5-7 карт + основание
+                  const visibleCards = Math.min(7, state.deck.length - 1);
+                  const hasBase = state.deck.length > 7;
+                  
+                  return (
+                    <>
+                      {/* Толстое основание для оставшихся карт */}
+                      {hasBase && (
+                        <div 
+                          className="absolute inset-0 rounded-lg"
+                          style={{ 
+                            transform: `translate(${visibleCards * 4}px, ${visibleCards * 4}px) rotateX(10deg) rotateY(-5deg)`,
+                            background: 'linear-gradient(135deg, #1e3a8a 0%, #1e40af 50%, #1e3a8a 100%)',
+                            border: '2px solid #3b82f6',
+                            boxShadow: `
+                              ${visibleCards * 2}px -${visibleCards * 2}px 0px #1e3a8a,
+                              ${visibleCards * 2 + 2}px -${visibleCards * 2 + 2}px 0px #1e40af,
+                              ${visibleCards * 2 + 4}px -${visibleCards * 2 + 4}px 8px rgba(0,0,0,0.5)
+                            `,
+                            zIndex: 1
+                          }}
+                        ></div>
+                      )}
+                      
+                      {/* Верхние карты со смещением */}
+                      {Array.from({ length: visibleCards }, (_, i) => (
+                        <div 
+                          key={i}
+                          className="absolute inset-0 rounded-lg"
+                          style={{ 
+                            transform: `translate(${(i + 1) * 4}px, ${(i + 1) * 4}px) rotateX(${2}deg) rotateY(${-1}deg)`,
+                            background: 'linear-gradient(135deg, #1e40af 0%, #1e3a8a 100%)',
+                            border: '2px solid #3b82f6',
+                            boxShadow: `
+                              2px -2px 0px rgba(30, 58, 138, 0.8),
+                              3px -3px 4px rgba(0,0,0,0.3),
+                              inset 0 0 10px rgba(255,255,255,0.1)
+                            `,
+                            zIndex: visibleCards - i + 1
+                          }}
+                        ></div>
+                      ))}
+                    </>
+                  );
                 })()}
                 
-                <CardComponent card={state.deck[0]} faceDown className="w-20 relative z-10" />
-                <div className="absolute -top-1 -right-1 bg-white text-green-800 rounded-full w-5 h-5 flex items-center justify-center text-[10px] font-bold shadow z-20">
+                <CardComponent card={state.deck[0]} faceDown className="w-20 relative z-20" />
+                <div className="absolute -top-1 -right-1 bg-white text-green-800 rounded-full w-5 h-5 flex items-center justify-center text-[10px] font-bold shadow z-30">
                   {state.deck.length}
                 </div>
               </div>
