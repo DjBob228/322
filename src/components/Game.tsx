@@ -1262,21 +1262,22 @@ export const Game: React.FC<GameProps> = ({ difficulty, deckSize, onBackToMenu }
             <div className="absolute right-4 top-4 flex items-center gap-2 z-20">
               {state.trumpCard && (
                 <div style={{ transform: 'rotate(90deg)' }}>
-                  <CardComponent card={state.trumpCard} className="w-20" />
+                  <CardComponent card={state.trumpCard} faceDown className="w-20" />
                 </div>
               )}
               <div className="relative" style={{ width: '5rem', height: '7rem' }}>
                 {(() => {
-                  const layerCount = state.deck.length === 1 ? 0 : Math.min(4, Math.max(1, Math.ceil(state.deck.length / 6)));
+                  // Создаем слои для 3D эффекта
+                  const layerCount = Math.min(6, Math.max(0, state.deck.length - 1));
                   return Array.from({ length: layerCount }, (_, i) => (
                     <div 
                       key={i}
                       className="absolute inset-0 rounded-lg"
                       style={{ 
-                        transform: `translate(${(i + 1) * 2}px, -${(i + 1) * 2}px)`,
-                        background: 'linear-gradient(135deg, #1d4ed8 0%, #1e3a8a 100%)',
+                        transform: `translate(${(i + 1) * 3}px, -${(i + 1) * 3}px)`,
+                        background: 'linear-gradient(135deg, #1e40af 0%, #1e3a8a 100%)',
                         border: '2px solid #3b82f6',
-                        boxShadow: '2px -2px 4px rgba(0,0,0,0.5)'
+                        boxShadow: '1px -1px 3px rgba(0,0,0,0.4)'
                       }}
                     ></div>
                   ));
