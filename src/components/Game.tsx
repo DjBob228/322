@@ -643,8 +643,8 @@ export const Game: React.FC<GameProps> = ({ difficulty, deckSize, onBackToMenu }
     
     // Показать уведомление о первом ходе
     setFirstTurnMessage(firstAttacker === 'computer' 
-      ? '🤖 Компьютер ходит первым\nМладший козырь' 
-      : '🎯 Вы ходите первым\nМладший козырь');
+      ? `🤖 Компьютер ходит первым\n${computerLowestTrump?.rank || ''} ${computerLowestTrump ? SUIT_SYMBOLS[computerLowestTrump.suit] : ''}` 
+      : `🎯 Вы ходите первым\n${playerLowestTrump?.rank || ''} ${playerLowestTrump ? SUIT_SYMBOLS[playerLowestTrump.suit] : ''}`);
     setShowFirstTurnNotification(true);
     setIsFadingOut(false);
     
@@ -1029,6 +1029,7 @@ export const Game: React.FC<GameProps> = ({ difficulty, deckSize, onBackToMenu }
   const restartGame = () => {
     if (computerTimeoutRef.current) clearTimeout(computerTimeoutRef.current);
     setIsTaking(false);
+    setShowExitConfirm(false);
     initGame();
   };
 
@@ -1136,14 +1137,18 @@ export const Game: React.FC<GameProps> = ({ difficulty, deckSize, onBackToMenu }
 
   useEffect(() => {
     const handleKeyDown = (e: KeyboardEvent) => {
-      if (e.key === 'Escape' && state.status === 'playing') {
-        setShowExitConfirm(true);
+      if (e.key === 'Escape') {
+        if (showExitConfirm) {
+          setShowExitConfirm(false);
+        } else if (state.status === 'playing') {
+          setShowExitConfirm(true);
+        }
       }
     };
 
     window.addEventListener('keydown', handleKeyDown);
     return () => window.removeEventListener('keydown', handleKeyDown);
-  }, [state.status]);
+  }, [state.status, showExitConfirm]);
 
   useEffect(() => {
     if (state.status === 'gameOver') {
@@ -1171,7 +1176,7 @@ export const Game: React.FC<GameProps> = ({ difficulty, deckSize, onBackToMenu }
         <div className={`fixed top-20 right-4 z-50 pointer-events-none transition-opacity duration-1000 ${
           isFadingOut ? 'opacity-0' : 'opacity-100 animate-slide-in-right'
         }`}>
-          <div className="bg-gradient-to-br from-green-700 to-green-900 rounded-xl p-4 shadow-2xl border-2 border-green-500/30 max-w-xs">
+          <div className={`bg-gradient-to-br ${theme.background} rounded-xl p-4 shadow-2xl border-2 ${theme.tableBorder} max-w-xs`}>
             <div className="text-white text-sm font-bold whitespace-pre-line leading-relaxed">
               {firstTurnMessage}
             </div>
@@ -1193,13 +1198,6 @@ export const Game: React.FC<GameProps> = ({ difficulty, deckSize, onBackToMenu }
         </div>
 
         <div className="flex items-center gap-3">
-          <div className="text-white text-sm">
-            <span className="text-yellow-300 font-bold">{score}</span>
-            <span className="text-white/50"> очков</span>
-          </div>
-          <div className="text-white/50 text-sm">
-            🏆 {highScore}
-          </div>
           <div className="text-white text-sm">
             🎯 Раунд: <span className="text-yellow-300 font-bold">{state.roundCount}</span>
           </div>

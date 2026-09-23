@@ -67,9 +67,9 @@ export const Menu: React.FC<MenuProps> = ({ onStartGame }) => {
           </h3>
           <div className="space-y-2">
             {[
-              { key: 'easy' as Difficulty, label: 'Легкая', emoji: '😊', desc: 'Компьютер иногда ошибается' },
-              { key: 'medium' as Difficulty, label: 'Средняя', emoji: '🤔', desc: 'Сбалансированная игра' },
-              { key: 'hard' as Difficulty, label: 'Сложная', emoji: '😈', desc: 'Оптимальная стратегия' }
+              { key: 'easy' as Difficulty, label: 'Легкая', emoji: '😊', desc: 'Анализ на 4 полухода' },
+              { key: 'medium' as Difficulty, label: 'Средняя', emoji: '🤔', desc: 'Анализ на 7 полуходов' },
+              { key: 'hard' as Difficulty, label: 'Сложная', emoji: '😈', desc: 'Анализ на 10 полуходов' }
             ].map(d => (
               <button
                 key={d.key}
@@ -242,7 +242,7 @@ export const Menu: React.FC<MenuProps> = ({ onStartGame }) => {
 
         {/* Version Info */}
         <div className="mt-4 text-center text-white/40 text-xs">
-          v0.31
+          v0.32
         </div>
       </div>
     </div>
