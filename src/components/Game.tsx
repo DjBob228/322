@@ -1171,6 +1171,14 @@ export const Game: React.FC<GameProps> = ({ difficulty, deckSize, onBackToMenu }
 
   return (
     <div className={`min-h-screen h-screen bg-gradient-to-b ${theme.background} flex flex-col relative overflow-y-auto pb-4`}>
+      {/* Декоративные масти на фоне */}
+      <div className="absolute inset-0 pointer-events-none opacity-10">
+        <div className="absolute top-10 left-10 text-8xl transform rotate-12 text-white drop-shadow-lg">♠</div>
+        <div className="absolute top-20 right-20 text-8xl transform -rotate-12 text-red-500 drop-shadow-lg">♥</div>
+        <div className="absolute bottom-20 left-20 text-8xl transform rotate-45 text-red-500 drop-shadow-lg">♦</div>
+        <div className="absolute bottom-10 right-10 text-8xl transform -rotate-45 text-white drop-shadow-lg">♣</div>
+      </div>
+      
       {/* Маленькое уведомление о первом ходе в правом верхнем углу */}
       {showFirstTurnNotification && (
         <div className={`fixed top-20 right-4 z-50 pointer-events-none transition-opacity duration-1000 ${
@@ -1452,9 +1460,9 @@ export const Game: React.FC<GameProps> = ({ difficulty, deckSize, onBackToMenu }
               </button>
               <button
                 onClick={changeTheme}
-                className="block w-full px-6 py-3 bg-pink-600 hover:bg-pink-500 text-white rounded-lg font-bold transition-colors"
+                className="block w-full px-6 py-3 bg-pink-600 hover:bg-pink-500 text-white rounded-lg font-bold transition-colors truncate"
               >
-                {theme.emoji} Тема: {theme.name}
+                {theme.emoji} {theme.name}
               </button>
               <button
                 onClick={restartGame}

@@ -51,12 +51,12 @@ export const themes: Record<Theme, ThemeColors> = {
   },
   orange: {
     name: t('terracotta'),
-    emoji: '🟤',
-    background: 'from-amber-900 via-amber-800 to-amber-950',
-    tableBg: 'bg-amber-700/20',
-    tableBorder: 'border-amber-500/20',
+    emoji: '🟠',
+    background: 'from-orange-800 via-orange-700 to-orange-900',
+    tableBg: 'bg-orange-600/20',
+    tableBorder: 'border-orange-500/20',
     patternColor: 'rgba(255,255,255,0.05)',
-    textColor: 'text-amber-300/60',
+    textColor: 'text-orange-300/60',
   },
   teal: {
     name: t('turquoise'),
