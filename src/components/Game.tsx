@@ -1261,7 +1261,7 @@ export const Game: React.FC<GameProps> = ({ difficulty, deckSize, onBackToMenu }
           {state.deck.length > 0 && (
             <div className="absolute right-4 top-4 flex items-center gap-2 z-20">
               {state.trumpCard && (
-                <div>
+                <div style={{ transform: 'rotate(90deg)' }}>
                   <CardComponent card={state.trumpCard} className="w-20" />
                 </div>
               )}
@@ -1278,13 +1278,13 @@ export const Game: React.FC<GameProps> = ({ difficulty, deckSize, onBackToMenu }
                         <div 
                           className="absolute inset-0 rounded-lg"
                           style={{ 
-                            transform: `translate(${visibleCards * 4}px, ${visibleCards * 4}px) rotateX(10deg) rotateY(-5deg)`,
+                            transform: `translate(${visibleCards * 2}px, -${visibleCards * 2}px) rotateX(10deg) rotateY(-5deg)`,
                             background: 'linear-gradient(135deg, #1e3a8a 0%, #1e40af 50%, #1e3a8a 100%)',
                             border: '2px solid #3b82f6',
                             boxShadow: `
-                              ${visibleCards * 2}px -${visibleCards * 2}px 0px #1e3a8a,
-                              ${visibleCards * 2 + 2}px -${visibleCards * 2 + 2}px 0px #1e40af,
-                              ${visibleCards * 2 + 4}px -${visibleCards * 2 + 4}px 8px rgba(0,0,0,0.5)
+                              ${visibleCards}px -${visibleCards}px 0px #1e3a8a,
+                              ${visibleCards + 1}px -${visibleCards + 1}px 0px #1e40af,
+                              ${visibleCards + 2}px -${visibleCards + 2}px 4px rgba(0,0,0,0.5)
                             `,
                             zIndex: 1
                           }}
@@ -1297,7 +1297,7 @@ export const Game: React.FC<GameProps> = ({ difficulty, deckSize, onBackToMenu }
                           key={i}
                           className="absolute inset-0 rounded-lg"
                           style={{ 
-                            transform: `translate(${(i + 1) * 4}px, ${(i + 1) * 4}px) rotateX(${2}deg) rotateY(${-1}deg)`,
+                            transform: `translate(${(i + 1) * 2}px, -${(i + 1) * 2}px) rotateX(${2}deg) rotateY(${-1}deg)`,
                             background: 'linear-gradient(135deg, #1e40af 0%, #1e3a8a 100%)',
                             border: '2px solid #3b82f6',
                             boxShadow: `
